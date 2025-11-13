@@ -12,4 +12,5 @@ func main() {
 	}
 
 	fmt.Println("Hello and welcome")
+	fmt.Println("Hello and welcome")
 }
