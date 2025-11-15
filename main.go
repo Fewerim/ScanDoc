@@ -1,12 +1,41 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"proWeb/files"
 )
 
 func main() {
-	fmt.Print("Project in process...")
-	fmt.Println("Мотя не пидор")
+	if !files.StorageExists() {
+		if err := files.CreateStorageJSON(); err != nil {
+			log.Fatal(err)
+		}
+	}
+	datas := []files.TestJson{}
+	data1 := files.TestJson{
+		Name:       "Danila",
+		Age:        25,
+		Profession: "Golang programmer",
+		Skills: []string{
+			"SQL",
+			"Kafka",
+			"Python",
+		},
+	}
+	data2 := files.TestJson{
+		Name:       "Danila",
+		Age:        25,
+		Profession: "Golang programmer",
+		Skills: []string{
+			"SQL",
+			"Kafka",
+			"Python",
+		},
+	}
 
-	fmt.Println("А кто пидор?")
+	datas = append(datas, data1, data2)
+	err := files.SaveFileToDirectory("jssdo", "УТП", datas)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
