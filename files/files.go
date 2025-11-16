@@ -37,27 +37,14 @@ func StorageExists() bool {
 	return !os.IsNotExist(err)
 }
 
-// SaveFileToDirectory - создает файл и сохраняет в локальном хранилище в папке по указанной директории
+// SaveFileToDirectory - сохраняет файл без перезаписи, если такой есть (создается уникальный)
 func SaveFileToDirectory(fileName, directory string, data interface{}) error {
-	fileNameWithExtension := addExtensionJSON(fileName)
-	fullDirectory := filepath.Join(nameStorage, directory)
-	filePath := filepath.Join(fullDirectory, fileNameWithExtension)
+	return saveFileToDirectory(fileName, directory, data, false)
+}
 
-	if err := os.MkdirAll(fullDirectory, 0777); err != nil {
-		return fmt.Errorf("error creating %s directory: %v", directory, err)
-	}
-
-	jsonData, err := json.MarshalIndent(data, "", "	")
-	if err != nil {
-		return fmt.Errorf("error marshalling json: %v", err)
-	}
-
-	if err = os.WriteFile(filePath, jsonData, 0666); err != nil {
-		return fmt.Errorf("error writing file: %v", err)
-	}
-
-	log.Printf("Created file %s in directory %s", fileNameWithExtension, fullDirectory)
-	return nil
+// OverwriteFileToDirectory - сохраняет файл c перезаписью, если такой есть (перезаписывает существующий)
+func OverwriteFileToDirectory(fileName, directory string, data interface{}) error {
+	return saveFileToDirectory(fileName, directory, data, true)
 }
 
 // DeleteFileFromDirectory - удаляет файл по пути
