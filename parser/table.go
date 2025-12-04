@@ -7,11 +7,32 @@ import (
 )
 
 func ProcessJsonTable(jsonData []byte) (*Items, error) {
+	table, err := ParseTable(jsonData)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(table.Rows) == 0 {
+		return &Items{}, nil
+	}
+
+	columns := ParseColumns(table)
+
+	fieldsName := GetFieldsNames(columns)
+
+	items := ParceRows(columns, fieldsName)
+	return &items, nil
+}
+
+func ParseTable(jsonData []byte) (*Table, error) {
 	var table Table
 	if err := json.Unmarshal(jsonData, &table); err != nil {
 		return nil, err
 	}
+	return &table, nil
+}
 
+func ParseColumns(table *Table) [][]Cell {
 	var columns [][]Cell
 	secondColX := table.Rows[0].Coordinates[0][0]
 	secondColY := table.Rows[0].Coordinates[1][1]
@@ -33,23 +54,29 @@ func ProcessJsonTable(jsonData []byte) (*Items, error) {
 			columns = append(columns, row)
 		}
 	}
+	return columns
+}
 
-	lineNumber := 1
+func GetFieldsNames(columns [][]Cell) []string {
 	fieldsName := []string{}
 	for _, item := range columns {
 		fieldsName = append(fieldsName, item[0].Text)
 	}
+	return fieldsName
+}
 
+func ParceRows(columns [][]Cell, fieldsNames []string) Items {
+	lineNumber := 1
 	var items Items
 	for z := 1; z < len(columns[0]); z++ {
 		var item Item
 		item.LineNumber = lineNumber
 		item.Fields = orderedmap.New()
-		for v := 0; v < len(fieldsName); v++ {
-			item.Fields.Set(fieldsName[v], columns[v][z].Text)
+		for v := 0; v < len(fieldsNames); v++ {
+			item.Fields.Set(fieldsNames[v], columns[v][z].Text)
 		}
 		items.Items = append(items.Items, item)
 		lineNumber++
 	}
-	return &items, nil
+	return items
 }

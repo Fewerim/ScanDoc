@@ -7,10 +7,6 @@ type Cell struct {
 	Text        string  `json:"text"`
 }
 
-//type Row struct {
-//	Cells []Cell `json:"cells"`
-//}
-
 type Table struct {
 	Rows []Cell `json:"table"`
 }
