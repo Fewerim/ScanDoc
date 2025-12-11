@@ -29,17 +29,16 @@ func onceFile(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if err = cliUtils.ValidateExtensionFile(filePath); err != nil {
-		return cliUtils.UserError(err.Error())
+		return err
 	}
 
 	if err = cliUtils.CheckExistsFile(filePath); err != nil {
-		return cliUtils.UserError(err.Error())
+		return err
 	}
 
-	//TODO: запуск сервиса и ожидание ответа
 	_, err = cliUtils.ProcessOnceFile(filePath, createdFileName, port)
 	if err != nil {
-		return cliUtils.ServerError(err.Error())
+		return err
 	}
 
 	fmt.Println(cliUtils.Success("программа завершилась успешно").ToString())
@@ -48,7 +47,7 @@ func onceFile(cmd *cobra.Command, args []string) (err error) {
 
 var runOnce = &cobra.Command{
 	Use:           "run_once",
-	Short:         "Команда для обработки одного файла: runOnce [путь к файлу] [название будущего файла]",
+	Short:         "Команда для обработки одного файла: run_once [путь к файлу] [название будущего файла]",
 	Args:          cobra.ExactArgs(2),
 	RunE:          onceFile,
 	SilenceErrors: true,
