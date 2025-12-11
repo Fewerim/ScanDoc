@@ -41,6 +41,8 @@ func onceFile(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
+	//TODO: формирование ответа для пользователя
+
 	fmt.Println(cliUtils.Success("программа завершилась успешно").ToString())
 	return nil
 }

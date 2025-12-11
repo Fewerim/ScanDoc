@@ -37,6 +37,7 @@ func ValidateExtensionFile(filePath string) error {
 	return nil
 }
 
+// CheckExistsFile - проверяет наличие файла в системе
 func CheckExistsFile(filePath string) error {
 	info, err := os.Stat(filePath)
 	if err != nil {

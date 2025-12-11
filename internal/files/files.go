@@ -42,6 +42,7 @@ func SaveFileToDirectory(fileName, directory string, data interface{}) error {
 	return saveFileToDirectory(fileName, directory, data, false)
 }
 
+// SaveFileToStorage - сохраняет файл без перезаписи в локальное хранилище
 func SaveFileToStorage(fileName string, data interface{}) error {
 	return saveFileToDirectory(fileName, "", data, false)
 }
