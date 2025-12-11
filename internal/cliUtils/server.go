@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -17,10 +18,12 @@ import (
 )
 
 const (
-	timeoutStart  = 30 * time.Second
+	timeoutStart  = 10 * time.Second
 	ErrorNoPython = "no python"
-	pathPython    = "python3"
+	pathPython    = "py"
 )
+
+var serverPath = filepath.Join("bin", "server.py")
 
 // Result - результат выполнения CLI команды (имя созданного файла, время создания)
 type Result struct {
@@ -30,7 +33,10 @@ type Result struct {
 
 // Data - заглушка имитирующая некие данные, т.е файл json
 type Data struct {
-	Something []byte
+	Filename    string            `json:"filename"`
+	DocType     string            `json:"doc_type"`
+	ProcessedAt string            `json:"processed_at"`
+	Fields      map[string]string `json:"fields"`
 }
 
 // createResult - конструктор для создания результата выполнения CLI команды
@@ -43,7 +49,7 @@ func createResult(fileName string) Result {
 
 // ProcessOnceFile - подключение к серверу, отправка файла, обработка результата, сохранение в локальное хранилище
 func ProcessOnceFile(filePath, createdNameFile string, port int) (Result, error) {
-	err := startPythonServer(port)
+	cmd, err := startPythonServer(port)
 	if err != nil {
 		if err.Error() == ErrorNoPython {
 			info := fmt.Sprintf("python не установлен или его нет в PATH, обратитесь к администратору")
@@ -53,6 +59,8 @@ func ProcessOnceFile(filePath, createdNameFile string, port int) (Result, error)
 		info := fmt.Sprintf("ошибка при старте сервера: %v", err)
 		return Result{}, ServerError(info)
 	}
+
+	defer killServer(cmd)
 
 	data, err := sendFileToServer(filePath, port)
 	if err != nil {
@@ -71,22 +79,21 @@ func ProcessOnceFile(filePath, createdNameFile string, port int) (Result, error)
 }
 
 // startPythonServer - создает соединение с сервером
-func startPythonServer(port int) error {
+func startPythonServer(port int) (*exec.Cmd, error) {
+	if _, err := exec.LookPath(pathPython); err != nil {
+		return nil, errors.New(ErrorNoPython)
+	}
+
+	cmd := exec.Command(pathPython, serverPath, "--port", fmt.Sprintf("%d", port))
+
+	if err := cmd.Start(); err != nil {
+		return nil, fmt.Errorf("не удалось запустить сервер: %w", err)
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutStart)
 	defer cancel()
 
-	_, err := exec.LookPath(pathPython)
-	if err != nil {
-		return errors.New(ErrorNoPython)
-	}
-
-	cmd := exec.CommandContext(ctx, pathPython, "server.py", "--port", fmt.Sprintf("%d", port))
-
-	if err = cmd.Start(); err != nil {
-		return fmt.Errorf("не удалось запустить сервер: %v", err)
-	}
-
-	addr := fmt.Sprintf("http://localhost:%v/health", port)
+	addr := fmt.Sprintf("http://127.0.0.1:%d/health", port)
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 
@@ -94,13 +101,23 @@ func startPythonServer(port int) error {
 		select {
 		case <-ctx.Done():
 			_ = cmd.Process.Kill()
-			return fmt.Errorf("сервер не успел запуститься вовремя")
+			return nil, fmt.Errorf("сервер не успел запуститься вовремя")
 		case <-ticker.C:
 			resp, err := http.Get(addr)
 			if err == nil && resp.StatusCode == http.StatusOK {
-				return nil
+				return cmd, nil
 			}
 		}
+	}
+}
+
+// killServer - принудительное закрытие соединения
+func killServer(cmd *exec.Cmd) {
+	log.Println("killServer called, cmd:", cmd)
+	if cmd != nil && cmd.Process != nil {
+		log.Println("killing pid", cmd.Process.Pid)
+		_ = cmd.Process.Kill()
+		_, _ = cmd.Process.Wait()
 	}
 }
 
@@ -149,7 +166,7 @@ func buildMultipartBody(filePath string) (body *bytes.Buffer, contentType string
 
 // recognizeRequest - отправка HTTP запроса на энд-поинт recognize
 func recognizeRequest(port int, body io.Reader, contentType string) (*http.Response, error) {
-	url := fmt.Sprintf("http://localhost:%v/recognize", port)
+	url := fmt.Sprintf("http://127.0.0.1:%v/recognize", port)
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка формирования запроса: %v", err)
