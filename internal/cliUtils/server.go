@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -113,9 +112,7 @@ func startPythonServer(port int) (*exec.Cmd, error) {
 
 // killServer - принудительное закрытие соединения
 func killServer(cmd *exec.Cmd) {
-	log.Println("killServer called, cmd:", cmd)
 	if cmd != nil && cmd.Process != nil {
-		log.Println("killing pid", cmd.Process.Pid)
 		_ = cmd.Process.Kill()
 		_, _ = cmd.Process.Wait()
 	}
