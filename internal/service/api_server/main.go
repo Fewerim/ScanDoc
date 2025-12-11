@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-	hand "proWeb/service/api_server/handlers"
-	serv "proWeb/service/api_server/server"
+	hand "proWeb/internal/service/api_server/handlers"
+	serv "proWeb/internal/service/api_server/server"
 	"time"
 )
 

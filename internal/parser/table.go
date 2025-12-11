@@ -20,7 +20,7 @@ func ProcessJsonTable(jsonData []byte) (*Items, error) {
 
 	fieldsName := GetFieldsNames(columns)
 
-	items := ParceRows(columns, fieldsName)
+	items := ParseRows(columns, fieldsName)
 	return &items, nil
 }
 
@@ -58,14 +58,14 @@ func ParseColumns(table *Table) [][]Cell {
 }
 
 func GetFieldsNames(columns [][]Cell) []string {
-	fieldsName := []string{}
+	fieldsName := make([]string, 0)
 	for _, item := range columns {
 		fieldsName = append(fieldsName, item[0].Text)
 	}
 	return fieldsName
 }
 
-func ParceRows(columns [][]Cell, fieldsNames []string) Items {
+func ParseRows(columns [][]Cell, fieldsNames []string) Items {
 	lineNumber := 1
 	var items Items
 	for z := 1; z < len(columns[0]); z++ {

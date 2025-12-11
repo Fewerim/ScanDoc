@@ -3,9 +3,10 @@ package server
 import (
 	"context"
 	"errors"
-	"github.com/gorilla/mux"
 	"net/http"
-	hand "proWeb/service/api_server/handlers"
+	hand "proWeb/internal/service/api_server/handlers"
+
+	"github.com/gorilla/mux"
 )
 
 type Server struct {

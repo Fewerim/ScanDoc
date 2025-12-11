@@ -42,6 +42,10 @@ func SaveFileToDirectory(fileName, directory string, data interface{}) error {
 	return saveFileToDirectory(fileName, directory, data, false)
 }
 
+func SaveFileToStorage(fileName string, data interface{}) error {
+	return saveFileToDirectory(fileName, "", data, false)
+}
+
 // OverwriteFileToDirectory - сохраняет файл c перезаписью, если такой есть (перезаписывает существующий)
 func OverwriteFileToDirectory(fileName, directory string, data interface{}) error {
 	return saveFileToDirectory(fileName, directory, data, true)

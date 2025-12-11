@@ -1,6 +1,8 @@
 package typesJSON
 
-import "proWeb/typesJSON/objects"
+import (
+	"proWeb/internal/typesJSON/objects"
+)
 
 type Torg12 struct {
 	DocumentInfo objects.DocumentInfoObj        `json:"document_info"`
