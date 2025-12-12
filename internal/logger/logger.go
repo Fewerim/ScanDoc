@@ -30,12 +30,18 @@ func NewFileLog(filePath string) (*Log, error) {
 
 // Info - выводит операцию, где был выполнен лог и информацию об операции
 // Пример вывода: [INFO] operation: op | message: message
-func (s *Log) Info(op, message string) {}
+func (s *Log) Info(op, message string) {
+	//TODO:
+}
 
 // Error - выводит операцию, где произошла ошибка и информацию об ошибке выполнения кода
 // Пример вывода: [ERROR] operation: op | message: message
-func (s *Log) Error(op, message string) {}
+func (s *Log) Error(op, message string) {
+	//TODO:
+}
 
 // Debug - выводи операцию, где происходит debug и информацию для пользователя
 // Пример вывода: [DEBUG] operation: op | message:
-func (s *Log) Debug(op, message string) {}
+func (s *Log) Debug(op, message string) {
+	//TODO:
+}

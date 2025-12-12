@@ -10,13 +10,17 @@ import (
 
 func main() {
 	if err := cmd.Execute(); err != nil {
-		var appErr *cliUtils.AppError
-		if errors.As(err, &appErr) {
-			fmt.Println(appErr.ToString())
-			os.Exit(appErr.ExitCode())
-		}
-
-		fmt.Println("непредвиденная ошибка:", err)
-		os.Exit(3)
+		handleError(err)
 	}
+}
+
+func handleError(err error) {
+	var appErr *cliUtils.AppError
+	if errors.As(err, &appErr) {
+		fmt.Println(appErr.ToString())
+		os.Exit(appErr.ExitCode())
+	}
+
+	fmt.Println("непредвиденная ошибка:", err)
+	os.Exit(3)
 }
