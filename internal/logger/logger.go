@@ -25,7 +25,7 @@ func New(w io.Writer) *Log {
 func NewFileLog(filePath string) (*Log, error) {
 	//TODO: реализовать открытие файла по пути (os.OpenFile) также прописать флаги на тот случай, если файла нет
 	// Возвращать конструктор логгера с переданным туда файлом
-	panic("implement me")
+	return &Log{}, nil
 }
 
 // Info - выводит операцию, где был выполнен лог и информацию об операции

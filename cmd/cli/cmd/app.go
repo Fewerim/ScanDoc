@@ -1,17 +1,21 @@
 package cmd
 
-import "proWeb/internal/logger"
+import (
+	"proWeb/internal/config"
+	"proWeb/internal/logger"
+)
 
 type App struct {
-	l logger.Logger
+	Log logger.Logger
+	Cfg *config.Config
 }
 
 // NewApp - конструктор для приложения
 func NewApp(l logger.Logger) *App {
-	return &App{l: l}
+	return &App{Log: l}
 }
 
-// Execute - делегирует запуск CLI приложения, вызываясь на экземпляре App
-func (a *App) Execute() error {
-	return rootCmd.Execute()
+// LoadConfig - загружает конфиг
+func (a *App) LoadConfig(path string) {
+	a.Cfg = config.MustLoadWithPath(path)
 }

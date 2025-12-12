@@ -8,11 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const port = 3210
-
 // onceFile - функция, которая проверяет входные данные, создает подключение к серверу,
 // обрабатывает и сохраняет файл локально
-func onceFile(cmd *cobra.Command, args []string) (err error) {
+func (a *App) onceFile(cmd *cobra.Command, args []string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = cliUtils.InternalError(fmt.Sprintf("внутренняя ошибка: %v", r))
@@ -21,6 +19,8 @@ func onceFile(cmd *cobra.Command, args []string) (err error) {
 
 	filePath := args[0]
 	createdFileName := args[1]
+
+	files.InitStorage(a.Cfg.StoragePath)
 
 	if !files.StorageExists() {
 		if err = files.CreateStorageJSON(); err != nil {
@@ -36,7 +36,7 @@ func onceFile(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	_, err = cliUtils.ProcessOnceFile(filePath, createdFileName, port)
+	_, err = cliUtils.ProcessOnceFile(filePath, createdFileName, a.Cfg)
 	if err != nil {
 		return err
 	}
@@ -47,15 +47,14 @@ func onceFile(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
-var runOnce = &cobra.Command{
-	Use:           "run_once",
-	Short:         "Команда для обработки одного файла: run_once [путь к файлу] [название будущего файла]",
-	Args:          cobra.ExactArgs(2),
-	RunE:          onceFile,
-	SilenceErrors: true,
-	SilenceUsage:  true,
-}
-
-func init() {
-	rootCmd.AddCommand(runOnce)
+// newRunOnceCmd - обертка над runOnce, чтобы можно было использовать логгер и конфиг
+func newRunOnceCmd(a *App) *cobra.Command {
+	return &cobra.Command{
+		Use:           "run_once",
+		Short:         "Команда для обработки одного файла: run_once [путь к файлу] [название будущего файла]",
+		Args:          cobra.ExactArgs(2),
+		RunE:          a.onceFile,
+		SilenceErrors: true,
+		SilenceUsage:  true,
+	}
 }

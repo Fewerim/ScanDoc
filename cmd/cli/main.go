@@ -4,16 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"proWeb/cmd/cli/cmd"
 	"proWeb/internal/cliUtils"
 )
 
 func main() {
-	if err := cmd.Execute(); err != nil {
-		handleError(err)
-	}
+
 }
 
+// handleError - ловит ошибки и выводит статус выхода
 func handleError(err error) {
 	var appErr *cliUtils.AppError
 	if errors.As(err, &appErr) {

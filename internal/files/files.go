@@ -20,7 +20,13 @@ type TestJson struct {
 
 // Название локального хранилища
 // В будущем добавить чтобы .gitignore сам обновлялся если меняется nameStorage
-const nameStorage = "storageJSONs"
+var nameStorage = "storageJSONs"
+
+func InitStorage(storage string) {
+	if storage != "" {
+		nameStorage = storage
+	}
+}
 
 // CreateStorageJSON - создает локальное хранилище для хранения JSON
 func CreateStorageJSON() error {

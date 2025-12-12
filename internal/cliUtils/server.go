@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"proWeb/internal/config"
 	"proWeb/internal/files"
 	"time"
 )
@@ -19,10 +20,8 @@ import (
 const (
 	timeoutStart  = 10 * time.Second
 	ErrorNoPython = "no python"
-	pathPython    = "py"
+	serverPath    = "./internal/service/serverPy/server.py"
 )
-
-var serverPath = filepath.Join("bin", "server.py")
 
 // Result - результат выполнения CLI команды (имя созданного файла, время создания)
 type Result struct {
@@ -47,8 +46,8 @@ func createResult(fileName string) Result {
 }
 
 // ProcessOnceFile - подключение к серверу, отправка файла, обработка результата, сохранение в локальное хранилище
-func ProcessOnceFile(filePath, createdNameFile string, port int) (Result, error) {
-	cmd, err := startPythonServer(port)
+func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (Result, error) {
+	cmd, err := startPythonServer(cfg.Port, cfg.PythonExecutable)
 	if err != nil {
 		if err.Error() == ErrorNoPython {
 			info := fmt.Sprintf("python не установлен или его нет в PATH, обратитесь к администратору")
@@ -61,7 +60,7 @@ func ProcessOnceFile(filePath, createdNameFile string, port int) (Result, error)
 
 	defer killServer(cmd)
 
-	data, err := sendFileToServer(filePath, port)
+	data, err := sendFileToServer(filePath, cfg.Port)
 	if err != nil {
 		info := fmt.Sprintf("ошибка при отправке файла: %v", err)
 		return Result{}, ServerError(info)
@@ -78,12 +77,12 @@ func ProcessOnceFile(filePath, createdNameFile string, port int) (Result, error)
 }
 
 // startPythonServer - создает соединение с сервером
-func startPythonServer(port int) (*exec.Cmd, error) {
-	if _, err := exec.LookPath(pathPython); err != nil {
+func startPythonServer(port int, pythonExecutable string) (*exec.Cmd, error) {
+	if _, err := exec.LookPath(pythonExecutable); err != nil {
 		return nil, errors.New(ErrorNoPython)
 	}
 
-	cmd := exec.Command(pathPython, serverPath, "--port", fmt.Sprintf("%d", port))
+	cmd := exec.Command(pythonExecutable, serverPath, "--port", fmt.Sprintf("%d", port))
 
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("не удалось запустить сервер: %w", err)
