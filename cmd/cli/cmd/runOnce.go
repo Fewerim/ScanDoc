@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	cliUtils "proWeb/internal/cliUtils"
+	"proWeb/internal/cliUtils/cmds"
 	"proWeb/internal/files"
 
 	"github.com/spf13/cobra"
@@ -36,7 +37,7 @@ func (a *App) onceFile(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	_, err = cliUtils.ProcessOnceFile(filePath, createdFileName, a.Cfg)
+	_, err = cmds.ProcessOnceFile(filePath, createdFileName, a.Cfg)
 	if err != nil {
 		return err
 	}

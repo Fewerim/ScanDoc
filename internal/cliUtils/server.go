@@ -12,8 +12,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"proWeb/internal/config"
-	"proWeb/internal/files"
 	"time"
 )
 
@@ -23,12 +21,6 @@ const (
 	serverPath    = "./internal/service/serverPy/server.py"
 )
 
-// Result - результат выполнения CLI команды (имя созданного файла, время создания)
-type Result struct {
-	FileName  string
-	CreatedAt time.Time
-}
-
 // Data - заглушка имитирующая некие данные, т.е файл json
 type Data struct {
 	Filename    string            `json:"filename"`
@@ -37,47 +29,8 @@ type Data struct {
 	Fields      map[string]string `json:"fields"`
 }
 
-// createResult - конструктор для создания результата выполнения CLI команды
-func createResult(fileName string) Result {
-	return Result{
-		FileName:  fileName,
-		CreatedAt: time.Now(),
-	}
-}
-
-// ProcessOnceFile - подключение к серверу, отправка файла, обработка результата, сохранение в локальное хранилище
-func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (Result, error) {
-	cmd, err := startPythonServer(cfg.Port, cfg.PythonExecutable)
-	if err != nil {
-		if err.Error() == ErrorNoPython {
-			info := fmt.Sprintf("python не установлен или его нет в PATH, обратитесь к администратору")
-			return Result{}, InternalError(info)
-		}
-
-		info := fmt.Sprintf("ошибка при старте сервера: %v", err)
-		return Result{}, ServerError(info)
-	}
-
-	defer killServer(cmd)
-
-	data, err := sendFileToServer(filePath, cfg.Port)
-	if err != nil {
-		info := fmt.Sprintf("ошибка при отправке файла: %v", err)
-		return Result{}, ServerError(info)
-	}
-
-	err = files.SaveFileToStorage(createdNameFile, data)
-	if err != nil {
-		info := fmt.Sprintf("ошибка при попытке сохранить файл: %v", err)
-		return Result{}, ServerError(info)
-	}
-
-	result := createResult(createdNameFile)
-	return result, nil
-}
-
-// startPythonServer - создает соединение с сервером
-func startPythonServer(port int, pythonExecutable string) (*exec.Cmd, error) {
+// StartPythonServer - создает соединение с сервером
+func StartPythonServer(port int, pythonExecutable string) (*exec.Cmd, error) {
 	if _, err := exec.LookPath(pythonExecutable); err != nil {
 		return nil, errors.New(ErrorNoPython)
 	}
@@ -109,16 +62,16 @@ func startPythonServer(port int, pythonExecutable string) (*exec.Cmd, error) {
 	}
 }
 
-// killServer - принудительное закрытие соединения
-func killServer(cmd *exec.Cmd) {
+// KillServer - принудительное закрытие соединения
+func KillServer(cmd *exec.Cmd) {
 	if cmd != nil && cmd.Process != nil {
 		_ = cmd.Process.Kill()
 		_, _ = cmd.Process.Wait()
 	}
 }
 
-// sendFileToServer - отправляет файл на сервер и возвращает результат выполнения сервиса (файл)
-func sendFileToServer(filePath string, port int) (Data, error) {
+// SendFileToServer - отправляет файл на сервер и возвращает результат выполнения сервиса (файл)
+func SendFileToServer(filePath string, port int) (Data, error) {
 	body, contentType, err := buildMultipartBody(filePath)
 	if err != nil {
 		return Data{}, err
