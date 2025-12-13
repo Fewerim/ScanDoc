@@ -19,7 +19,7 @@ func initCommands() {
 	commandsHelp.Set("-Обрабатывает один документ", CommandRunOnce)
 }
 
-func helper(cmd *cobra.Command, args []string) {
+func (a *App) helper(cmd *cobra.Command, args []string) {
 	initCommands()
 	fmt.Println("Добро пожаловать в сервис распознавания бухгалтерских документов")
 	fmt.Println("Вот список доступных команд (*использовать без скобок):")
@@ -31,13 +31,11 @@ func helper(cmd *cobra.Command, args []string) {
 	return
 }
 
-var help = &cobra.Command{
-	Use:   "help",
-	Short: "Список команд",
-	Args:  cobra.NoArgs,
-	Run:   helper,
-}
-
-func init() {
-	rootCmd.AddCommand(help)
+func newHelperCmd(a *App) *cobra.Command {
+	return &cobra.Command{
+		Use:   "help",
+		Short: "Список команд",
+		Args:  cobra.NoArgs,
+		Run:   a.helper,
+	}
 }
