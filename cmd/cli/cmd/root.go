@@ -33,6 +33,7 @@ func (a *App) initCommands() {
 		return nil
 	}
 
+	rootCmd.AddCommand(newHelperCmd(a))
 	rootCmd.AddCommand(newRunOnceCmd(a))
 }
 
