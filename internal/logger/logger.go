@@ -1,8 +1,11 @@
 package logger
 
 import (
+	"fmt"
 	"io"
 	"log"
+	"os"
+	"path/filepath"
 )
 
 // Logger - интерфейс, чтобы протягивать логгер по всему проекту, где он необходим
@@ -23,25 +26,34 @@ func New(w io.Writer) *Log {
 
 // NewFileLog - создает логгер, который пишет в указанный по пути файл
 func NewFileLog(filePath string) (*Log, error) {
-	//TODO: реализовать открытие файла по пути (os.OpenFile) также прописать флаги на тот случай, если файла нет
-	// Возвращать конструктор логгера с переданным туда файлом
-	return &Log{}, nil
+	dir := filepath.Dir(filePath)
+	if dir == "" && dir != "." {
+		if err := os.MkdirAll(dir, 0775); err != nil {
+			return nil, fmt.Errorf("failed to create log directory '%s': %w", dir, err)
+		}
+	}
+
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open log file '%s': %w", filePath, err)
+	}
+	return New(file), nil
 }
 
 // Info - выводит операцию, где был выполнен лог и информацию об операции
 // Пример вывода: [INFO] operation: op | message: message
 func (s *Log) Info(op, message string) {
-	//TODO:
+	s.l.Printf("[INFO] operation: %s | message: %s\n", op, message)
 }
 
 // Error - выводит операцию, где произошла ошибка и информацию об ошибке выполнения кода
 // Пример вывода: [ERROR] operation: op | message: message
-func (s *Log) Error(op, message string) {
-	//TODO:
+func (s *Log) Error(op, message string, errorType int) {
+	s.l.Printf("[ERROR] operation: %s | error type: %d | message: %s\n", op, errorType, message)
 }
 
-// Debug - выводи операцию, где происходит debug и информацию для пользователя
+// Debug - выводит операцию, где происходит debug и информацию для пользователя
 // Пример вывода: [DEBUG] operation: op | message:
 func (s *Log) Debug(op, message string) {
-	//TODO:
+	s.l.Printf("[DEBUG] operation: %s | message: %s", op, message)
 }
