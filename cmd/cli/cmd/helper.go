@@ -20,7 +20,14 @@ func initCommands() {
 }
 
 func (a *App) helper(cmd *cobra.Command, args []string) {
+	const operation = "cmd.helper"
+
+	a.Log.Info(operation, "начало выполнения команды сравки")
+
 	initCommands()
+
+	a.Log.Info(operation, "вывод приветственных сообщений и всех возможных команд")
+
 	fmt.Println("Добро пожаловать в сервис распознавания бухгалтерских документов")
 	fmt.Println("Вот список доступных команд (*использовать без скобок):")
 	keys := commandsHelp.Keys()
@@ -28,6 +35,8 @@ func (a *App) helper(cmd *cobra.Command, args []string) {
 		v, _ := commandsHelp.Get(k)
 		fmt.Printf("%s\t%s\n", k, v.(string))
 	}
+
+	a.Log.Info(operation, "справка успешно отображена")
 	return
 }
 

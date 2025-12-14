@@ -11,7 +11,7 @@ import (
 // Logger - интерфейс, чтобы протягивать логгер по всему проекту, где он необходим
 type Logger interface {
 	Info(op, message string)
-	Error(op, message string)
+	Error(op, message string, errorType int)
 	Debug(op, message string)
 }
 
@@ -55,5 +55,5 @@ func (s *Log) Error(op, message string, errorType int) {
 // Debug - выводит операцию, где происходит debug и информацию для пользователя
 // Пример вывода: [DEBUG] operation: op | message:
 func (s *Log) Debug(op, message string) {
-	s.l.Printf("[DEBUG] operation: %s | message: %s", op, message)
+	s.l.Printf("[DEBUG] operation: %s | message: %s\n", op, message)
 }
