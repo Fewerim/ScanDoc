@@ -1,0 +1,10 @@
+2025/12/15 03:13:58 [INFO] operation: cli.onceFile | message: начало обработки файла
+2025/12/15 03:13:58 [INFO] operation: cli.onceFile | message: локальное хранилище не существует, создание нового
+2025/12/15 03:13:58 [INFO] operation: cli.onceFile | message: локальное хранилище успешно создано
+2025/12/15 03:13:59 [INFO] operation: cli.onceFile | message: операция завершена успешно
+2025/12/15 03:13:59 [INFO] operation: main | message: приложение успешно завершено
+2025/12/15 03:15:58 [INFO] operation: cli.onceFile | message: начало обработки файла
+2025/12/15 03:15:58 [INFO] operation: cli.onceFile | message: локальное хранилище не существует, создание нового
+2025/12/15 03:15:58 [INFO] operation: cli.onceFile | message: локальное хранилище успешно создано
+2025/12/15 03:15:59 [INFO] operation: cli.onceFile | message: операция завершена успешно
+2025/12/15 03:15:59 [INFO] operation: main | message: приложение успешно завершено

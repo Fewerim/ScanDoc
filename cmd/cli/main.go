@@ -10,26 +10,20 @@ import (
 )
 
 func main() {
-	log, err := logger.NewFileLog("app.log")
-	if err != nil {
-		log = logger.New(os.Stdout)
-		handleError(err, log)
+	const op = "cli.main"
+	defer catchPanic()
+
+	app := cmd.NewApp()
+	if err := app.Execute(); err != nil {
+		handleError(err, app.Log)
 	}
 
-	log.Info("main", "старт приложения")
-
-	app := cmd.NewApp(log)
-
-	if errs := app.Execute(); errs != nil {
-		handleError(errs, log)
-	}
-
-	log.Info("main", "приложения успешно завершено")
+	app.Log.Info(op, "приложение успешно завершено")
 }
 
 // handleError - ловит ошибки и выводит статус выхода
 func handleError(err error, log logger.Logger) {
-	const operation = "main.handleError"
+	const operation = "cli.main.handleError"
 
 	var appErr *cliUtils.AppError
 	if errors.As(err, &appErr) {
@@ -41,4 +35,11 @@ func handleError(err error, log logger.Logger) {
 	log.Error(operation, fmt.Sprintf("непредвиденная ошибка: %v", err), 3)
 	fmt.Println("непредвиденная ошибка:", err)
 	os.Exit(3)
+}
+
+func catchPanic() {
+	if r := recover(); r != nil {
+		fmt.Println("программа завершилась с паникой: ", r)
+		os.Exit(3)
+	}
 }

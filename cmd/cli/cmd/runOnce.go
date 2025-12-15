@@ -12,8 +12,8 @@ import (
 // onceFile - функция, которая проверяет входные данные, создает подключение к серверу,
 // обрабатывает и сохраняет файл локально
 func (a *App) onceFile(cmd *cobra.Command, args []string) (err error) {
-	const operation = "cmd.onceFile"
-	a.Log.Info(operation, "начало обработаки файла")
+	const operation = "cli.onceFile"
+	a.Log.Info(operation, "начало обработки файла")
 
 	defer func() {
 		if r := recover(); r != nil {

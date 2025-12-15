@@ -11,11 +11,16 @@ type App struct {
 }
 
 // NewApp - конструктор для приложения
-func NewApp(l logger.Logger) *App {
-	return &App{Log: l}
+func NewApp() *App {
+	return &App{Log: nil, Cfg: nil}
 }
 
-// LoadConfig - загружает конфиг
+// LoadConfig - загружает конфиг из переданного пути
 func (a *App) LoadConfig(path string) {
 	a.Cfg = config.MustLoadWithPath(path)
+}
+
+// SetupLogger - устанавливает логгер, который пишет в файл по переданному пути
+func (a *App) SetupLogger(path string) {
+	a.Log = logger.MustSetup(path)
 }

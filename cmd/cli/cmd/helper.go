@@ -20,7 +20,7 @@ func initCommands() {
 }
 
 func (a *App) helper(cmd *cobra.Command, args []string) {
-	const operation = "cmd.helper"
+	const operation = "cli.helper"
 
 	a.Log.Info(operation, "начало выполнения команды сравки")
 

@@ -30,6 +30,9 @@ func (a *App) initCommands() {
 		}
 
 		a.LoadConfig(path)
+
+		a.SetupLogger(a.Cfg.LogPath)
+
 		return nil
 	}
 

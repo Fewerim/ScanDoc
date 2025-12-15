@@ -7,13 +7,19 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-const defaultPathToConfig = "./config/config.yaml"
+const (
+	defaultPathToConfig  = "./config/config.yaml"
+	defaultPort          = 8080
+	defaultPyExecutable  = "python"
+	defaultPathToStorage = "storageJSONs"
+	defaultPathToLog     = "log/config.log"
+)
 
 type Config struct {
 	Port             int    `yaml:"port" required:"true"`
 	PythonExecutable string `yaml:"python_executable" required:"true"`
-	StoragePath      string `yaml:"storagePath" default:"./storageJSONs"`
-	LogPath          string `yaml:"log_path" default:"./logs/app.log"`
+	StoragePath      string `yaml:"storage_path"`
+	LogPath          string `yaml:"log_path"`
 }
 
 // MustLoad - читает конфиг и возвращает структуру конфига для работы приложения
@@ -28,13 +34,18 @@ func MustLoad() *Config {
 		panic("пути к конфигу не найдено: " + path)
 	}
 
-	var cfg Config
+	cfg := &Config{
+		Port:             defaultPort,
+		PythonExecutable: defaultPyExecutable,
+		StoragePath:      defaultPathToStorage,
+		LogPath:          defaultPathToLog,
+	}
 
 	if err := cleanenv.ReadConfig(path, &cfg); err != nil {
 		panic("ошибка при чтении конфига: " + err.Error())
 	}
 
-	return &cfg
+	return cfg
 }
 
 // MustLoadWithPath - читает конфиг по входящему пути и возвращает структуру конфига для работы приложения
@@ -43,13 +54,18 @@ func MustLoadWithPath(pathToConfig string) *Config {
 		panic("пути к конфигу не найдено: " + pathToConfig)
 	}
 
-	var cfg Config
+	cfg := &Config{
+		Port:             defaultPort,
+		PythonExecutable: defaultPyExecutable,
+		StoragePath:      defaultPathToStorage,
+		LogPath:          defaultPathToLog,
+	}
 
-	if err := cleanenv.ReadConfig(pathToConfig, &cfg); err != nil {
+	if err := cleanenv.ReadConfig(pathToConfig, cfg); err != nil {
 		panic("ошибка при чтении конфига: " + err.Error())
 	}
 
-	return &cfg
+	return cfg
 }
 
 // fetchConfigPath - достает путь к конфигу через флаг в командной строке

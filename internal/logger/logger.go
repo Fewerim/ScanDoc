@@ -27,7 +27,7 @@ func New(w io.Writer) *Log {
 // NewFileLog - создает логгер, который пишет в указанный по пути файл
 func NewFileLog(filePath string) (*Log, error) {
 	dir := filepath.Dir(filePath)
-	if dir == "" && dir != "." {
+	if dir != "" && dir != "." {
 		if err := os.MkdirAll(dir, 0775); err != nil {
 			return nil, fmt.Errorf("failed to create log directory '%s': %w", dir, err)
 		}
@@ -38,6 +38,15 @@ func NewFileLog(filePath string) (*Log, error) {
 		return nil, fmt.Errorf("failed to open log file '%s': %w", filePath, err)
 	}
 	return New(file), nil
+}
+
+// MustSetup - установка логгера, если произошла какая-то ошибка - вызовет панику
+func MustSetup(filePath string) *Log {
+	l, err := NewFileLog(filePath)
+	if err != nil {
+		panic(err)
+	}
+	return l
 }
 
 // Info - выводит операцию, где был выполнен лог и информацию об операции
