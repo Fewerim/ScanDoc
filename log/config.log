@@ -38,3 +38,15 @@
 2025/12/18 00:07:23 [INFO] operation: cli.onceFile | message: начало обработки файла
 2025/12/18 00:07:36 [INFO] operation: cli.onceFile | message: операция завершена успешно
 2025/12/18 00:07:36 [INFO] operation: cli.main | message: приложение успешно завершено
+2025/12/18 01:52:02 [INFO] operation: cli.onceFile | message: начало обработки файла
+2025/12/18 01:53:55 [INFO] operation: cli.onceFile | message: начало обработки файла
+2025/12/18 01:56:28 [INFO] operation: cli.onceFile | message: начало обработки файла
+2025/12/18 02:00:07 [INFO] operation: cli.onceFile | message: начало обработки файла
+2025/12/18 02:00:11 [ERROR] operation: cli.onceFile | error type: 2 | message: ошибка при отправке файла: сервер вернул статус: 400
+2025/12/18 02:00:11 [ERROR] operation: cli.main.handleError | error type: 2 | message: ошибка при отправке файла: сервер вернул статус: 400
+2025/12/18 02:00:42 [INFO] operation: cli.onceFile | message: начало обработки файла
+2025/12/18 02:01:27 [INFO] operation: cli.onceFile | message: операция завершена успешно
+2025/12/18 02:01:27 [INFO] operation: cli.main | message: приложение успешно завершено
+2025/12/18 02:02:54 [INFO] operation: cli.onceFile | message: начало обработки файла
+2025/12/18 02:03:10 [INFO] operation: cli.onceFile | message: операция завершена успешно
+2025/12/18 02:03:10 [INFO] operation: cli.main | message: приложение успешно завершено

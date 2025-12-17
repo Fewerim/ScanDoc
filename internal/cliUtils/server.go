@@ -73,8 +73,9 @@ func KillServer(cmd *exec.Cmd) {
 // SendFileToServer - отправляет файл на сервер и возвращает результат выполнения сервиса (файл)
 func SendFileToServer(filePath string, port int) (interface{}, error) {
 	var data interface{}
+	fieldNameOfRequest := setupFieldName(filePath)
 
-	body, contentType, err := buildMultipartBody(filePath)
+	body, contentType, err := buildMultipartBody(filePath, fieldNameOfRequest)
 	if err != nil {
 		return data, err
 	}
@@ -91,7 +92,7 @@ func SendFileToServer(filePath string, port int) (interface{}, error) {
 }
 
 // buildMultipartBody - создание тела для запроса
-func buildMultipartBody(filePath string) (body *bytes.Buffer, contentType string, err error) {
+func buildMultipartBody(filePath, fieldName string) (body *bytes.Buffer, contentType string, err error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, "", fmt.Errorf("не удалось открыть файл: %v", err)
@@ -102,7 +103,7 @@ func buildMultipartBody(filePath string) (body *bytes.Buffer, contentType string
 	w := multipart.NewWriter(body)
 
 	//TODO: file | image
-	part, err := w.CreateFormFile("image", filepath.Base(filePath))
+	part, err := w.CreateFormFile(fieldName, filepath.Base(filePath))
 	if err != nil {
 		return nil, "", fmt.Errorf("ошибка форматирования multipart: %v", err)
 	}
@@ -145,4 +146,14 @@ func decodeDataResponse(r io.Reader) (interface{}, error) {
 		return data, fmt.Errorf("ошибка парсинга JSON-ответа: %v", err)
 	}
 	return data, nil
+}
+
+func setupFieldName(filePath string) string {
+	ext := filepath.Ext(filePath)
+	switch ext {
+	case ".jpg", ".jpeg", ".png":
+		return "image"
+	default:
+		return "file"
+	}
 }
