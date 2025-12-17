@@ -1,45 +1,37 @@
 package typesUtils
 
 import (
+	"errors"
 	"fmt"
 	"proWeb/internal/typesJSON"
 	"strings"
 )
 
-const (
-	typeUPD     = "UPD"
-	typeINVOICE = "INVOICE"
-	typeTORG    = "TORG"
-)
+type DocFactory func() interface{}
 
-// validateDocumentType - нормализует и валидирует тип документа
-// ТИПЫ ДОКУМЕНТОВ: UPD | TORG | INVOICE
-func validateDocumentType(typeOfDocument string) (result string, err error) {
-	tDocument := strings.ToUpper(typeOfDocument)
+// docFactories - хранилище допустимых типов документов
+var docFactories = map[string]DocFactory{
+	"UPD":     func() interface{} { return &typesJSON.Upd{} },
+	"INVOICE": func() interface{} { return &typesJSON.TheInvoice{} },
+	"TORG":    func() interface{} { return &typesJSON.Torg12{} },
+}
 
-	switch tDocument {
-	case typeUPD, typeINVOICE, typeTORG:
-		return tDocument, nil
-	default:
-		return "", fmt.Errorf("неизвестный тип документа %v", typeOfDocument)
-	}
+// normalize - нормализует строку переводя ее в верхний регистр и убирая лишние пробелы
+func normalize(tDocument string) string {
+	return strings.ToLower(strings.TrimSpace(tDocument))
 }
 
 // GetJSONStruct - фабрика, возвращает указатель на объект JSON структуры по переданному типу документа
 func GetJSONStruct(typeOfDocument string) (data interface{}, err error) {
-	tDocument, err := validateDocumentType(typeOfDocument)
-	if err != nil {
-		return nil, err
+	tDocument := normalize(typeOfDocument)
+
+	if tDocument == "" {
+		return nil, errors.New("тип документа не был передан в результате запроса")
 	}
 
-	switch tDocument {
-	case typeUPD:
-		return &typesJSON.Upd{}, nil
-	case typeINVOICE:
-		return &typesJSON.TheInvoice{}, nil
-	case typeTORG:
-		return &typesJSON.Torg12{}, nil
-	default:
-		return nil, fmt.Errorf("неизвестный тип документа : %v", typeOfDocument)
+	factory, ok := docFactories[tDocument]
+	if !ok {
+		return nil, fmt.Errorf("неизвестный тип документа %s", tDocument)
 	}
+	return factory(), nil
 }
