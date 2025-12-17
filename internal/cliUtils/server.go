@@ -140,6 +140,7 @@ func scanRequest(port int, body io.Reader, contentType string) (*http.Response, 
 // decodeDataResponse - парсинг JSON ответа
 func decodeDataResponse(r io.Reader) (interface{}, error) {
 	var data interface{}
+
 	if err := json.NewDecoder(r).Decode(&data); err != nil {
 		return data, fmt.Errorf("ошибка парсинга JSON-ответа: %v", err)
 	}
