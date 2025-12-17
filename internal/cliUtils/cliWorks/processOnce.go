@@ -2,6 +2,7 @@ package cliWorks
 
 import (
 	"fmt"
+	"log"
 	"proWeb/internal/cliUtils"
 	"proWeb/internal/config"
 	"proWeb/internal/files"
@@ -27,6 +28,7 @@ func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (Resu
 		return Result{}, cliUtils.ServerError(info)
 	}
 
+	log.Printf("не дошло")
 	defer cliUtils.KillServer(cmd)
 
 	data, err := cliUtils.SendFileToServer(filePath, cfg.Port)

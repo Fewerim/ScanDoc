@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	timeoutStart  = 10 * time.Second
+	timeoutStart  = 180 * time.Second
 	ErrorNoPython = "no python"
-	serverPath    = "./internal/service/serverPy/server.py"
+	serverPath    = "internal/service/scanPy/src/run_api.py"
 )
 
 // Data - заглушка имитирующая некие данные, т.е файл json
@@ -71,15 +71,17 @@ func KillServer(cmd *exec.Cmd) {
 }
 
 // SendFileToServer - отправляет файл на сервер и возвращает результат выполнения сервиса (файл)
-func SendFileToServer(filePath string, port int) (Data, error) {
+func SendFileToServer(filePath string, port int) (interface{}, error) {
+	var data interface{}
+
 	body, contentType, err := buildMultipartBody(filePath)
 	if err != nil {
-		return Data{}, err
+		return data, err
 	}
 
-	resp, err := recognizeRequest(port, body, contentType)
+	resp, err := scanRequest(port, body, contentType)
 	if err != nil {
-		return Data{}, err
+		return data, err
 	}
 	defer resp.Body.Close()
 
@@ -99,7 +101,8 @@ func buildMultipartBody(filePath string) (body *bytes.Buffer, contentType string
 	body = &bytes.Buffer{}
 	w := multipart.NewWriter(body)
 
-	part, err := w.CreateFormFile("file", filepath.Base(filePath))
+	//TODO: file | image
+	part, err := w.CreateFormFile("image", filepath.Base(filePath))
 	if err != nil {
 		return nil, "", fmt.Errorf("ошибка форматирования multipart: %v", err)
 	}
@@ -113,10 +116,10 @@ func buildMultipartBody(filePath string) (body *bytes.Buffer, contentType string
 	return body, w.FormDataContentType(), nil
 }
 
-// recognizeRequest - отправка HTTP запроса на энд-поинт recognize
-func recognizeRequest(port int, body io.Reader, contentType string) (*http.Response, error) {
-	url := fmt.Sprintf("http://127.0.0.1:%v/recognize", port)
-	req, err := http.NewRequest("POST", url, body)
+// scanRequest - отправка HTTP запроса на энд-поинт scan
+func scanRequest(port int, body io.Reader, contentType string) (*http.Response, error) {
+	url := fmt.Sprintf("http://127.0.0.1:%v/scan", port)
+	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка формирования запроса: %v", err)
 	}
@@ -135,10 +138,10 @@ func recognizeRequest(port int, body io.Reader, contentType string) (*http.Respo
 }
 
 // decodeDataResponse - парсинг JSON ответа
-func decodeDataResponse(r io.Reader) (Data, error) {
-	var data Data
+func decodeDataResponse(r io.Reader) (interface{}, error) {
+	var data interface{}
 	if err := json.NewDecoder(r).Decode(&data); err != nil {
-		return Data{}, fmt.Errorf("ошибка парсинга JSON-ответа: %v", err)
+		return data, fmt.Errorf("ошибка парсинга JSON-ответа: %v", err)
 	}
 	return data, nil
 }
