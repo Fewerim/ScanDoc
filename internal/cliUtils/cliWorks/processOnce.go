@@ -1,6 +1,7 @@
 package cliWorks
 
 import (
+	"context"
 	"fmt"
 	"proWeb/internal/cliUtils"
 	"proWeb/internal/config"
@@ -16,7 +17,10 @@ type Result struct {
 
 // ProcessOnceFile - подключение к серверу, отправка файла, обработка результата, сохранение в локальное хранилище
 func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (Result, error) {
-	cmd, err := cliUtils.StartPythonServer(cfg.Port, cfg.PythonExecutable)
+	_, cancel := context.WithTimeout(context.Background(), cliUtils.ProcessTimeout)
+	defer cancel()
+
+	cmd, err := cliUtils.StartPythonServer(cfg.Port, cfg.PythonExecutable, cfg.PythonScript)
 	if err != nil {
 		if err.Error() == cliUtils.ErrorNoPython {
 			info := fmt.Sprintf("python не установлен или его нет в PATH, обратитесь к администратору")

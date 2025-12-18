@@ -1,2 +1,2 @@
 port: 3210
-python_executable: "py"
+python_executable: ".venv/Scripts/python.exe"

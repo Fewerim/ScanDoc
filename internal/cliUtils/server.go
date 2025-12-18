@@ -16,9 +16,12 @@ import (
 )
 
 const (
-	timeoutStart  = 180 * time.Second
-	ErrorNoPython = "no python"
-	serverPath    = "internal/service/scanPy/src/run_api.py"
+	ProcessTimeout           = 180 * time.Second
+	ServerStartTimeout       = 10 * time.Second
+	HealthCheckAttempts      = 10
+	HealthCheckInterval      = 1 * time.Second
+	HealthCheckClientTimeout = 5 * time.Second
+	ErrorNoPython            = "python не найден"
 )
 
 // Data - заглушка имитирующая некие данные, т.е файл json
@@ -30,36 +33,27 @@ type Data struct {
 }
 
 // StartPythonServer - создает соединение с сервером
-func StartPythonServer(port int, pythonExecutable string) (*exec.Cmd, error) {
+func StartPythonServer(port int, pythonExecutable, pathToScript string) (*exec.Cmd, error) {
 	if _, err := exec.LookPath(pythonExecutable); err != nil {
 		return nil, errors.New(ErrorNoPython)
 	}
+	portStr := fmt.Sprintf("%d", port)
 
-	cmd := exec.Command(pythonExecutable, serverPath, "--port", fmt.Sprintf("%d", port))
+	cmd := exec.Command(pythonExecutable, pathToScript, "--port", portStr)
 
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("не удалось запустить сервер: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutStart)
+	ctx, cancel := context.WithTimeout(context.Background(), ServerStartTimeout)
 	defer cancel()
 
-	addr := fmt.Sprintf("http://127.0.0.1:%d/health", port)
-	ticker := time.NewTicker(500 * time.Millisecond)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			_ = cmd.Process.Kill()
-			return nil, fmt.Errorf("сервер не успел запуститься вовремя")
-		case <-ticker.C:
-			resp, err := http.Get(addr)
-			if err == nil && resp.StatusCode == http.StatusOK {
-				return cmd, nil
-			}
-		}
+	if err := healthCheck(ctx, port); err != nil {
+		cmd.Process.Kill()
+		return nil, err
 	}
+
+	return cmd, nil
 }
 
 // KillServer - принудительное закрытие соединения
@@ -119,7 +113,7 @@ func buildMultipartBody(filePath, fieldName string) (body *bytes.Buffer, content
 
 // scanRequest - отправка HTTP запроса на энд-поинт scan
 func scanRequest(port int, body io.Reader, contentType string) (*http.Response, error) {
-	url := fmt.Sprintf("http://127.0.0.1:%v/scan", port)
+	url := fmt.Sprintf("http://localhost:%v/scan", port)
 	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка формирования запроса: %v", err)
@@ -138,6 +132,34 @@ func scanRequest(port int, body io.Reader, contentType string) (*http.Response, 
 	return resp, nil
 }
 
+// healthCheck - проверяет запустился ли сервер, если нет, возвращает ошибку
+func healthCheck(ctx context.Context, port int) error {
+	client := &http.Client{Timeout: HealthCheckClientTimeout}
+
+	maxAttempts := HealthCheckAttempts
+
+	for i := 0; i < maxAttempts; i++ {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+		url := fmt.Sprintf("http://localhost:%d/health", port)
+
+		resp, err := client.Get(url)
+		if err == nil && resp.StatusCode == http.StatusOK {
+			if resp.Body != nil {
+				resp.Body.Close()
+			}
+
+			return nil
+		}
+		time.Sleep(HealthCheckInterval)
+	}
+
+	return fmt.Errorf("сервер не успел запуститься за %d попыток", maxAttempts)
+}
+
 // decodeDataResponse - парсинг JSON ответа
 func decodeDataResponse(r io.Reader) (interface{}, error) {
 	var data interface{}
@@ -148,6 +170,7 @@ func decodeDataResponse(r io.Reader) (interface{}, error) {
 	return data, nil
 }
 
+// setupFieldName - возвращает тип файла для поля запроса (image или file)
 func setupFieldName(filePath string) string {
 	ext := filepath.Ext(filePath)
 	switch ext {

@@ -17,7 +17,6 @@ func (a *App) onceFile(cmd *cobra.Command, args []string) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			a.Log.Error(operation, fmt.Sprintf("паника: %v", r), 3)
 			err = cliUtils.InternalError(fmt.Sprintf("внутренняя ошибка: %v", r))
 			a.Log.Error(operation, "операция завершена с паникой", 3)
 		}

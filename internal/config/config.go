@@ -8,16 +8,19 @@ import (
 )
 
 const (
-	defaultPathToConfig  = "./config/config.yaml"
-	defaultPort          = 8080
-	defaultPyExecutable  = "python"
+	DefaultPathToConfig = "./config/config.yaml"
+
+	defaultPort          = 3210
+	defaultPyExecutable  = ".venv/Scripts/python.exe"
+	defaultPyScript      = "./internal/service/scanPy/src/run_api.py"
 	defaultPathToStorage = "storageJSONs"
 	defaultPathToLog     = "log/config.log"
 )
 
 type Config struct {
 	Port             int    `yaml:"port" required:"true"`
-	PythonExecutable string `yaml:"python_executable" required:"true"`
+	PythonExecutable string `yaml:"python_executable"`
+	PythonScript     string `yaml:"python_script"`
 	StoragePath      string `yaml:"storage_path"`
 	LogPath          string `yaml:"log_path"`
 }
@@ -37,6 +40,7 @@ func MustLoad() *Config {
 	cfg := &Config{
 		Port:             defaultPort,
 		PythonExecutable: defaultPyExecutable,
+		PythonScript:     defaultPyScript,
 		StoragePath:      defaultPathToStorage,
 		LogPath:          defaultPathToLog,
 	}
@@ -57,6 +61,7 @@ func MustLoadWithPath(pathToConfig string) *Config {
 	cfg := &Config{
 		Port:             defaultPort,
 		PythonExecutable: defaultPyExecutable,
+		PythonScript:     defaultPyScript,
 		StoragePath:      defaultPathToStorage,
 		LogPath:          defaultPathToLog,
 	}
@@ -70,7 +75,7 @@ func MustLoadWithPath(pathToConfig string) *Config {
 
 // fetchConfigPath - достает путь к конфигу через флаг в командной строке
 // priority: flag > env > default
-// default: defaultPathToConfig
+// default: DefaultPathToConfig
 func fetchConfigPath() string {
 	var res string
 
@@ -82,7 +87,7 @@ func fetchConfigPath() string {
 	}
 
 	if res == "" {
-		res = defaultPathToConfig
+		res = DefaultPathToConfig
 	}
 
 	return res

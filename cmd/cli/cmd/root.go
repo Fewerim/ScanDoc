@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"proWeb/internal/config"
 
 	"github.com/spf13/cobra"
 )
@@ -15,8 +16,6 @@ var (
 
 	configPath string
 )
-
-const defaultConfigPath = "./config/config.yaml"
 
 // initCommands - инициализирует CLI команды, предварительно обработав флаг для получения пути к конфигу
 // если флаг не был введен, используется дефолтный путь.
@@ -32,6 +31,10 @@ func (a *App) initCommands() {
 		a.LoadConfig(path)
 
 		a.SetupLogger(a.Cfg.LogPath)
+
+		if err = a.CheckPythonScripts(); err != nil {
+			return err
+		}
 
 		return nil
 	}
@@ -54,7 +57,7 @@ func resolveConfigPath() (string, error) {
 	}
 
 	if path == "" {
-		path = defaultConfigPath
+		path = config.DefaultPathToConfig
 	}
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {

@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
 	"proWeb/internal/config"
 	"proWeb/internal/logger"
 )
@@ -23,4 +25,18 @@ func (a *App) LoadConfig(path string) {
 // SetupLogger - устанавливает логгер, который пишет в файл по переданному пути
 func (a *App) SetupLogger(path string) {
 	a.Log = logger.MustSetup(path)
+}
+
+// CheckPythonScripts - проверяет наличие пути к python скрипту и наличие venv файла для успешного запуска скрипта
+func (a *App) CheckPythonScripts() error {
+	pyVenv := a.Cfg.PythonExecutable
+	pyScript := a.Cfg.PythonScript
+
+	if _, err := os.Stat(pyVenv); os.IsNotExist(err) {
+		return fmt.Errorf("python из venv не найден: %s", pyVenv)
+	}
+	if _, err := os.Stat(pyScript); os.IsNotExist(err) {
+		return fmt.Errorf("серверный скрипт не найден: %s", pyScript)
+	}
+	return nil
 }
