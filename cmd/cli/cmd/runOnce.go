@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// onceFile - функция, которая проверяет входные данные, создает подключение к серверу,
+// onceFile - проверяет входные данные, создает подключение к серверу,
 // обрабатывает и сохраняет файл локально
 func (a *App) onceFile(cmd *cobra.Command, args []string) (err error) {
 	const operation = "cli.onceFile"

@@ -29,8 +29,11 @@ func (a *App) initCommands() {
 		}
 
 		a.LoadConfig(path)
-
 		a.SetupLogger(a.Cfg.LogPath)
+
+		if err = a.InitPythonVenv(); err != nil {
+			return err
+		}
 
 		if err = a.CheckPythonScripts(); err != nil {
 			return err
@@ -40,6 +43,7 @@ func (a *App) initCommands() {
 	}
 
 	rootCmd.AddCommand(newHelperCmd(a))
+	rootCmd.AddCommand(newInitAppCmd(a))
 	rootCmd.AddCommand(newRunOnceCmd(a))
 }
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"proWeb/internal/cliUtils"
 	"proWeb/internal/config"
 	"proWeb/internal/logger"
 )
@@ -25,6 +26,16 @@ func (a *App) LoadConfig(path string) {
 // SetupLogger - устанавливает логгер, который пишет в файл по переданному пути
 func (a *App) SetupLogger(path string) {
 	a.Log = logger.MustSetup(path)
+}
+
+// InitPythonVenv - инициализирует venv для python, если файла нет, создает
+func (a *App) InitPythonVenv() error {
+	if _, err := os.Stat(".venv"); os.IsNotExist(err) {
+		if err = cliUtils.CreateVenv(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // CheckPythonScripts - проверяет наличие пути к python скрипту и наличие venv файла для успешного запуска скрипта

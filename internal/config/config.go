@@ -12,7 +12,7 @@ const (
 
 	defaultPort          = 3210
 	defaultPyExecutable  = ".venv/Scripts/python.exe"
-	defaultPyScript      = "./internal/service/scanPy/src/run_api.py"
+	defaultPyScript      = "./internal/service/scanPy"
 	defaultPathToStorage = "storageJSONs"
 	defaultPathToLog     = "log/config.log"
 )

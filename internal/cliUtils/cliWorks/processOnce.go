@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const processTimeout = 180 * time.Second
+
 // Result - результат выполнения CLI команды (имя созданного файла, время создания)
 type Result struct {
 	FileName  string
@@ -17,7 +19,7 @@ type Result struct {
 
 // ProcessOnceFile - подключение к серверу, отправка файла, обработка результата, сохранение в локальное хранилище
 func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (Result, error) {
-	_, cancel := context.WithTimeout(context.Background(), cliUtils.ProcessTimeout)
+	_, cancel := context.WithTimeout(context.Background(), processTimeout)
 	defer cancel()
 
 	cmd, err := cliUtils.StartPythonServer(cfg.Port, cfg.PythonExecutable, cfg.PythonScript)

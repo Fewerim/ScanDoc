@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -16,11 +15,10 @@ import (
 )
 
 const (
-	ProcessTimeout           = 180 * time.Second
-	ServerStartTimeout       = 10 * time.Second
-	HealthCheckAttempts      = 10
-	HealthCheckInterval      = 1 * time.Second
-	HealthCheckClientTimeout = 5 * time.Second
+	serverStartTimeout       = 10 * time.Second
+	healthCheckAttempts      = 10
+	healthCheckInterval      = 1 * time.Second
+	healthCheckClientTimeout = 5 * time.Second
 	ErrorNoPython            = "python не найден"
 )
 
@@ -35,22 +33,24 @@ type Data struct {
 // StartPythonServer - создает соединение с сервером
 func StartPythonServer(port int, pythonExecutable, pathToScript string) (*exec.Cmd, error) {
 	if _, err := exec.LookPath(pythonExecutable); err != nil {
-		return nil, errors.New(ErrorNoPython)
+		return nil, InternalError(ErrorNoPython)
 	}
 	portStr := fmt.Sprintf("%d", port)
+	pathToScript = filepath.Join(pathToScript, "src/run_api.py")
 
 	cmd := exec.Command(pythonExecutable, pathToScript, "--port", portStr)
 
 	if err := cmd.Start(); err != nil {
-		return nil, fmt.Errorf("не удалось запустить сервер: %w", err)
+		info := fmt.Sprintf("не удалось запустить сервер: %v", err)
+		return nil, ServerError(info)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), ServerStartTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), serverStartTimeout)
 	defer cancel()
 
 	if err := healthCheck(ctx, port); err != nil {
 		cmd.Process.Kill()
-		return nil, err
+		return nil, ServerError(err.Error())
 	}
 
 	return cmd, nil
@@ -71,12 +71,12 @@ func SendFileToServer(filePath string, port int) (interface{}, error) {
 
 	body, contentType, err := buildMultipartBody(filePath, fieldNameOfRequest)
 	if err != nil {
-		return data, err
+		return data, InternalError(err.Error())
 	}
 
 	resp, err := scanRequest(port, body, contentType)
 	if err != nil {
-		return data, err
+		return data, InternalError(err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -134,9 +134,9 @@ func scanRequest(port int, body io.Reader, contentType string) (*http.Response, 
 
 // healthCheck - проверяет запустился ли сервер, если нет, возвращает ошибку
 func healthCheck(ctx context.Context, port int) error {
-	client := &http.Client{Timeout: HealthCheckClientTimeout}
+	client := &http.Client{Timeout: healthCheckClientTimeout}
 
-	maxAttempts := HealthCheckAttempts
+	maxAttempts := healthCheckAttempts
 
 	for i := 0; i < maxAttempts; i++ {
 		select {
@@ -154,7 +154,7 @@ func healthCheck(ctx context.Context, port int) error {
 
 			return nil
 		}
-		time.Sleep(HealthCheckInterval)
+		time.Sleep(healthCheckInterval)
 	}
 
 	return fmt.Errorf("сервер не успел запуститься за %d попыток", maxAttempts)

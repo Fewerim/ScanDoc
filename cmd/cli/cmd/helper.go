@@ -9,6 +9,7 @@ import (
 
 const (
 	CommandHelp    = "\\bin\\proweb.exe help"
+	CommandInit    = "\\bin\\proweb.exe init"
 	CommandRunOnce = "\\bin\\proweb.exe run_once [путь к файлу] [название нового файла]"
 )
 
@@ -16,9 +17,11 @@ var commandsHelp = orderedmap.New()
 
 func initCommands() {
 	commandsHelp.Set("-Показывает список всех команд", CommandHelp)
+	commandsHelp.Set("-Подтягивает все необходимые зависимости для работы приложения", CommandInit)
 	commandsHelp.Set("-Обрабатывает один документ", CommandRunOnce)
 }
 
+// helper - выводит список всех существующих команд
 func (a *App) helper(cmd *cobra.Command, args []string) {
 	const operation = "cli.helper"
 
@@ -33,7 +36,7 @@ func (a *App) helper(cmd *cobra.Command, args []string) {
 	keys := commandsHelp.Keys()
 	for _, k := range keys {
 		v, _ := commandsHelp.Get(k)
-		fmt.Printf("%s\t%s\n", k, v.(string))
+		fmt.Printf("%s\t%s\n", v.(string), k)
 	}
 
 	a.Log.Info(operation, "справка успешно отображена")
