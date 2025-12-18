@@ -3,12 +3,13 @@ package config
 import (
 	"flag"
 	"os"
+	"path/filepath"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 const (
-	DefaultPathToConfig = "./config/config.yaml"
+	defaultPathToConfig = "./config/config.yaml"
 
 	defaultPort          = 3210
 	defaultPyExecutable  = ".venv/Scripts/python.exe"
@@ -73,6 +74,18 @@ func MustLoadWithPath(pathToConfig string) *Config {
 	return cfg
 }
 
+// DefaultConfigPath - возвращает путь к конфиг файлу, чтобы приложение смогло инициализировать конфиг
+func DefaultConfigPath() string {
+	exePath, err := os.Executable()
+	if err != nil {
+		return defaultPathToConfig
+	}
+
+	exeDir := filepath.Dir(exePath)
+	rootDir := filepath.Dir(exeDir)
+	return filepath.Join(rootDir, "config", "config.yaml")
+}
+
 // fetchConfigPath - достает путь к конфигу через флаг в командной строке
 // priority: flag > env > default
 // default: DefaultPathToConfig
@@ -87,7 +100,7 @@ func fetchConfigPath() string {
 	}
 
 	if res == "" {
-		res = DefaultPathToConfig
+		res = defaultPathToConfig
 	}
 
 	return res

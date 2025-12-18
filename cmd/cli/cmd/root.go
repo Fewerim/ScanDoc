@@ -1,10 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-	"proWeb/internal/config"
-
 	"github.com/spf13/cobra"
 )
 
@@ -14,28 +10,27 @@ var (
 		Short: "CLI для распознавания бухгалтерских документов",
 	}
 
-	configPath string
+	configFlag string
 )
 
 // initCommands - инициализирует CLI команды, предварительно обработав флаг для получения пути к конфигу
 // если флаг не был введен, используется дефолтный путь.
 func (a *App) initCommands() {
-	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "config file path")
+	rootCmd.PersistentFlags().StringVar(&configFlag, "config", "", "config file path")
 
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		path, err := resolveConfigPath()
-		if err != nil {
-			return err
+		if configFlag == "" {
+			a.CfgPath = configFlag
 		}
 
-		a.LoadConfig(path)
+		a.LoadConfig()
 		a.SetupLogger(a.Cfg.LogPath)
 
-		if err = a.InitPythonVenv(); err != nil {
+		if err := a.InitPythonVenv(); err != nil {
 			return err
 		}
 
-		if err = a.CheckPythonScripts(); err != nil {
+		if err := a.CheckPythonScripts(); err != nil {
 			return err
 		}
 
@@ -51,22 +46,4 @@ func (a *App) initCommands() {
 func (a *App) Execute() error {
 	a.initCommands()
 	return rootCmd.Execute()
-}
-
-// resolveConfigPath - получает путь к конфигу из переменной окружения, флага или устанавливает дефолтное значение пути
-func resolveConfigPath() (string, error) {
-	path := configPath
-	if path == "" {
-		path = os.Getenv("CONFIG_PATH")
-	}
-
-	if path == "" {
-		path = config.DefaultPathToConfig
-	}
-
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return "", fmt.Errorf("конфиг файл по пути %s не найден", path)
-	}
-
-	return path, nil
 }

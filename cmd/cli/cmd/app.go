@@ -9,23 +9,30 @@ import (
 )
 
 type App struct {
-	Log logger.Logger
-	Cfg *config.Config
+	CfgPath string
+	Log     logger.Logger
+	Cfg     *config.Config
 }
 
 // NewApp - конструктор для приложения
 func NewApp() *App {
-	return &App{Log: nil, Cfg: nil}
+	return &App{CfgPath: "", Log: nil, Cfg: nil}
 }
 
-// LoadConfig - загружает конфиг из переданного пути
-func (a *App) LoadConfig(path string) {
+// LoadConfig - загружает конфиг по пути из поля App, если путь пустой, устанавливает его
+func (a *App) LoadConfig() {
+	path := a.CfgPath
+	if path == "" {
+		path = config.DefaultConfigPath()
+	}
+
+	a.CfgPath = path
 	a.Cfg = config.MustLoadWithPath(path)
 }
 
 // SetupLogger - устанавливает логгер, который пишет в файл по переданному пути
-func (a *App) SetupLogger(path string) {
-	a.Log = logger.MustSetup(path)
+func (a *App) SetupLogger(pathToFile string) {
+	a.Log = logger.MustSetup(pathToFile)
 }
 
 // InitPythonVenv - инициализирует venv для python, если файла нет, создает
