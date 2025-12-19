@@ -5,6 +5,7 @@ import (
 	cliUtils "proWeb/internal/cliUtils"
 	"proWeb/internal/cliUtils/cliWorks"
 	"proWeb/internal/files"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -14,6 +15,8 @@ import (
 func (a *App) onceFile(cmd *cobra.Command, args []string) (err error) {
 	const operation = "cli.onceFile"
 	a.Log.Info(operation, "начало обработки файла")
+
+	start := time.Now()
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -54,8 +57,9 @@ func (a *App) onceFile(cmd *cobra.Command, args []string) (err error) {
 
 	//TODO: формирование ответа для пользователя
 
-	fmt.Println(cliUtils.Success("программа завершилась успешно").ToString())
-	a.Log.Info(operation, "операция завершена успешно")
+	elapsed := time.Since(start)
+	fmt.Println(cliUtils.Success("программа завершилась успешно, файл сохранен в хранилище", elapsed).ToString())
+	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", elapsed.Seconds()))
 	return nil
 }
 

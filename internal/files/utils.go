@@ -3,7 +3,6 @@ package files
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,10 +59,10 @@ func saveFileToDirectory(fileName, directory string, data interface{}, overWrite
 		return fmt.Errorf("ошибка записи файла: %v", err)
 	}
 
-	action := "created"
-	if overWrite {
-		action = "overwritten"
-	}
-	log.Printf("%s файл %s находится в директории %s", action, fileName, fullDirectory)
+	//action := "created"
+	//if overWrite {
+	//	action = "overwritten"
+	//}
+	//log.Printf("%s файл %s находится в директории %s", action, fileName, fullDirectory)
 	return nil
 }

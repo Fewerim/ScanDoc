@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	serverStartTimeout       = 10 * time.Second
-	healthCheckAttempts      = 10
+	serverStartTimeout       = 15 * time.Second
+	healthCheckAttempts      = 15
 	healthCheckInterval      = 1 * time.Second
 	healthCheckClientTimeout = 5 * time.Second
 	ErrorNoPython            = "python не найден"
@@ -157,7 +157,7 @@ func healthCheck(ctx context.Context, port int) error {
 		time.Sleep(healthCheckInterval)
 	}
 
-	return fmt.Errorf("сервер не успел запуститься за %d попыток", maxAttempts)
+	return fmt.Errorf("сервер не успел запуститься за %d попыток, попробуйте еще раз", maxAttempts)
 }
 
 // decodeDataResponse - парсинг JSON ответа
