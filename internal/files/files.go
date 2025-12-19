@@ -31,9 +31,9 @@ func InitStorage(storage string) {
 // CreateStorageJSON - создает локальное хранилище для хранения JSON
 func CreateStorageJSON() error {
 	if err := os.Mkdir(nameStorage, 0777); err != nil {
-		return fmt.Errorf("error creating storage JSON directory: %v", err)
+		return fmt.Errorf("ошибка при создании хранилища для JSON файлов: %v", err)
 	}
-	log.Printf("Successfully created %s directory", nameStorage)
+	log.Printf("Хранилище для обработанных файлов (%s) успешно создано", nameStorage)
 	return nil
 }
 
@@ -61,9 +61,9 @@ func OverwriteFileToDirectory(fileName, directory string, data interface{}) erro
 // DeleteFileFromDirectory - удаляет файл по пути
 func DeleteFileFromDirectory(filePath string) error {
 	if err := os.RemoveAll(filePath); err != nil {
-		return fmt.Errorf("error deleting file %s: %v", filePath, err)
+		return fmt.Errorf("ошибка при удалении файла %s: %v", filePath, err)
 	}
-	log.Printf("Successfully deleted file %s", filePath)
+	log.Printf("файл по пути %s был успешно удален", filePath)
 	return nil
 }
 
@@ -71,11 +71,11 @@ func DeleteFileFromDirectory(filePath string) error {
 func ReadJSONFile(filePath string, result interface{}) error {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return fmt.Errorf("error reading file: %v", err)
+		return fmt.Errorf("ошибка при чтении файла: %v", err)
 	}
 
 	if err = json.Unmarshal(data, result); err != nil {
-		return fmt.Errorf("error parsing JSON: %v", err)
+		return fmt.Errorf("ошибка парсинга JSON: %v", err)
 	}
 
 	return nil
@@ -87,7 +87,7 @@ func GetListFilesInDirectory(directory string) ([]string, error) {
 
 	entries, err := os.ReadDir(fullPath)
 	if err != nil {
-		return nil, fmt.Errorf("error reading directory %s: %v", directory, err)
+		return nil, fmt.Errorf("ошибка при чтении директории %s: %v", directory, err)
 	}
 
 	fileNames := make([]string, 0)

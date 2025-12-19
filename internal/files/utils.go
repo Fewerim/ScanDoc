@@ -48,22 +48,22 @@ func saveFileToDirectory(fileName, directory string, data interface{}, overWrite
 	fileName, filePath := getUniqFileName(fileNameWithExtension, fullDirectory, overWrite)
 
 	if err := os.MkdirAll(fullDirectory, 0777); err != nil {
-		return fmt.Errorf("error creating %s directory: %v", directory, err)
+		return fmt.Errorf("ошибка создания %s директории: %v", directory, err)
 	}
 
 	jsonData, err := json.MarshalIndent(data, "", "	")
 	if err != nil {
-		return fmt.Errorf("error marshalling json: %v", err)
+		return fmt.Errorf("ошибка маршаллинга json: %v", err)
 	}
 
 	if err = os.WriteFile(filePath, jsonData, 0666); err != nil {
-		return fmt.Errorf("error writing file: %v", err)
+		return fmt.Errorf("ошибка записи файла: %v", err)
 	}
 
 	action := "created"
 	if overWrite {
 		action = "overwritten"
 	}
-	log.Printf("%s file %s in directory %s", action, fileName, fullDirectory)
+	log.Printf("%s файл %s находится в директории %s", action, fileName, fullDirectory)
 	return nil
 }
