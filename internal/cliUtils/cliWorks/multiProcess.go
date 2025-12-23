@@ -1,12 +1,12 @@
 package cliWorks
 
 import (
-	"context"
 	"fmt"
 	"path/filepath"
 	"proWeb/internal/cliUtils"
 	"proWeb/internal/config"
 	"proWeb/internal/files"
+	"strings"
 	"sync"
 )
 
@@ -18,22 +18,19 @@ type MultiProcessResult struct {
 
 // MultiProcessFiles - обрабатывает сразу все файлы из директории, возвращает результаты выполнения CLI командб ошибку при подключении сервера или проверки дтректории, слайс ошибок, возникших при обработке конкретных файлов
 func MultiProcessFiles(directoryPath string, cfg *config.Config) (MultiProcessResult, error, []error) {
-	filePaths, info := cliUtils.GetFilesFromDirectory(directoryPath)
-	if info != "" {
-		return MultiProcessResult{}, cliUtils.UserError(info), nil
+	filePaths, errorInfo := cliUtils.GetFilesFromDirectory(directoryPath)
+	if errorInfo != "" {
+		return MultiProcessResult{}, cliUtils.UserError(errorInfo), nil
 	}
-
-	_, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	cmd, err := cliUtils.StartPythonServer(cfg.Port, cfg.PythonExecutable, cfg.PythonScript)
 	if err != nil {
 		if err.Error() == cliUtils.ErrorNoPython {
-			info = fmt.Sprintf("python не установлен или его нет в PATH, обратитесь к администратору")
+			info := fmt.Sprintf("python не установлен или его нет в PATH, обратитесь к администратору")
 			return MultiProcessResult{}, cliUtils.InternalError(info), nil
 		}
 
-		info = fmt.Sprintf("ошибка при старте сервера: %v", err)
+		info := fmt.Sprintf("ошибка при старте сервера: %v", err)
 		return MultiProcessResult{}, cliUtils.ServerError(info), nil
 	}
 
@@ -53,26 +50,35 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config) (MultiProcessRe
 		semaphore <- struct{}{}
 
 		go func(filePath string) {
-			wg.Add(1)
+			defer wg.Done()
 			defer func() { <-semaphore }()
 
 			fileName := filepath.Base(filePath)
+			extension := filepath.Ext(fileName)
+			fileNameWithoutExt := strings.TrimSuffix(fileName, extension)
+
+			err := cliUtils.ValidateExtensionFile(filePath)
+			if err != nil {
+				info := fmt.Sprintf("Расширение файла %s не поддерживается: %v", fileNameWithoutExt, err)
+				errorsFileProcessing <- info
+				return
+			}
 
 			data, err := cliUtils.SendFileToServer(filePath, cfg.Port)
 			if err != nil {
-				info = fmt.Sprintf("ошибка при отправке файла %s: %v", err, fileName)
+				info := fmt.Sprintf("ошибка при отправке файла %s: %v", fileNameWithoutExt, err)
 				errorsFileProcessing <- info
 				return
 			}
 
-			err = files.SaveFileToStorage(fileName, data)
-			if err != nil {
-				info = fmt.Sprintf("ошибка при попытке сохранить файл %s: %v", err, fileName)
+			errNew := files.SaveFileToStorage(fileNameWithoutExt, data)
+			if errNew != nil {
+				info := fmt.Sprintf("ошибка при попытке сохранить файл %s: %v", fileNameWithoutExt, errNew)
 				errorsFileProcessing <- info
 				return
 			}
 
-			result := createResult(fileName)
+			result := createResult(fileNameWithoutExt)
 			results <- result
 		}(filePath)
 	}

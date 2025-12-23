@@ -40,6 +40,7 @@ func (a *App) initCommands() {
 	rootCmd.AddCommand(newHelperCmd(a))
 	rootCmd.AddCommand(newInitAppCmd(a))
 	rootCmd.AddCommand(newRunOnceCmd(a))
+	rootCmd.AddCommand(newMultyRunCmd(a))
 }
 
 // Execute - делегирует запуск CLI приложения, вызываясь на экземпляре App

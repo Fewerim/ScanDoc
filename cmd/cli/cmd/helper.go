@@ -8,9 +8,10 @@ import (
 )
 
 const (
-	CommandHelp    = "\\bin\\proweb.exe help"
-	CommandInit    = "\\bin\\proweb.exe init"
-	CommandRunOnce = "\\bin\\proweb.exe run_once [путь к файлу] [название нового файла]"
+	CommandHelp     = "\\bin\\proweb.exe help"
+	CommandInit     = "\\bin\\proweb.exe init"
+	CommandRunOnce  = "\\bin\\proweb.exe run_once [путь к файлу] [название нового файла]"
+	CommandRunMulty = "\\bin\\proweb.exe run_multy [директория]"
 )
 
 var commandsHelp = orderedmap.New()
@@ -19,6 +20,7 @@ func initCommands() {
 	commandsHelp.Set("-Показывает список всех команд", CommandHelp)
 	commandsHelp.Set("-Подтягивает все необходимые зависимости для работы приложения", CommandInit)
 	commandsHelp.Set("-Обрабатывает один документ", CommandRunOnce)
+	commandsHelp.Set("-Обрабатывает пакет документов", CommandRunMulty)
 }
 
 // helper - выводит список всех существующих команд
