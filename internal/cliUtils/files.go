@@ -1,6 +1,7 @@
 package cliUtils
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,4 +49,44 @@ func CheckExistsFile(filePath string) error {
 	}
 
 	return nil
+}
+
+// GetFilesFromDirectory - проверяет наличие директории в системе, возвращает слайс путей к каждому файлу из этой директории и текст ошибки
+func GetFilesFromDirectory(directoryPath string) ([]string, string) {
+	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
+		info := fmt.Sprintf("директория не существует: %s", directoryPath)
+		return []string{}, info
+	}
+
+	fileInfo, err := os.Stat(directoryPath)
+	if err != nil {
+		info := fmt.Sprintf("ошибка при проверке директории %s: %v", directoryPath, err)
+		return []string{}, info
+	}
+
+	if !fileInfo.IsDir() {
+		info := fmt.Sprintf("указанный путь не является директорией: %s", directoryPath)
+		return []string{}, info
+	}
+
+	files, err := os.ReadDir(directoryPath)
+	if err != nil {
+		info := fmt.Sprintf("ошибка чтения директории: %v", err)
+		return []string{}, info
+	}
+
+	var filePaths []string
+	for _, file := range files {
+		if !file.IsDir() {
+			filePath := filepath.Join(directoryPath, file.Name())
+			filePaths = append(filePaths, filePath)
+		}
+	}
+
+	if len(filePaths) == 0 {
+		info := fmt.Sprintf("в директории нет файлов для обработки: %s", directoryPath)
+		return []string{}, info
+	}
+
+	return filePaths, ""
 }
