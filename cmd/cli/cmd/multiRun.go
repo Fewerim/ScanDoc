@@ -41,7 +41,7 @@ func (a *App) multiFiles(cmd *cobra.Command, args []string) (err error) {
 		a.Log.Info(operation, "локальное хранилище успешно создано")
 	}
 
-	if err = cliUtils.CheckExistsFile(dirPath); err != nil {
+	if err = cliUtils.CheckExistsPath(dirPath); err != nil {
 		a.Log.Error(operation, err.Error(), 1)
 		return err
 	}

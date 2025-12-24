@@ -51,6 +51,18 @@ func CheckExistsFile(filePath string) error {
 	return nil
 }
 
+// CheckExistsPath - проверяет наличие пути в системе
+func CheckExistsPath(filePath string) error {
+	info, err := os.Stat(filePath)
+	if err != nil {
+		return UserError("такой путь не найден (проверьте путь)")
+	}
+	if !info.IsDir() {
+		return UserError("во флаге был передан не путь, а что-то другое")
+	}
+	return nil
+}
+
 // GetFilesFromDirectory - проверяет наличие директории в системе, возвращает слайс путей к каждому файлу из этой директории и текст ошибки
 func GetFilesFromDirectory(directoryPath string) ([]string, string) {
 	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
@@ -92,5 +104,5 @@ func GetFilesFromDirectory(directoryPath string) ([]string, string) {
 }
 
 func CheckedStorage() {
-	
+
 }
