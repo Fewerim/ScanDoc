@@ -11,12 +11,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// multiFiles - проверяет входные данные, создает подключение к серверу, обрабатывает и сохраняет файлы локально
+// multiFiles - проверяет входные данные, создает подключение к серверу,
+// обрабатывает и сохраняет файлы локально
 func (a *App) multiFiles(cmd *cobra.Command, args []string) (err error) {
 	const operation = "cli.multiFiles"
 
 	a.Log.Info(operation, "начало обработки директории файлов")
-	log.Println("система одновременно может обрабатывать не более 5 файлов, если файлов больше, то на это требуется больше времени")
 
 	start := time.Now()
 
@@ -28,6 +28,7 @@ func (a *App) multiFiles(cmd *cobra.Command, args []string) (err error) {
 	}()
 
 	dirPath := args[0]
+	log.Println("система одновременно может обрабатывать не более 5 файлов, если файлов больше, то на это требуется больше времени")
 
 	files.InitStorage(a.Cfg.StoragePath)
 
@@ -40,7 +41,12 @@ func (a *App) multiFiles(cmd *cobra.Command, args []string) (err error) {
 		a.Log.Info(operation, "локальное хранилище успешно создано")
 	}
 
-	_, err, errs := cliWorks.MultiProcessFiles(dirPath, a.Cfg)
+	if err = cliUtils.CheckExistsFile(dirPath); err != nil {
+		a.Log.Error(operation, err.Error(), 1)
+		return err
+	}
+
+	result, err, errs := cliWorks.MultiProcessFiles(dirPath, a.Cfg)
 	if err != nil {
 		a.Log.Error(operation, err.Error(), 2)
 		return err
@@ -51,19 +57,18 @@ func (a *App) multiFiles(cmd *cobra.Command, args []string) (err error) {
 			a.Log.Error(operation, fileErr.Error(), 2)
 		}
 	}
-
-	//TODO: формирование ответа для пользователя
-
 	elapsed := time.Since(start)
-	fmt.Println(cliUtils.Success("программа завершилась успешно, файлы сохранены в хранилище", elapsed).ToString())
-	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", elapsed.Seconds()))
+	result.SetElapsedTime(elapsed)
+
+	cliUtils.NewSuccess(&result).PrintSuccess()
+	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", result.Elapsed))
 	return nil
 }
 
-func newMultyRunCmd(a *App) *cobra.Command {
+func newMultiRunCmd(a *App) *cobra.Command {
 	return &cobra.Command{
-		Use:           "run_multy",
-		Short:         "Команда для обработки всех файлов в директории: run_multy [директория]",
+		Use:           "run_multi",
+		Short:         "Команда для обработки всех файлов в директории: run_multi [директория]",
 		Args:          cobra.ExactArgs(1),
 		RunE:          a.multiFiles,
 		SilenceErrors: true,

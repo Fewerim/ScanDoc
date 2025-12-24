@@ -90,3 +90,7 @@ func GetFilesFromDirectory(directoryPath string) ([]string, string) {
 
 	return filePaths, ""
 }
+
+func CheckedStorage() {
+	
+}

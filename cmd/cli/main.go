@@ -7,6 +7,9 @@ import (
 	"proWeb/cmd/cli/cmd"
 	"proWeb/internal/cliUtils"
 	"proWeb/internal/logger"
+	"strings"
+
+	"github.com/fatih/color"
 )
 
 func main() {
@@ -14,8 +17,10 @@ func main() {
 	defer catchPanic()
 
 	app := cmd.NewApp()
+
 	if err := app.Execute(); err != nil {
 		handleError(err, app.Log)
+		return
 	}
 
 	app.Log.Info(op, "приложение успешно завершено")
@@ -37,9 +42,16 @@ func handleError(err error, log logger.Logger) {
 	os.Exit(3)
 }
 
+// catchPanic - ловит панику, если такая случилась
 func catchPanic() {
 	if r := recover(); r != nil {
-		fmt.Println("программа завершилась с паникой: ", r)
+		msg := fmt.Sprintf("%v", r)
+		if strings.Contains(msg, "nil pointer") {
+			pan := fmt.Sprintf("программа завершилась с паникой: возможно, команда получила не все аргументы. проверьте ввод")
+			color.Red(pan)
+		} else {
+			color.Red("программа завершилась с паникой: ", r)
+		}
 		os.Exit(3)
 	}
 }

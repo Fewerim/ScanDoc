@@ -2,33 +2,39 @@ package cliUtils
 
 import (
 	"fmt"
-	"time"
+
+	"github.com/fatih/color"
 )
 
 const (
 	success = 1
-	fail    = -1
 )
+
+type Message interface {
+	ToString() string
+}
 
 type AppSuccess struct {
 	Status  int
-	Message string
-	Time    time.Duration
+	Message Message
 }
 
-func newAppSuccess(status int, message string, time time.Duration) *AppSuccess {
-	return &AppSuccess{status, message, time}
+func newAppSuccess(status int, message Message) *AppSuccess {
+	return &AppSuccess{status, message}
 }
 
+// NewSuccess - конструктор, возвращающий статус успеха приложения
+func NewSuccess(message Message) *AppSuccess {
+	return newAppSuccess(success, message)
+}
+
+// ToString - возвращает строку для вывода статуса успеха приложения
 func (app *AppSuccess) ToString() string {
-	result := fmt.Sprintf("Статус выполнения: %d\nВремя выполнения: %.3fs\nОписание результата: %s", app.Status, app.Time.Seconds(), app.Message)
-	return result
+	result := fmt.Sprintf("Статус выполнения: %d\nОписание результата:\n%s", app.Status, app.Message.ToString())
+	return color.GreenString(result)
 }
 
-func Success(message string, time time.Duration) *AppSuccess {
-	return newAppSuccess(success, message, time)
-}
-
-func Error(message string, time time.Duration) *AppSuccess {
-	return newAppSuccess(fail, message, time)
+// PrintSuccess - выводит в консоль статус успеха приложения
+func (app *AppSuccess) PrintSuccess() {
+	fmt.Println(app.ToString())
 }

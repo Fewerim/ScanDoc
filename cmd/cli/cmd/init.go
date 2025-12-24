@@ -30,7 +30,9 @@ func (a *App) initApp(cmd *cobra.Command, args []string) error {
 		a.Log.Error(operation, "зависимости не были установлены", 3)
 		return err
 	}
+	result := cliUtils.CreateInitResult("зависимости успешно установлены")
 
+	cliUtils.NewSuccess(&result).PrintSuccess()
 	a.Log.Info(operation, "зависимости установлены")
 	return nil
 }

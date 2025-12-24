@@ -2,6 +2,8 @@ package cliUtils
 
 import (
 	"fmt"
+
+	"github.com/fatih/color"
 )
 
 const (
@@ -14,8 +16,6 @@ const (
 type AppError struct {
 	exitCode    int
 	userMessage string
-	//LogMessage 	string
-	//date time.Time
 }
 
 // newAppError - конструктор для создания новой ошибки приложения
@@ -37,7 +37,7 @@ func (err *AppError) ExitCode() int {
 func (err *AppError) ToString() string {
 	result := fmt.Sprintf("Код ошибки: [%d]\nОписание ошибки: %s", err.exitCode, err.userMessage)
 
-	return result
+	return color.RedString(result)
 }
 
 // UserError - возвращает пользовательскую ошибку приложения

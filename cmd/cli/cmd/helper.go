@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/fatih/color"
 	"github.com/iancoleman/orderedmap"
 	"github.com/spf13/cobra"
 )
@@ -11,7 +12,7 @@ const (
 	CommandHelp     = "\\bin\\proweb.exe help"
 	CommandInit     = "\\bin\\proweb.exe init"
 	CommandRunOnce  = "\\bin\\proweb.exe run_once [путь к файлу] [название нового файла]"
-	CommandRunMulty = "\\bin\\proweb.exe run_multy [директория]"
+	CommandRunMulty = "\\bin\\proweb.exe run_multi [директория]"
 )
 
 var commandsHelp = orderedmap.New()
@@ -33,8 +34,8 @@ func (a *App) helper(cmd *cobra.Command, args []string) {
 
 	a.Log.Info(operation, "вывод приветственных сообщений и всех возможных команд")
 
-	fmt.Println("Добро пожаловать в сервис распознавания бухгалтерских документов")
-	fmt.Println("Вот список доступных команд (*использовать без скобок):")
+	color.Blue("Добро пожаловать в сервис распознавания бухгалтерских документов")
+	color.Blue("Вот список доступных команд (*использовать без скобок):")
 	keys := commandsHelp.Keys()
 	for _, k := range keys {
 		v, _ := commandsHelp.Get(k)

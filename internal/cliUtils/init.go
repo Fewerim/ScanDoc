@@ -55,6 +55,7 @@ func InstallRequirements(pathToScript string) error {
 	return nil
 }
 
+// findSystemPython - ищет Python в системе, если не находит, возвращает ошибку
 func findSystemPython() (string, error) {
 	if path, err := exec.LookPath("py"); err == nil {
 		return path, nil

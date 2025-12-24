@@ -12,26 +12,24 @@ import (
 
 const maxParallelOperations = 5
 
-type MultiProcessResult struct {
-	Results []Result
-}
-
-// MultiProcessFiles - обрабатывает сразу все файлы из директории, возвращает результаты выполнения CLI командб ошибку при подключении сервера или проверки дтректории, слайс ошибок, возникших при обработке конкретных файлов
-func MultiProcessFiles(directoryPath string, cfg *config.Config) (MultiProcessResult, error, []error) {
+// MultiProcessFiles - подключение к серверу, обработка файлов в директории, сохранение результатов в локальное хранилище.
+// Обрабатывает сразу все файлы из директории, возвращает результаты выполнения CLI команды, ошибку при подключении сервера или проверки директории,
+// слайс ошибок, возникших при обработке конкретных файлов
+func MultiProcessFiles(directoryPath string, cfg *config.Config) (cliUtils.MultiProcessResult, error, []error) {
 	filePaths, errorInfo := cliUtils.GetFilesFromDirectory(directoryPath)
 	if errorInfo != "" {
-		return MultiProcessResult{}, cliUtils.UserError(errorInfo), nil
+		return cliUtils.MultiProcessResult{}, cliUtils.UserError(errorInfo), nil
 	}
 
 	cmd, err := cliUtils.StartPythonServer(cfg.Port, cfg.PythonExecutable, cfg.PythonScript)
 	if err != nil {
 		if err.Error() == cliUtils.ErrorNoPython {
 			info := fmt.Sprintf("python не установлен или его нет в PATH, обратитесь к администратору")
-			return MultiProcessResult{}, cliUtils.InternalError(info), nil
+			return cliUtils.MultiProcessResult{}, cliUtils.InternalError(info), nil
 		}
 
 		info := fmt.Sprintf("ошибка при старте сервера: %v", err)
-		return MultiProcessResult{}, cliUtils.ServerError(info), nil
+		return cliUtils.MultiProcessResult{}, cliUtils.ServerError(info), nil
 	}
 
 	defer cliUtils.KillServer(cmd)
@@ -39,7 +37,7 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config) (MultiProcessRe
 	maxWorkers := maxParallelOperations
 	semaphore := make(chan struct{}, maxWorkers)
 
-	results := make(chan Result, len(filePaths))
+	results := make(chan cliUtils.Result, len(filePaths))
 	errorsFileProcessing := make(chan string, len(filePaths))
 
 	var wg sync.WaitGroup
@@ -78,7 +76,7 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config) (MultiProcessRe
 				return
 			}
 
-			result := createResult(fileNameWithoutExt)
+			result := cliUtils.CreateResult(fileNameWithoutExt, cfg.StoragePath)
 			results <- result
 		}(filePath)
 	}
@@ -87,11 +85,11 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config) (MultiProcessRe
 	close(results)
 	close(errorsFileProcessing)
 
-	var multiProcessResult MultiProcessResult
+	multiProcessResult := cliUtils.CreateMultiProcessResult()
 	var allErrorsFileProcessing []error
 
 	for result := range results {
-		multiProcessResult.Results = append(multiProcessResult.Results, result)
+		multiProcessResult.SetResult(result)
 	}
 
 	for errs := range errorsFileProcessing {

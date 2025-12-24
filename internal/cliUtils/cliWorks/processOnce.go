@@ -11,14 +11,8 @@ import (
 
 const processTimeout = 180 * time.Second
 
-// Result - результат выполнения CLI команды (имя созданного файла, время создания)
-type Result struct {
-	FileName  string
-	CreatedAt time.Time
-}
-
 // ProcessOnceFile - подключение к серверу, отправка файла, обработка результата, сохранение в локальное хранилище
-func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (Result, error) {
+func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (cliUtils.OnceProcessResult, error) {
 	_, cancel := context.WithTimeout(context.Background(), processTimeout)
 	defer cancel()
 
@@ -26,11 +20,11 @@ func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (Resu
 	if err != nil {
 		if err.Error() == cliUtils.ErrorNoPython {
 			info := fmt.Sprintf("python не установлен или его нет в PATH, обратитесь к администратору")
-			return Result{}, cliUtils.InternalError(info)
+			return cliUtils.OnceProcessResult{}, cliUtils.InternalError(info)
 		}
 
 		info := fmt.Sprintf("ошибка при старте сервера: %v", err)
-		return Result{}, cliUtils.ServerError(info)
+		return cliUtils.OnceProcessResult{}, cliUtils.ServerError(info)
 	}
 
 	defer cliUtils.KillServer(cmd)
@@ -38,23 +32,15 @@ func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (Resu
 	data, err := cliUtils.SendFileToServer(filePath, cfg.Port)
 	if err != nil {
 		info := fmt.Sprintf("ошибка при отправке файла: %v", err)
-		return Result{}, cliUtils.ServerError(info)
+		return cliUtils.OnceProcessResult{}, cliUtils.ServerError(info)
 	}
 
 	err = files.SaveFileToStorage(createdNameFile, data)
 	if err != nil {
 		info := fmt.Sprintf("ошибка при попытке сохранить файл: %v", err)
-		return Result{}, cliUtils.ServerError(info)
+		return cliUtils.OnceProcessResult{}, cliUtils.ServerError(info)
 	}
 
-	result := createResult(createdNameFile)
-	return result, nil
-}
-
-// createResult - конструктор для создания результата выполнения CLI команды
-func createResult(fileName string) Result {
-	return Result{
-		FileName:  fileName,
-		CreatedAt: time.Now(),
-	}
+	onceProcessResult := cliUtils.CreateOnceProcessResult(createdNameFile, cfg.StoragePath)
+	return onceProcessResult, nil
 }

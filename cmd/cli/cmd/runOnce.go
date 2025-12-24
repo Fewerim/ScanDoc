@@ -49,17 +49,16 @@ func (a *App) onceFile(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	_, err = cliWorks.ProcessOnceFile(filePath, createdFileName, a.Cfg)
+	result, err := cliWorks.ProcessOnceFile(filePath, createdFileName, a.Cfg)
 	if err != nil {
 		a.Log.Error(operation, err.Error(), 2)
 		return err
 	}
-
-	//TODO: формирование ответа для пользователя
-
 	elapsed := time.Since(start)
-	fmt.Println(cliUtils.Success("программа завершилась успешно, файл сохранен в хранилище", elapsed).ToString())
-	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", elapsed.Seconds()))
+	result.SetElapsedTime(elapsed)
+
+	cliUtils.NewSuccess(&result).PrintSuccess()
+	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", result.Elapsed))
 	return nil
 }
 
