@@ -35,12 +35,14 @@ func CreateVenv() error {
 // InstallRequirements - устанавливает все необходимые зависимости для python скрипта
 func InstallRequirements(pathToScript string) error {
 	reqsPath := filepath.Join(pathToScript, "requirements.txt")
+	if _, err := os.Stat(reqsPath); os.IsNotExist(err) {
+		return UserError("файл requirements.txt не найден")
+	}
 
 	pipPath := filepath.Join(".venv", "Scripts", "pip.exe")
-
 	if _, err := os.Stat(pipPath); os.IsNotExist(err) {
 		info := fmt.Sprintf("pip не найден в .venv: %s", pipPath)
-		return InternalError(info)
+		return UserError(info)
 	}
 
 	if !checkInternetConnection() {
@@ -79,6 +81,7 @@ func findSystemPython() (string, error) {
 	return "", fmt.Errorf("реальный Python не найден")
 }
 
+// checkInternetConnection - проверяет наличие интернета через попытку подключиться к PyPi
 func checkInternetConnection() bool {
 	cmd := exec.Command("ping", "-n", "1", "-w", "3000", "pypi.org")
 	return cmd.Run() == nil

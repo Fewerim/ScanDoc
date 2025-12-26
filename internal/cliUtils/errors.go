@@ -2,15 +2,14 @@ package cliUtils
 
 import (
 	"fmt"
+	"proWeb/internal/exitCodes"
 
 	"github.com/fatih/color"
 )
 
-const (
-	userError     = 1 // Пользовательские ошибки (ввод, расширения файла и тд)
-	serverError   = 2 // Серверные ошибки (ошибки сканирования, обработки)
-	internalError = 3 // Внутренние ошибки (непредвиденные ошибки приложения)
-)
+type ExitCoder interface {
+	ExitCode() int
+}
 
 // AppError - структура для вывода и формирования ошибок приложения
 type AppError struct {
@@ -42,15 +41,23 @@ func (err *AppError) ToString() string {
 
 // UserError - возвращает пользовательскую ошибку приложения
 func UserError(message string) *AppError {
-	return newAppError(userError, message)
+	return newAppError(exitCodes.UserError, message)
 }
 
 // ServerError - возвращает серверную ошибку приложения
 func ServerError(message string) *AppError {
-	return newAppError(serverError, message)
+	return newAppError(exitCodes.ServerError, message)
 }
 
 // InternalError - возвращает внутреннюю ошибку приложения
 func InternalError(message string) *AppError {
-	return newAppError(internalError, message)
+	return newAppError(exitCodes.InternalError, message)
+}
+
+// GetExitCode - возвращает статус ExitCode ошибки или defaultCode, если ошибка соответствует интерфейсу ExitCoder
+func GetExitCode(err error, defaultCode int) int {
+	if exitCoder, ok := err.(ExitCoder); ok {
+		return exitCoder.ExitCode()
+	}
+	return defaultCode
 }

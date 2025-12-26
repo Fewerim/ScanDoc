@@ -6,6 +6,7 @@ import (
 	"os"
 	"proWeb/cmd/cli/cmd"
 	"proWeb/internal/cliUtils"
+	"proWeb/internal/exitCodes"
 	"proWeb/internal/logger"
 	"strings"
 
@@ -23,7 +24,9 @@ func main() {
 		return
 	}
 
-	app.Log.Info(op, "приложение успешно завершено")
+	if app.Log != nil {
+		app.Log.Info(op, "приложение успешно завершено")
+	}
 }
 
 // handleError - ловит ошибки и выводит статус выхода
@@ -32,14 +35,17 @@ func handleError(err error, log logger.Logger) {
 
 	var appErr *cliUtils.AppError
 	if errors.As(err, &appErr) {
-		log.Error(operation, err.Error(), appErr.ExitCode())
 		fmt.Println(appErr.ToString())
 		os.Exit(appErr.ExitCode())
 	}
 
-	log.Error(operation, fmt.Sprintf("непредвиденная ошибка: %v", err), 3)
-	fmt.Println("непредвиденная ошибка:", err)
-	os.Exit(3)
+	if log != nil {
+		log.Error(operation, fmt.Sprintf("непредвиденная ошибка: %v", err), exitCodes.InternalError)
+	}
+
+	msg := fmt.Sprintf("непредвиденная ошибка: %v", err)
+	color.Red(msg)
+	os.Exit(exitCodes.InternalError)
 }
 
 // catchPanic - ловит панику, если такая случилась

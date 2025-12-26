@@ -5,6 +5,7 @@ import (
 	"os"
 	"proWeb/internal/cliUtils"
 	"proWeb/internal/config"
+	"proWeb/internal/files"
 	"proWeb/internal/logger"
 )
 
@@ -55,6 +56,18 @@ func (a *App) CheckPythonScripts() error {
 	}
 	if _, err := os.Stat(pyScript); os.IsNotExist(err) {
 		return fmt.Errorf("серверный скрипт не найден: %s", pyScript)
+	}
+	return nil
+}
+
+// CheckStorageJSON - проверяет наличие локального хранилища, если его нет, создает новое
+func (a *App) CheckStorageJSON() error {
+	files.InitStorage(a.Cfg.StoragePath)
+
+	if !files.StorageExists() {
+		if err := files.CreateStorageJSON(); err != nil {
+			return fmt.Errorf("ошибка создания локального хранилища: %v", err)
+		}
 	}
 	return nil
 }

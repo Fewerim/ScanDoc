@@ -2,12 +2,9 @@ package cliUtils
 
 import (
 	"fmt"
+	"proWeb/internal/exitCodes"
 
 	"github.com/fatih/color"
-)
-
-const (
-	success = 0
 )
 
 type Message interface {
@@ -25,7 +22,7 @@ func newAppSuccess(status int, message Message) *AppSuccess {
 
 // NewSuccess - конструктор, возвращающий статус успеха приложения
 func NewSuccess(message Message) *AppSuccess {
-	return newAppSuccess(success, message)
+	return newAppSuccess(exitCodes.Success, message)
 }
 
 // ToString - возвращает строку для вывода статуса успеха приложения

@@ -6,8 +6,8 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "proweb-cli",
-		Short: "CLI для распознавания бухгалтерских документов",
+		Use:   "scanner.exe",
+		Short: "ScannerDoc - CLI для распознавания бухгалтерских документов",
 	}
 
 	configFlag string
@@ -16,9 +16,18 @@ var (
 // initCommands - инициализирует CLI команды, предварительно обработав флаг для получения пути к конфигу
 // если флаг не был введен, используется дефолтный путь.
 func (a *App) initCommands() {
-	rootCmd.PersistentFlags().StringVar(&configFlag, "config", "", "config file path")
+	rootCmd.PersistentFlags().StringVar(&configFlag, "config", "", "путь к конфигурации приложения")
+	rootCmd.LocalFlags().BoolP("help", "h", false, "показать справку по команде")
+
+	rootCmd.DisableAutoGenTag = true
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if cmd.Flags().Lookup("help") != nil && cmd.Flags().Lookup("help").Changed ||
+			cmd.CommandPath() == "proweb-cli" && len(args) == 0 {
+			return nil
+		}
+
 		if configFlag == "" {
 			a.CfgPath = configFlag
 		}
@@ -36,8 +45,7 @@ func (a *App) initCommands() {
 
 		return nil
 	}
-
-	rootCmd.AddCommand(newHelperCmd(a))
+	rootCmd.SetHelpCommand(newHelperCmd(a))
 	rootCmd.AddCommand(newInitAppCmd(a))
 	rootCmd.AddCommand(newRunOnceCmd(a))
 	rootCmd.AddCommand(newMultiRunCmd(a))

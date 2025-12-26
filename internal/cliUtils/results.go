@@ -58,6 +58,11 @@ func (res *OnceProcessResult) SetElapsedTime(elapsed time.Duration) {
 	res.Elapsed = elapsed
 }
 
+// GetElapsedTime - возвращает прошедшее время
+func (res *OnceProcessResult) GetElapsedTime() float64 {
+	return res.Elapsed.Seconds()
+}
+
 // CreateMultiProcessResult - конструктор для создания результата выполнения CLI команды run_multi
 func CreateMultiProcessResult() MultiProcessResult {
 	return MultiProcessResult{
@@ -84,6 +89,11 @@ func (res *MultiProcessResult) ToString() string {
 // SetElapsedTime - устанавливает прошедшее время внутрь объекта
 func (res *MultiProcessResult) SetElapsedTime(elapsed time.Duration) {
 	res.Elapsed = elapsed
+}
+
+// GetElapsedTime - возвращает прошедшее время
+func (res *MultiProcessResult) GetElapsedTime() float64 {
+	return res.Elapsed.Seconds()
 }
 
 // SetResult - устанавливает Result внутрь объекта

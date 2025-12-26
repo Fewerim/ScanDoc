@@ -2,76 +2,76 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"proWeb/internal/cliUtils"
 	"proWeb/internal/cliUtils/cliWorks"
-	"proWeb/internal/files"
+	"proWeb/internal/exitCodes"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
 // multiFiles - проверяет входные данные, создает подключение к серверу,
 // обрабатывает и сохраняет файлы локально
-func (a *App) multiFiles(cmd *cobra.Command, args []string) (err error) {
+func (a *App) multiFiles(directory string) (err error) {
 	const operation = "cli.multiFiles"
-
-	a.Log.Info(operation, "начало обработки директории файлов")
-
 	start := time.Now()
 
 	defer func() {
 		if r := recover(); r != nil {
 			err = cliUtils.InternalError(fmt.Sprintf("внутренняя ошибка: %v", r))
-			a.Log.Error(operation, "операция завершена с паникой", 3)
+			a.Log.Error(operation, "операция завершена с паникой", exitCodes.InternalError)
 		}
 	}()
 
-	dirPath := args[0]
-	log.Println("система одновременно может обрабатывать не более 5 файлов, если файлов больше, то на это требуется больше времени")
+	color.Blue("система одновременно может обрабатывать не более 5 файлов, если файлов больше, то на это требуется больше времени")
 
-	files.InitStorage(a.Cfg.StoragePath)
-
-	if !files.StorageExists() {
-		a.Log.Info(operation, "локальное хранилище не существует, создание нового")
-		if err = files.CreateStorageJSON(); err != nil {
-			a.Log.Error(operation, fmt.Sprintf("ошибка создания локального хранилища: %v", err), 3)
-			return cliUtils.InternalError("ошибка создания локального хранилища")
-		}
-		a.Log.Info(operation, "локальное хранилище успешно создано")
+	if err := a.CheckStorageJSON(); err != nil {
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.InternalError))
+		return cliUtils.InternalError(err.Error())
 	}
 
-	if err = cliUtils.CheckExistsPath(dirPath); err != nil {
-		a.Log.Error(operation, err.Error(), 1)
+	if err = cliUtils.CheckExistsPath(directory); err != nil {
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError))
 		return err
 	}
 
-	result, err, errs := cliWorks.MultiProcessFiles(dirPath, a.Cfg)
+	a.Log.Info(operation, "начало обработки директории файлов")
+	result, err, errs := cliWorks.MultiProcessFiles(directory, a.Cfg)
 	if err != nil {
-		a.Log.Error(operation, err.Error(), 2)
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.ServerError))
 		return err
 	}
 
 	if errs != nil {
 		for _, fileErr := range errs {
-			a.Log.Error(operation, fileErr.Error(), 2)
+			a.Log.Error(operation, fileErr.Error(), cliUtils.GetExitCode(err, exitCodes.ServerError))
 		}
 	}
 	elapsed := time.Since(start)
 	result.SetElapsedTime(elapsed)
 
 	cliUtils.NewSuccess(&result).PrintSuccess()
-	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", result.Elapsed.Seconds()))
+	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", result.GetElapsedTime()))
 	return nil
 }
 
 func newMultiRunCmd(a *App) *cobra.Command {
-	return &cobra.Command{
-		Use:           "run_multi",
-		Short:         "Команда для обработки всех файлов в директории: run_multi [директория]",
-		Args:          cobra.ExactArgs(1),
-		RunE:          a.multiFiles,
+	var directory string
+
+	cmd := &cobra.Command{
+		Use:     "run_multi",
+		Short:   "Команда для обработки всех файлов в директории: run_multi -d='директория'",
+		Example: "scanner.exe run_multi --dir='./packageToScan'\nотправит пакет файлов на обработку, результаты будут сохранены в локальное хранилище под теми же именами",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return a.multiFiles(directory)
+		},
 		SilenceErrors: true,
 		SilenceUsage:  true,
 	}
+
+	cmd.Flags().StringVarP(&directory, "dir", "d", "", "путь к директории, которую требуется обработать")
+	cmd.MarkFlagRequired("dir")
+
+	return cmd
 }

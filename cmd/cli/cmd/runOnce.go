@@ -4,7 +4,7 @@ import (
 	"fmt"
 	cliUtils "proWeb/internal/cliUtils"
 	"proWeb/internal/cliUtils/cliWorks"
-	"proWeb/internal/files"
+	"proWeb/internal/exitCodes"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -12,64 +12,76 @@ import (
 
 // onceFile - проверяет входные данные, создает подключение к серверу,
 // обрабатывает и сохраняет файл локально
-func (a *App) onceFile(cmd *cobra.Command, args []string) (err error) {
+func (a *App) onceFile(filePath, createdFileName string) (err error) {
 	const operation = "cli.onceFile"
-	a.Log.Info(operation, "начало обработки файла")
-
 	start := time.Now()
 
 	defer func() {
 		if r := recover(); r != nil {
 			err = cliUtils.InternalError(fmt.Sprintf("внутренняя ошибка: %v", r))
-			a.Log.Error(operation, "операция завершена с паникой", 3)
+			a.Log.Error(operation, "операция завершена с паникой", exitCodes.InternalError)
 		}
 	}()
 
-	filePath := args[0]
-	createdFileName := args[1]
+	if filePath == "" {
+		a.Log.Error(operation, "не указан путь к файлу", exitCodes.UserError)
+		return cliUtils.UserError("укажите путь к файлу")
+	}
 
-	files.InitStorage(a.Cfg.StoragePath)
+	if createdFileName == "" {
+		a.Log.Error(operation, "не указано имя нового файла", exitCodes.UserError)
+		return cliUtils.UserError("не указано имя нового файла")
+	}
 
-	if !files.StorageExists() {
-		a.Log.Info(operation, "локальное хранилище не существует, создание нового")
-		if err = files.CreateStorageJSON(); err != nil {
-			a.Log.Error(operation, fmt.Sprintf("ошибка создания локального хранилища: %v", err), 3)
-			return cliUtils.InternalError("ошибка создания локального хранилища")
-		}
-		a.Log.Info(operation, "локальное хранилище успешно создано")
+	if err := a.CheckStorageJSON(); err != nil {
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.InternalError))
+		return cliUtils.InternalError(err.Error())
 	}
 
 	if err = cliUtils.ValidateExtensionFile(filePath); err != nil {
-		a.Log.Error(operation, err.Error(), 1)
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError))
 		return err
 	}
 
 	if err = cliUtils.CheckExistsFile(filePath); err != nil {
-		a.Log.Error(operation, err.Error(), 1)
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError))
 		return err
 	}
 
+	a.Log.Info(operation, "начало обработки файла")
 	result, err := cliWorks.ProcessOnceFile(filePath, createdFileName, a.Cfg)
 	if err != nil {
-		a.Log.Error(operation, err.Error(), 2)
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.ServerError))
 		return err
 	}
 	elapsed := time.Since(start)
 	result.SetElapsedTime(elapsed)
 
 	cliUtils.NewSuccess(&result).PrintSuccess()
-	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", result.Elapsed.Seconds()))
+	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", result.GetElapsedTime()))
 	return nil
 }
 
 // newRunOnceCmd - обертка над runOnce, чтобы можно было использовать логгер и конфиг
 func newRunOnceCmd(a *App) *cobra.Command {
-	return &cobra.Command{
-		Use:           "run_once",
-		Short:         "Команда для обработки одного файла: run_once [путь к файлу] [название будущего файла]",
-		Args:          cobra.ExactArgs(2),
-		RunE:          a.onceFile,
+	var pathToFile, nameNewFile string
+
+	cmd := &cobra.Command{
+		Use:     "run_once",
+		Short:   "Команда для обработки одного файла: run_once -f='путь к файлу' -n='название будущего файла'",
+		Example: "scanner.exe run_once --file='.test/scan.jpg' --name='result'\nотправит на обработку файл 'scan.jpg' и сохранит результат под именем 'result.json'",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return a.onceFile(pathToFile, nameNewFile)
+		},
 		SilenceErrors: true,
 		SilenceUsage:  true,
 	}
+
+	cmd.MarkFlagRequired("file")
+	cmd.MarkFlagRequired("name")
+
+	cmd.Flags().StringVarP(&pathToFile, "file", "f", "", "путь к файлу, который требуется обработать")
+	cmd.Flags().StringVarP(&nameNewFile, "name", "n", "", "имя нового файла")
+
+	return cmd
 }
