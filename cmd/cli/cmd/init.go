@@ -39,9 +39,11 @@ func (a *App) initApp(cmd *cobra.Command, args []string) error {
 
 func newInitAppCmd(a *App) *cobra.Command {
 	return &cobra.Command{
-		Use:   "init",
-		Short: "Устанавливает необходимые зависимости для корректной работы приложения",
-		Args:  cobra.NoArgs,
-		RunE:  a.initApp,
+		Use:           "init",
+		Short:         "Устанавливает необходимые зависимости для корректной работы приложения",
+		Args:          cobra.NoArgs,
+		RunE:          a.initApp,
+		SilenceErrors: true,
+		SilenceUsage:  true,
 	}
 }

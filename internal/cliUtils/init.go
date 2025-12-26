@@ -43,14 +43,17 @@ func InstallRequirements(pathToScript string) error {
 		return InternalError(info)
 	}
 
+	if !checkInternetConnection() {
+		return UserError("не удается подключиться к PyPi. проверьте подключение к интернету")
+	}
+
 	cmd := exec.Command(pipPath, "install", "-r", reqsPath)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		info := fmt.Sprintf("зависимости не установлены: %v", err)
-		return InternalError(info)
+		return InternalError(fmt.Sprint("зависимости не установлены"))
 	}
 	return nil
 }
@@ -74,4 +77,9 @@ func findSystemPython() (string, error) {
 	}
 
 	return "", fmt.Errorf("реальный Python не найден")
+}
+
+func checkInternetConnection() bool {
+	cmd := exec.Command("ping", "-n", "1", "-w", "3000", "pypi.org")
+	return cmd.Run() == nil
 }

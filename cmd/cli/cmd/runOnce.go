@@ -58,7 +58,7 @@ func (a *App) onceFile(cmd *cobra.Command, args []string) (err error) {
 	result.SetElapsedTime(elapsed)
 
 	cliUtils.NewSuccess(&result).PrintSuccess()
-	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", result.Elapsed))
+	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", result.Elapsed.Seconds()))
 	return nil
 }
 

@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	success = 1
+	success = 0
 )
 
 type Message interface {
