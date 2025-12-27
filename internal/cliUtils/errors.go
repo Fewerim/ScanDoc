@@ -61,3 +61,8 @@ func GetExitCode(err error, defaultCode int) int {
 	}
 	return defaultCode
 }
+
+type FileError struct {
+	FileName string
+	Err      error
+}

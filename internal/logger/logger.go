@@ -11,7 +11,7 @@ import (
 // Logger - интерфейс, чтобы протягивать логгер по всему проекту, где он необходим
 type Logger interface {
 	Info(op, message string)
-	Error(op, message string, errorType int)
+	Error(op, message string, errorType int, fileName ...string)
 	Debug(op, message string)
 }
 
@@ -57,8 +57,17 @@ func (s *Log) Info(op, message string) {
 
 // Error - выводит операцию, где произошла ошибка и информацию об ошибке выполнения кода
 // Пример вывода: [ERROR] operation: op | message: message
-func (s *Log) Error(op, message string, errorType int) {
-	s.l.Printf("[ERROR] operation: %s | error type: %d | message: %s\n", op, errorType, message)
+func (s *Log) Error(op, message string, errorType int, fileName ...string) {
+	file := ""
+	if len(fileName) > 0 {
+		file = fileName[0]
+	}
+
+	if file != "" {
+		s.l.Printf("[ERROR] operation: %s | error type: %d | file: '%s' | message: %s\n", op, errorType, file, message)
+	} else {
+		s.l.Printf("[ERROR] operation: %s | error type: %d | message: %s\n", op, errorType, message)
+	}
 }
 
 // Debug - выводит операцию, где происходит debug и информацию для пользователя

@@ -17,6 +17,8 @@ func (a *App) multiFiles(directory string) (err error) {
 	const operation = "cli.multiFiles"
 	start := time.Now()
 
+	a.Log.Info(operation, "Команда начала свое выполнение")
+
 	defer func() {
 		if r := recover(); r != nil {
 			err = cliUtils.InternalError(fmt.Sprintf("внутренняя ошибка: %v", r))
@@ -45,7 +47,7 @@ func (a *App) multiFiles(directory string) (err error) {
 
 	if errs != nil {
 		for _, fileErr := range errs {
-			a.Log.Error(operation, fileErr.Error(), cliUtils.GetExitCode(err, exitCodes.ServerError))
+			a.Log.Error(operation, fileErr.Err.Error(), cliUtils.GetExitCode(err, exitCodes.ServerError), fileErr.FileName)
 		}
 	}
 	elapsed := time.Since(start)

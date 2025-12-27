@@ -15,7 +15,7 @@ const maxParallelOperations = 5
 // MultiProcessFiles - подключение к серверу, обработка файлов в директории, сохранение результатов в локальное хранилище.
 // Обрабатывает сразу все файлы из директории, возвращает результаты выполнения CLI команды, ошибку при подключении сервера или проверки директории,
 // слайс ошибок, возникших при обработке конкретных файлов
-func MultiProcessFiles(directoryPath string, cfg *config.Config) (cliUtils.MultiProcessResult, error, []error) {
+func MultiProcessFiles(directoryPath string, cfg *config.Config) (cliUtils.MultiProcessResult, error, []cliUtils.FileError) {
 	filePaths, errorInfo := cliUtils.GetFilesFromDirectory(directoryPath)
 	if errorInfo != "" {
 		return cliUtils.MultiProcessResult{}, cliUtils.UserError(errorInfo), nil
@@ -38,7 +38,7 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config) (cliUtils.Multi
 	semaphore := make(chan struct{}, maxWorkers)
 
 	results := make(chan cliUtils.Result, len(filePaths))
-	errorsFileProcessing := make(chan string, len(filePaths))
+	errorsFileProcessing := make(chan cliUtils.FileError, len(filePaths))
 
 	var wg sync.WaitGroup
 
@@ -57,22 +57,22 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config) (cliUtils.Multi
 
 			err := cliUtils.ValidateExtensionFile(filePath)
 			if err != nil {
-				info := fmt.Sprintf("Расширение файла %s не поддерживается: %v", fileNameWithoutExt, err)
-				errorsFileProcessing <- info
+				info := fmt.Sprintf("Расширение файла не поддерживается: %v", err)
+				errorsFileProcessing <- cliUtils.FileError{fileName, cliUtils.UserError(info)}
 				return
 			}
 
 			data, err := cliUtils.SendFileToServer(filePath, cfg.Port)
 			if err != nil {
-				info := fmt.Sprintf("ошибка при отправке файла %s: %v", fileNameWithoutExt, err)
-				errorsFileProcessing <- info
+				info := fmt.Sprintf("ошибка при отправке файла: %v", err)
+				errorsFileProcessing <- cliUtils.FileError{fileName, cliUtils.ServerError(info)}
 				return
 			}
 
 			errNew := files.SaveFileToStorage(fileNameWithoutExt, data)
 			if errNew != nil {
-				info := fmt.Sprintf("ошибка при попытке сохранить файл %s: %v", fileNameWithoutExt, errNew)
-				errorsFileProcessing <- info
+				info := fmt.Sprintf("ошибка при попытке сохранить файл: %v", errNew)
+				errorsFileProcessing <- cliUtils.FileError{fileName, cliUtils.ServerError(info)}
 				return
 			}
 
@@ -86,14 +86,14 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config) (cliUtils.Multi
 	close(errorsFileProcessing)
 
 	multiProcessResult := cliUtils.CreateMultiProcessResult()
-	var allErrorsFileProcessing []error
+	var allErrorsFileProcessing []cliUtils.FileError
 
 	for result := range results {
 		multiProcessResult.SetResult(result)
 	}
 
 	for errs := range errorsFileProcessing {
-		allErrorsFileProcessing = append(allErrorsFileProcessing, cliUtils.ServerError(errs))
+		allErrorsFileProcessing = append(allErrorsFileProcessing, errs)
 	}
 
 	return multiProcessResult, nil, allErrorsFileProcessing

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
 	cliUtils "proWeb/internal/cliUtils"
 	"proWeb/internal/cliUtils/cliWorks"
 	"proWeb/internal/exitCodes"
@@ -14,6 +15,9 @@ import (
 // обрабатывает и сохраняет файл локально
 func (a *App) onceFile(filePath, createdFileName string) (err error) {
 	const operation = "cli.onceFile"
+
+	a.Log.Info(operation, "Команда начала свое выполнение")
+
 	start := time.Now()
 
 	defer func() {
@@ -38,20 +42,21 @@ func (a *App) onceFile(filePath, createdFileName string) (err error) {
 		return cliUtils.InternalError(err.Error())
 	}
 
-	if err = cliUtils.ValidateExtensionFile(filePath); err != nil {
-		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError))
-		return err
-	}
-
 	if err = cliUtils.CheckExistsFile(filePath); err != nil {
 		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError))
 		return err
 	}
 
 	a.Log.Info(operation, "начало обработки файла")
+
+	if err = cliUtils.ValidateExtensionFile(filePath); err != nil {
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError), filepath.Base(filePath))
+		return err
+	}
+
 	result, err := cliWorks.ProcessOnceFile(filePath, createdFileName, a.Cfg)
 	if err != nil {
-		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.ServerError))
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.ServerError), filepath.Base(filePath))
 		return err
 	}
 	elapsed := time.Since(start)
