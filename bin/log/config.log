@@ -1,0 +1,1 @@
+2025/12/26 18:32:25 [ERROR] operation: cli.main.handleError | error type: 3 | message: непредвиденная ошибка: серверный скрипт не найден: ./internal/service/scanPy

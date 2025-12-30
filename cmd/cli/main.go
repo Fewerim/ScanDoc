@@ -40,7 +40,7 @@ func handleError(err error, log logger.Logger) {
 	}
 
 	if log != nil {
-		log.Error(operation, fmt.Sprintf("непредвиденная ошибка: %v", err), exitCodes.InternalError)
+		log.Error(operation, fmt.Sprintf("непредвиденная ошибка: %v", err), cliUtils.GetExitCode(err, exitCodes.InternalError))
 	}
 
 	msg := fmt.Sprintf("непредвиденная ошибка: %v", err)

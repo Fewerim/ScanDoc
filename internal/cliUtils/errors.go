@@ -17,6 +17,11 @@ type AppError struct {
 	userMessage string
 }
 
+type FileError struct {
+	FileName string
+	Err      error
+}
+
 // newAppError - конструктор для создания новой ошибки приложения
 func newAppError(exitCode int, message string) *AppError {
 	return &AppError{exitCode, message}
@@ -39,17 +44,17 @@ func (err *AppError) ToString() string {
 	return color.RedString(result)
 }
 
-// UserError - возвращает пользовательскую ошибку приложения
+// UserError - возвращает пользовательскую ошибку приложения (1)
 func UserError(message string) *AppError {
 	return newAppError(exitCodes.UserError, message)
 }
 
-// ServerError - возвращает серверную ошибку приложения
+// ServerError - возвращает серверную ошибку приложения (2)
 func ServerError(message string) *AppError {
 	return newAppError(exitCodes.ServerError, message)
 }
 
-// InternalError - возвращает внутреннюю ошибку приложения
+// InternalError - возвращает внутреннюю ошибку приложения (3)
 func InternalError(message string) *AppError {
 	return newAppError(exitCodes.InternalError, message)
 }
@@ -60,9 +65,4 @@ func GetExitCode(err error, defaultCode int) int {
 		return exitCoder.ExitCode()
 	}
 	return defaultCode
-}
-
-type FileError struct {
-	FileName string
-	Err      error
 }

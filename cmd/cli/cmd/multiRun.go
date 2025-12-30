@@ -5,6 +5,7 @@ import (
 	"proWeb/internal/cliUtils"
 	"proWeb/internal/cliUtils/cliWorks"
 	"proWeb/internal/exitCodes"
+	"proWeb/internal/tesseract"
 	"time"
 
 	"github.com/fatih/color"
@@ -15,6 +16,11 @@ import (
 // обрабатывает и сохраняет файлы локально
 func (a *App) multiFiles(directory string) (err error) {
 	const operation = "cli.multiFiles"
+	if err := tesseract.CheckTesseract(); err != nil {
+		a.Log.Error(operation, "tesseract не добавлен в PATH", exitCodes.UserError)
+		return cliUtils.UserError("tesseract не добавлен в PATH")
+	}
+
 	start := time.Now()
 
 	a.Log.Info(operation, "Команда начала свое выполнение")

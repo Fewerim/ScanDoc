@@ -3,7 +3,9 @@ package files
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 )
@@ -97,4 +99,33 @@ func GetListFilesInDirectory(directory string) ([]string, error) {
 		}
 	}
 	return fileNames, nil
+}
+
+// DownloadFile - скачивает файл с url и создает в target пути
+func DownloadFile(url, target string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	out, err := os.Create(target)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	return err
+}
+
+// ProjectRoot - возвращает путь к корню проекта, если не удалось получить путь возвращает ошибку
+func ProjectRoot() (string, error) {
+	exePath, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+
+	binDir := filepath.Dir(exePath)
+	return filepath.Dir(binDir), nil
 }

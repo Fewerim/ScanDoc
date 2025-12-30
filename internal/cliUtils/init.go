@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"proWeb/internal/tesseract"
 )
 
 // CreateVenv - создает виртуальное окружения для python
@@ -57,6 +58,28 @@ func InstallRequirements(pathToScript string) error {
 	if err := cmd.Run(); err != nil {
 		return InternalError(fmt.Sprint("зависимости не установлены"))
 	}
+	return nil
+}
+
+// InstallTesseract - устанавливает Tesseract на локальную машину пользователя
+func InstallTesseract() error {
+	if _, err := exec.LookPath("tesseract"); err == nil {
+		return nil
+	}
+
+	tempDir := filepath.Join(os.TempDir(), "tesseract-installer")
+	if err := os.MkdirAll(tempDir, 0755); err != nil {
+		return InternalError(fmt.Sprintf("не удалось создать каталог: %v", err))
+	}
+
+	if !checkInternetConnection() {
+		return UserError("проверьте подключение к интернету")
+	}
+
+	if err := tesseract.Install(tempDir); err != nil {
+		return InternalError(err.Error())
+	}
+
 	return nil
 }
 

@@ -46,6 +46,7 @@ func (a *App) initCommands() {
 		return nil
 	}
 	rootCmd.SetHelpCommand(newHelperCmd(a))
+	rootCmd.AddCommand(newInstallTesseract(a))
 	rootCmd.AddCommand(newInitAppCmd(a))
 	rootCmd.AddCommand(newRunOnceCmd(a))
 	rootCmd.AddCommand(newMultiRunCmd(a))

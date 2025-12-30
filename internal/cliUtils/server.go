@@ -8,6 +8,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -67,14 +68,14 @@ func KillServer(cmd *exec.Cmd) {
 // SendFileToServer - отправляет файл на сервер и возвращает результат выполнения сервиса (файл)
 func SendFileToServer(filePath string, port int) (interface{}, error) {
 	var data interface{}
-	fieldNameOfRequest := setupFieldName(filePath)
+	//fieldNameOfRequest := setupFieldName(filePath)
+	//
+	//body, contentType, err := buildMultipartBody(filePath, fieldNameOfRequest)
+	//if err != nil {
+	//	return data, InternalError(err.Error())
+	//}
 
-	body, contentType, err := buildMultipartBody(filePath, fieldNameOfRequest)
-	if err != nil {
-		return data, InternalError(err.Error())
-	}
-
-	resp, err := scanRequest(port, body, contentType)
+	resp, err := scanRequest(port, filePath)
 	if err != nil {
 		return data, InternalError(err.Error())
 	}
@@ -112,13 +113,13 @@ func buildMultipartBody(filePath, fieldName string) (body *bytes.Buffer, content
 }
 
 // scanRequest - отправка HTTP запроса на энд-поинт scan
-func scanRequest(port int, body io.Reader, contentType string) (*http.Response, error) {
-	url := fmt.Sprintf("http://localhost:%v/scan", port)
-	req, err := http.NewRequest(http.MethodPost, url, body)
+func scanRequest(port int, filePath string) (*http.Response, error) {
+	url := fmt.Sprintf("http://localhost:%v/scan?url=%s", port, url.QueryEscape(filePath))
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка формирования запроса: %v", err)
 	}
-	req.Header.Set("Content-Type", contentType)
+	//req.Header.Set("Content-Type", contentType)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -144,7 +145,7 @@ func healthCheck(ctx context.Context, port int) error {
 			return ctx.Err()
 		default:
 		}
-		url := fmt.Sprintf("http://localhost:%d/health", port)
+		url := fmt.Sprintf("http://localhost:%v/health", port)
 
 		resp, err := client.Get(url)
 		if err == nil && resp.StatusCode == http.StatusOK {

@@ -3,6 +3,7 @@ package cmd
 import (
 	"proWeb/internal/cliUtils"
 	"proWeb/internal/exitCodes"
+	"proWeb/internal/tesseract"
 
 	"github.com/spf13/cobra"
 )
@@ -18,6 +19,12 @@ func (a *App) initApp(cmd *cobra.Command, args []string) error {
 		return cliUtils.InternalError(err.Error())
 	}
 	a.Log.Info(operation, "локальное хранилище успешно установлено")
+
+	a.Log.Info(operation, "проверка наличия tesseract в PATH")
+	if err := tesseract.CheckTesseract(); err != nil {
+		a.Log.Error(operation, "tesseract не добавлен в PATH", exitCodes.UserError)
+		return cliUtils.UserError("tesseract не добавлен в PATH")
+	}
 
 	a.Log.Info(operation, "начало установки зависимостей")
 	if err := cliUtils.InstallRequirements(a.Cfg.PythonScript); err != nil {
@@ -39,5 +46,6 @@ func newInitAppCmd(a *App) *cobra.Command {
 		Args:          cobra.NoArgs,
 		RunE:          a.initApp,
 		SilenceErrors: true,
+		SilenceUsage:  true,
 	}
 }
