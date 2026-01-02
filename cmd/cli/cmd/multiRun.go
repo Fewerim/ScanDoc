@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"proWeb/internal/cliUtils"
 	"proWeb/internal/cliUtils/cliWorks"
@@ -59,7 +60,17 @@ func (a *App) multiFiles(directory string) (err error) {
 	elapsed := time.Since(start)
 	result.SetElapsedTime(elapsed)
 
+	if len(result.Results) == 0 {
+		err = errors.New("директория пуста или нет подходящих файлов для обработки")
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.InternalError))
+		return err
+	}
+
 	cliUtils.NewSuccess(&result).PrintSuccess()
+	if errs != nil {
+		cliUtils.FilesNotProcessed(errs)
+	}
+
 	a.Log.Info(operation, fmt.Sprintf("операция завершена, время выполнения: %.3fs", result.GetElapsedTime()))
 	return nil
 }

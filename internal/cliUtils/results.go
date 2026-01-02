@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 // Result - результат выполнения CLI команды (имя созданного файла, время создания)
@@ -111,4 +113,17 @@ func CreateInitResult(textMsg string) InitResult {
 // ToString - возвращает строку для вывода результата выполнения CLI команды init
 func (res *InitResult) ToString() string {
 	return res.Message
+}
+
+func (errs FileErrors) ToString() string {
+	fileNames := make([]string, 0)
+	for _, file := range errs {
+		fileNames = append(fileNames, file.FileName)
+	}
+	res := "Файлы, которые не были обработаны: " + strings.Join(fileNames, ", ")
+	return color.RedString(res)
+}
+
+func (errs FileErrors) PrintNotSuccess() {
+	fmt.Println(errs.ToString())
 }

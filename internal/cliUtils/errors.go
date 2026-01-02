@@ -22,6 +22,8 @@ type FileError struct {
 	Err      error
 }
 
+type FileErrors []FileError
+
 // newAppError - конструктор для создания новой ошибки приложения
 func newAppError(exitCode int, message string) *AppError {
 	return &AppError{exitCode, message}
@@ -65,4 +67,10 @@ func GetExitCode(err error, defaultCode int) int {
 		return exitCoder.ExitCode()
 	}
 	return defaultCode
+}
+
+func FilesNotProcessed(filesErrs []FileError) {
+	filesNotSuccess := FileErrors{}
+	filesNotSuccess = filesErrs
+	filesNotSuccess.PrintNotSuccess()
 }
