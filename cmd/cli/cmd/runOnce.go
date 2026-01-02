@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	cliUtils "proWeb/internal/cliUtils"
@@ -19,6 +20,15 @@ func (a *App) onceFile(filePath, createdFileName string) (err error) {
 	if err := tesseract.CheckTesseract(); err != nil {
 		a.Log.Error(operation, "tesseract не добавлен в PATH", exitCodes.UserError)
 		return cliUtils.UserError("tesseract не добавлен в PATH")
+	}
+
+	ch, err := cliUtils.CheckIsAutorunCorrect()
+	if err != nil {
+		return err
+	}
+	if ch == true {
+		cliUtils.PrintInstruction()
+		return errors.New("не установлена UTF-8 кодировка")
 	}
 
 	a.Log.Info(operation, "Команда начала свое выполнение")

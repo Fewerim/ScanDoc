@@ -22,6 +22,15 @@ func (a *App) multiFiles(directory string) (err error) {
 		return cliUtils.UserError("tesseract не добавлен в PATH")
 	}
 
+	ch, err := cliUtils.CheckIsAutorunCorrect()
+	if err != nil {
+		return err
+	}
+	if ch == true {
+		cliUtils.PrintInstruction()
+		return errors.New("не установлена UTF-8 кодировка")
+	}
+
 	start := time.Now()
 
 	a.Log.Info(operation, "Команда начала свое выполнение")
@@ -61,7 +70,7 @@ func (a *App) multiFiles(directory string) (err error) {
 	result.SetElapsedTime(elapsed)
 
 	if len(result.Results) == 0 {
-		err = errors.New("директория пуста или нет подходящих файлов для обработки")
+		err = errors.New("в директории нет подходящих файлов для обработки")
 		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.InternalError))
 		return err
 	}
