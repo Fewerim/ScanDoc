@@ -2,6 +2,7 @@ package parser
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/iancoleman/orderedmap"
 )
@@ -29,6 +30,11 @@ func ParseTable(jsonData []byte) (*Table, error) {
 	if err := json.Unmarshal(jsonData, &table); err != nil {
 		return nil, err
 	}
+
+	for i := range table.Rows {
+		table.Rows[i].Text = cleanText(table.Rows[i].Text)
+	}
+
 	return &table, nil
 }
 
@@ -79,4 +85,8 @@ func ParseRows(columns [][]Cell, fieldsNames []string) Items {
 		lineNumber++
 	}
 	return items
+}
+
+func cleanText(text string) string {
+	return strings.ReplaceAll(text, "\n", " ")
 }

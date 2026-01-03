@@ -53,7 +53,7 @@ func CreateOnceProcessResult(fileName, docType, location string) OnceProcessResu
 func (res *OnceProcessResult) ToString() string {
 	date := res.Result.CreatedAt.Format("2006/01/02 | 15:04:05")
 
-	s := fmt.Sprintf("В хранилище:\t%s\nСоздан файл:\t%s\nТип Документа:\t%s\nВремя создания:\t%s\nВремя выполнения:\t%.3fs",
+	s := fmt.Sprintf("В хранилище:\t%s\nСоздан файл:\t%s\nТип документа:\t%s\nВремя создания:\t%s\nВремя выполнения:\t%.3fs",
 		res.Result.Location, res.Result.FileName, res.Result.DocType, date, res.Elapsed.Seconds())
 	return s
 }
