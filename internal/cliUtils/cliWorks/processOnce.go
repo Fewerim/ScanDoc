@@ -29,7 +29,7 @@ func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (cliU
 
 	defer cliUtils.KillServer(cmd)
 
-	data, err := cliUtils.SendFileToServer(filePath, cfg.Port)
+	data, docType, err := cliUtils.SendFileToServer(filePath, cfg.Port)
 	if err != nil {
 		info := fmt.Sprintf("ошибка при отправке файла: %v", err)
 		return cliUtils.OnceProcessResult{}, cliUtils.ServerError(info)
@@ -41,6 +41,6 @@ func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (cliU
 		return cliUtils.OnceProcessResult{}, cliUtils.ServerError(info)
 	}
 
-	onceProcessResult := cliUtils.CreateOnceProcessResult(createdNameFile, cfg.StoragePath)
+	onceProcessResult := cliUtils.CreateOnceProcessResult(createdNameFile, docType, cfg.StoragePath)
 	return onceProcessResult, nil
 }

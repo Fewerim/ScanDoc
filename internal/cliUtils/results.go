@@ -2,6 +2,7 @@ package cliUtils
 
 import (
 	"fmt"
+	"proWeb/internal/typesJSON/typesUtils"
 	"strings"
 	"time"
 
@@ -13,6 +14,7 @@ type Result struct {
 	FileName  string
 	Location  string
 	CreatedAt time.Time
+	DocType   string
 }
 
 type OnceProcessResult struct {
@@ -30,18 +32,19 @@ type InitResult struct {
 }
 
 // CreateResult - конструктор для создания результата выполнения CLI команды
-func CreateResult(fileName, location string) Result {
+func CreateResult(fileName, docType, location string) Result {
 	return Result{
 		FileName:  fileName,
 		Location:  location,
 		CreatedAt: time.Now(),
+		DocType:   typesUtils.TypesDoc[docType],
 	}
 }
 
 // CreateOnceProcessResult - конструктор для создания результата выполнения CLI команды run_once
-func CreateOnceProcessResult(fileName, location string) OnceProcessResult {
+func CreateOnceProcessResult(fileName, docType, location string) OnceProcessResult {
 	return OnceProcessResult{
-		Result:  CreateResult(fileName, location),
+		Result:  CreateResult(fileName, docType, location),
 		Elapsed: 0,
 	}
 }
@@ -50,8 +53,8 @@ func CreateOnceProcessResult(fileName, location string) OnceProcessResult {
 func (res *OnceProcessResult) ToString() string {
 	date := res.Result.CreatedAt.Format("2006/01/02 | 15:04:05")
 
-	s := fmt.Sprintf("В хранилище:\t%s\nСоздан файл:\t%s\nВремя создания:\t%s\nВремя выполнения:\t%.3fs",
-		res.Result.Location, res.Result.FileName, date, res.Elapsed.Seconds())
+	s := fmt.Sprintf("В хранилище:\t%s\nСоздан файл:\t%s\nТип Документа:\t%s\nВремя создания:\t%s\nВремя выполнения:\t%.3fs",
+		res.Result.Location, res.Result.FileName, res.Result.DocType, date, res.Elapsed.Seconds())
 	return s
 }
 

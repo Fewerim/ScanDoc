@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-func getDoctype(resp *http.Response) (string, error) {
-	doctype := resp.Header.Get("document_type")
+func GetDoctype(resp *http.Response) (string, error) {
+	doctype := resp.Header.Get("Document-type")
 	if doctype == "" {
 		return "", errors.New("тип документа не найден в заголовках ответа")
 	}

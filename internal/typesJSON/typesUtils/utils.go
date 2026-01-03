@@ -11,9 +11,9 @@ type DocFactory func() interface{}
 
 // docFactories - хранилище допустимых типов документов
 var docFactories = map[string]DocFactory{
-	"UPD":     func() interface{} { return &typesJSON.Upd{} },
-	"INVOICE": func() interface{} { return &typesJSON.TheInvoice{} },
-	"TORG":    func() interface{} { return &typesJSON.Torg12{} },
+	"upd":     func() interface{} { return &typesJSON.Upd{} },
+	"invoice": func() interface{} { return &typesJSON.TheInvoice{} },
+	"torg":    func() interface{} { return &typesJSON.Torg12{} },
 }
 
 // normalize - нормализует строку переводя ее в верхний регистр и убирая лишние пробелы

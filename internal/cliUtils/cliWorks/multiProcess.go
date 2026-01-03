@@ -62,7 +62,7 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config) (cliUtils.Multi
 				return
 			}
 
-			data, err := cliUtils.SendFileToServer(filePath, cfg.Port)
+			data, docType, err := cliUtils.SendFileToServer(filePath, cfg.Port)
 			if err != nil {
 				info := fmt.Sprintf("ошибка при отправке файла: %v", err)
 				errorsFileProcessing <- cliUtils.FileError{fileName, cliUtils.ServerError(info)}
@@ -76,7 +76,7 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config) (cliUtils.Multi
 				return
 			}
 
-			result := cliUtils.CreateResult(fileNameWithoutExt, cfg.StoragePath)
+			result := cliUtils.CreateResult(fileNameWithoutExt, docType, cfg.StoragePath)
 			results <- result
 		}(filePath)
 	}

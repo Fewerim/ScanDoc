@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"proWeb/internal/typesJSON/typesUtils"
 	"time"
 )
 
@@ -66,7 +67,7 @@ func KillServer(cmd *exec.Cmd) {
 }
 
 // SendFileToServer - отправляет файл на сервер и возвращает результат выполнения сервиса (файл)
-func SendFileToServer(filePath string, port int) (interface{}, error) {
+func SendFileToServer(filePath string, port int) (interface{}, string, error) {
 	var data interface{}
 	//fieldNameOfRequest := setupFieldName(filePath)
 	//
@@ -77,13 +78,22 @@ func SendFileToServer(filePath string, port int) (interface{}, error) {
 
 	resp, err := scanRequest(port, filePath)
 	if err != nil {
-		return data, InternalError(err.Error())
+		return data, "", InternalError(err.Error())
 	}
 	defer resp.Body.Close()
 
+	t, err := typesUtils.GetDoctype(resp)
+	if err != nil {
+		return data, "", InternalError(err.Error())
+	}
+
 	//TODO: получить из заголовков ответа тип документа и использовать подходящую структуру для сериализации
 
-	return decodeDataResponse(resp.Body)
+	decodeData, err := decodeDataResponse(resp.Body)
+	if err != nil {
+		return data, "", InternalError(err.Error())
+	}
+	return decodeData, t, nil
 }
 
 // buildMultipartBody - создание тела для запроса
