@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -12,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"proWeb/internal/parser"
 	"proWeb/internal/typesJSON/typesUtils"
 	"time"
 )
@@ -93,7 +95,16 @@ func SendFileToServer(filePath string, port int) (interface{}, string, error) {
 	if err != nil {
 		return data, "", InternalError(err.Error())
 	}
-	return decodeData, t, nil
+
+	decodeDataWithTable, err := parser.UpdateTableInData(decodeData)
+	if err != nil {
+		if !errors.Is(err, parser.ErrNotFoundTable) {
+			return data, "", InternalError(err.Error())
+		}
+		decodeDataWithTable = decodeData
+	}
+
+	return decodeDataWithTable, t, nil
 }
 
 // buildMultipartBody - создание тела для запроса

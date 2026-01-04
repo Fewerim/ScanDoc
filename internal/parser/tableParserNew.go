@@ -4,6 +4,7 @@ import (
 	"github.com/iancoleman/orderedmap"
 )
 
+// ParseNewTable - парсит поле table в читаемый вид
 func ParseNewTable(jsonData []byte) (*Items, error) {
 	table, err := ParseTable(jsonData)
 	if err != nil {
@@ -14,12 +15,32 @@ func ParseNewTable(jsonData []byte) (*Items, error) {
 		return &Items{}, nil
 	}
 
-	items := GetAllTitles(table)
+	items := GetAllLines(table)
 
 	return items, nil
 }
 
-func GetAllTitles(table *Table) *Items {
+func GetAllLines(table *Table) *Items {
+	titlesNames, fin := GetAllTitlesNames(table)
+
+	lineNumber := 1
+	var items Items
+	for s := fin; s < len(table.Rows); s = s + len(titlesNames) {
+		var item Item
+		item.LineNumber = lineNumber
+		item.Fields = orderedmap.New()
+		numTit := 0
+		for v := s; v < s+len(titlesNames); v++ {
+			item.Fields.Set(titlesNames[numTit], table.Rows[v].Text)
+			numTit++
+		}
+		items.Items = append(items.Items, item)
+		lineNumber++
+	}
+	return &items
+}
+
+func GetAllTitlesNames(table *Table) ([]string, int) {
 	var titles []Cell
 	var doubleTitles []Cell
 	var titlesNames []string
@@ -70,20 +91,5 @@ func GetAllTitles(table *Table) *Items {
 		}
 		titlesNames = append(titlesNames, currentTitle)
 	}
-
-	lineNumber := 1
-	var items Items
-	for s := fin; s < len(table.Rows); s = s + len(titlesNames) {
-		var item Item
-		item.LineNumber = lineNumber
-		item.Fields = orderedmap.New()
-		numTit := 0
-		for v := s; v < s+len(titlesNames); v++ {
-			item.Fields.Set(titlesNames[numTit], table.Rows[v].Text)
-			numTit++
-		}
-		items.Items = append(items.Items, item)
-		lineNumber++
-	}
-	return &items
+	return titlesNames, fin
 }
