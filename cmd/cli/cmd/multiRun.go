@@ -22,13 +22,9 @@ func (a *App) multiFiles(directory string) (err error) {
 		return cliUtils.UserError("tesseract не добавлен в PATH")
 	}
 
-	ch, err := cliUtils.CheckIsAutorunCorrect()
-	if err != nil {
+	if err := cliUtils.CheckIsAutorunCorrect(); err != nil {
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError))
 		return err
-	}
-	if ch == true {
-		cliUtils.PrintInstruction()
-		return errors.New("не установлена UTF-8 кодировка")
 	}
 
 	start := time.Now()

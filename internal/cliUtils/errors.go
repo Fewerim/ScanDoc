@@ -3,10 +3,8 @@ package cliUtils
 import (
 	"fmt"
 	"proWeb/internal/exitCodes"
-	"strings"
 
 	"github.com/fatih/color"
-	"golang.org/x/sys/windows/registry"
 )
 
 type ExitCoder interface {
@@ -75,39 +73,4 @@ func FilesNotProcessed(filesErrs []FileError) {
 	filesNotSuccess := FileErrors{}
 	filesNotSuccess = filesErrs
 	filesNotSuccess.PrintNotSuccess()
-}
-
-func CheckIsAutorunCorrect() (bool, error) {
-	key, err := registry.OpenKey(registry.LOCAL_MACHINE, `Software\Microsoft\Command Processor`, registry.QUERY_VALUE|registry.READ)
-	if err != nil {
-		return false, err
-	}
-	defer key.Close()
-
-	autorun, _, err := key.GetStringValue("Autorun")
-	if err != nil {
-		fmt.Println("Autorun не установлен:", err)
-		return true, err
-	}
-
-	if autorun != "@chcp 65001>nul" && autorun != "chcp 65001" {
-		return true, nil
-	}
-
-	return false, nil
-}
-
-func PrintInstruction() {
-	var sb strings.Builder
-	sb.WriteString("Для корректной работы приложения установите UTF-8 кодировку в консоли\n")
-	sb.WriteString("Вот как это можно сделать:\n")
-	sb.WriteString("нажмите Win + R\n")
-	sb.WriteString("Введите regedit\n")
-	sb.WriteString("Нажмите Ок\n")
-	sb.WriteString("В появившемся окне, найдите строчку Autorun, кликнете по ней два раза\n")
-	sb.WriteString("Поменяйте значение на @chcp 65001>nul\n")
-	sb.WriteString("Нажмите Ок и запустите команду заново\n")
-
-	instructions := sb.String()
-	color.Blue(instructions)
 }
