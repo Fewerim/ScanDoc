@@ -26,6 +26,12 @@ func (a *App) initApp(cmd *cobra.Command, args []string) error {
 		return cliUtils.UserError("tesseract не добавлен в PATH")
 	}
 
+	a.Log.Info(operation, "проверка наличия кодировки UTF-8")
+	if err := cliUtils.CheckIsAutorunCorrect(); err != nil {
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError))
+		return err
+	}
+
 	a.Log.Info(operation, "начало установки зависимостей")
 	if err := cliUtils.InstallRequirements(a.Cfg.PythonScript); err != nil {
 		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.InternalError))
