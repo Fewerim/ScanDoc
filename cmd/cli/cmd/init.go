@@ -5,6 +5,7 @@ import (
 	"proWeb/internal/exitCodes"
 	"proWeb/internal/tesseract"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -13,6 +14,7 @@ import (
 func (a *App) initApp(cmd *cobra.Command, args []string) error {
 	const operation = "cli.initApp"
 
+	color.Blue("Команда init начала свое выполнение, проверка зависимостей и инициализация окружения")
 	a.Log.Info(operation, "проверка и создание локального хранилища")
 	if err := a.CheckStorageJSON(); err != nil {
 		a.Log.Error(operation, err.Error(), exitCodes.InternalError)
@@ -33,6 +35,7 @@ func (a *App) initApp(cmd *cobra.Command, args []string) error {
 	}
 
 	a.Log.Info(operation, "начало установки зависимостей")
+	color.Blue("Начало установки зависимостей")
 	if err := cliUtils.InstallRequirements(a.Cfg.PythonScript); err != nil {
 		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.InternalError))
 		return err

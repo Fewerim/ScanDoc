@@ -17,6 +17,9 @@ import (
 // обрабатывает и сохраняет файлы локально
 func (a *App) multiFiles(directory string) (err error) {
 	const operation = "cli.multiFiles"
+
+	color.Blue("Команда run_multi начала свое выполнение, валидация входных данных и проверка предварительных условий")
+
 	if err := tesseract.CheckTesseract(); err != nil {
 		a.Log.Error(operation, "tesseract не добавлен в PATH", exitCodes.UserError)
 		return cliUtils.UserError("tesseract не добавлен в PATH")
@@ -38,8 +41,6 @@ func (a *App) multiFiles(directory string) (err error) {
 		}
 	}()
 
-	color.Blue("система одновременно может обрабатывать не более 5 файлов, если файлов больше, то на это требуется больше времени")
-
 	if err := a.CheckStorageJSON(); err != nil {
 		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.InternalError))
 		return cliUtils.InternalError(err.Error())
@@ -51,6 +52,8 @@ func (a *App) multiFiles(directory string) (err error) {
 	}
 
 	a.Log.Info(operation, "начало обработки директории файлов")
+	color.Blue("Начало обработки директории файлов")
+
 	result, err, errs := cliWorks.MultiProcessFiles(directory, a.Cfg)
 	if err != nil {
 		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.ServerError))

@@ -9,6 +9,7 @@ import (
 	"proWeb/internal/tesseract"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -16,6 +17,9 @@ import (
 // обрабатывает и сохраняет файл локально
 func (a *App) onceFile(filePath, createdFileName string) (err error) {
 	const operation = "cli.onceFile"
+
+	color.Blue("Команда run_once начала свое выполнение, валидация входных данных и проверка предварительных условий")
+
 	if err := tesseract.CheckTesseract(); err != nil {
 		a.Log.Error(operation, "tesseract не добавлен в PATH", exitCodes.UserError)
 		return cliUtils.UserError("tesseract не добавлен в PATH")
@@ -63,6 +67,7 @@ func (a *App) onceFile(filePath, createdFileName string) (err error) {
 	}
 
 	a.Log.Info(operation, "начало обработки файла")
+	color.Blue("Начало обработки файла")
 
 	result, err := cliWorks.ProcessOnceFile(filePath, createdFileName, a.Cfg)
 	if err != nil {

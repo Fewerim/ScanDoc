@@ -8,6 +8,8 @@ import (
 	"proWeb/internal/files"
 	"strings"
 	"sync"
+
+	"github.com/fatih/color"
 )
 
 const maxParallelOperations = 5
@@ -33,6 +35,10 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config) (cliUtils.Multi
 	}
 
 	defer cliUtils.KillServer(cmd)
+
+	if len(filePaths) > 5 {
+		color.Blue("Система одновременно может обрабатывать не более 5 файлов, если файлов больше, то на это требуется больше времени")
+	}
 
 	maxWorkers := maxParallelOperations
 	semaphore := make(chan struct{}, maxWorkers)
