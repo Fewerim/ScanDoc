@@ -15,7 +15,7 @@ const (
 	defaultPyExecutable  = ".venv/Scripts/python.exe"
 	defaultPyScript      = "./internal/service/scanPy"
 	defaultPathToStorage = "storageJSONs"
-	defaultPathToLog     = "log/config.log"
+	defaultPathToLog     = "log/info.log"
 )
 
 type Config struct {

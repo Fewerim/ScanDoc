@@ -7,7 +7,7 @@ import (
 var (
 	rootCmd = &cobra.Command{
 		Use:   "scanner.exe",
-		Short: "ScannerDoc - CLI для распознавания бухгалтерских документов",
+		Short: "ScanDoc - CLI для распознавания бухгалтерских документов",
 	}
 
 	configFlag string

@@ -52,17 +52,17 @@ func (a *App) onceFile(filePath, createdFileName string) (err error) {
 		return cliUtils.InternalError(err.Error())
 	}
 
+	if err = cliUtils.ValidateExtensionFile(filePath); err != nil {
+		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError), filepath.Base(filePath))
+		return err
+	}
+
 	if err = cliUtils.CheckExistsFile(filePath); err != nil {
 		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError))
 		return err
 	}
 
 	a.Log.Info(operation, "начало обработки файла")
-
-	if err = cliUtils.ValidateExtensionFile(filePath); err != nil {
-		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError), filepath.Base(filePath))
-		return err
-	}
 
 	result, err := cliWorks.ProcessOnceFile(filePath, createdFileName, a.Cfg)
 	if err != nil {
