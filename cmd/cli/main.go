@@ -11,22 +11,17 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/spf13/cobra"
 )
 
 func main() {
-	const op = "cli.main"
-	defer catchPanic()
 
-	app := cmd.NewApp()
-
-	if err := app.Execute(); err != nil {
-		handleError(err, app.Log)
+	if len(os.Args) > 1 && os.Args[1] == "config_set" {
+		runConfigSetOnly()
 		return
 	}
 
-	if app.Log != nil {
-		app.Log.Info(op, "приложение успешно завершено")
-	}
+	runStandartApp()
 }
 
 // handleError - ловит ошибки и выводит статус выхода
@@ -59,5 +54,35 @@ func catchPanic() {
 			color.Red("программа завершилась с паникой: ", r)
 		}
 		os.Exit(3)
+	}
+}
+
+func runStandartApp() {
+	const op = "cli.main"
+	defer catchPanic()
+
+	app := cmd.NewApp()
+
+	if err := app.Execute(); err != nil {
+		handleError(err, app.Log)
+		return
+	}
+
+	if app.Log != nil {
+		app.Log.Info(op, "приложение успешно завершено")
+	}
+}
+
+func runConfigSetOnly() {
+	rootCmd := &cobra.Command{
+		Use:   "scanner.exe",
+		Short: "ScanDoc - CLI для распознавания документов",
+	}
+
+	rootCmd.AddCommand(cmd.NewConfigSetCmd())
+
+	if err := rootCmd.Execute(); err != nil {
+		color.Red("Ошибка: %v", err)
+		os.Exit(1)
 	}
 }

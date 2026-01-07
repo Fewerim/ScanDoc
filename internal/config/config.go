@@ -22,8 +22,8 @@ type Config struct {
 	Port             int    `yaml:"port" required:"true"`
 	PythonExecutable string `yaml:"python_executable"`
 	PythonScript     string `yaml:"python_script"`
-	StoragePath      string `yaml:"storage_path"`
-	LogPath          string `yaml:"log_path"`
+	StoragePath      string `yaml:"storage_path,omitempty"`
+	LogPath          string `yaml:"log_path,omitempty"`
 }
 
 // MustLoad - читает конфиг и возвращает структуру конфига для работы приложения
