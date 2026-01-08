@@ -8,20 +8,20 @@ import (
 )
 
 const (
-	docxFormat = ".docx"
-	pdfFormat  = ".pdf"
-	jpgFormat  = ".jpg"
-	pngFormat  = ".png"
-	xlsxFormat = ".xlsx"
+	//docxFormat = ".docx" в данный момент не поддерживается
+	//pdfFormat  = ".pdf"  в данный момент не поддерживается
+	jpgFormat = ".jpg"
+	pngFormat = ".png"
+	//xlsxFormat = ".xlsx" в данный момент не поддерживается
 )
 
 // Для проверки поддерживаемых форматов
 var allowedFormats = map[string]struct{}{
-	docxFormat: {},
-	pdfFormat:  {},
-	jpgFormat:  {},
-	pngFormat:  {},
-	xlsxFormat: {},
+	//docxFormat: {},
+	//pdfFormat:  {},
+	jpgFormat: {},
+	pngFormat: {},
+	//xlsxFormat: {},
 }
 
 // ValidateExtensionFile - проверяет есть ли поддержка расширения прикрепленного файла
