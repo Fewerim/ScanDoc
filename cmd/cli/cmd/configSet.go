@@ -13,6 +13,7 @@ import (
 
 const defaultConfigPath = "C:\\Users\\Administrator\\Desktop\\githubTest\\PP2025-ProWeb\\config\\config.yaml"
 
+// ConfigSet - команда, позволяющая менять значения конфига внутри файла
 func ConfigSet(configPath string, port int, pythonExecutable, pythonScript, storagePath, logPath string) error {
 	if port == 0 {
 		return fmt.Errorf("порт обязателен для указания")
@@ -53,6 +54,7 @@ func ConfigSet(configPath string, port int, pythonExecutable, pythonScript, stor
 	return nil
 }
 
+// loadConfig - чтение конфига из файла
 func loadConfig(path string) (*config.Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -67,6 +69,12 @@ func loadConfig(path string) (*config.Config, error) {
 	return &cfg, nil
 }
 
+// setupDefaultConfig - устанавливает базовые значения для конфига
+func setupDefaultConfig() (cfg *config.Config, err error) {
+	panic("implement me")
+}
+
+// saveConfig - сохраняет конфиг в файл
 func saveConfig(cfg *config.Config, path string) error {
 	var yamlLines []string
 
@@ -95,6 +103,7 @@ func saveConfig(cfg *config.Config, path string) error {
 	return nil
 }
 
+// escapeYAMLString - экранирует специальные символы в строке
 func escapeYAMLString(s string) string {
 	s = strings.ReplaceAll(s, `\`, `\\`)
 	s = strings.ReplaceAll(s, `"`, `\"`)
@@ -114,8 +123,8 @@ func NewConfigSetCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "config_set",
 		Short:   "Изменить настройки конфигурационного файла",
-		Long:    "Изменить настройки конфига. Все флаги необязательны - меняйте только то, что нужно.",
-		Example: "scanner.exe config-set --port 8080\nscanner.exe config-set --config my-config.yaml --python-executable \"python3\"",
+		Long:    "Изменить настройки конфига. Не все флаги обязательны - меняйте только то, что нужно.",
+		Example: "scanner.exe config_set --port 8080\nscanner.exe config_set --config my-config.yaml --python-executable \"python3\"",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			finalConfigPath := configPath
 			if finalConfigPath == "" {

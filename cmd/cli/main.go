@@ -15,13 +15,12 @@ import (
 )
 
 func main() {
-
 	if len(os.Args) > 1 && os.Args[1] == "config_set" {
 		runConfigSetOnly()
 		return
 	}
 
-	runStandartApp()
+	runStandardApp()
 }
 
 // handleError - ловит ошибки и выводит статус выхода
@@ -57,7 +56,8 @@ func catchPanic() {
 	}
 }
 
-func runStandartApp() {
+// runStandardApp - запускает приложение в обычном режиме
+func runStandardApp() {
 	const op = "cli.main"
 	defer catchPanic()
 
@@ -73,6 +73,7 @@ func runStandartApp() {
 	}
 }
 
+// runConfigSetOnly - запускает приложение только для установки значений конфига
 func runConfigSetOnly() {
 	rootCmd := &cobra.Command{
 		Use:   "scanner.exe",
