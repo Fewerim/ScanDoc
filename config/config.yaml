@@ -1,3 +1,5 @@
 port: 3210
 python_executable: ".venv/Scripts/python.exe"
 python_script: "./internal/service/scanPy"
+storage_path: "storageJSONs"
+log_path: "log/info.log"

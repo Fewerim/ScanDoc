@@ -9,13 +9,13 @@ import (
 )
 
 const (
-	defaultPathToConfig = "./config/config.yaml"
+	DefaultPathToConfig = "./config/config.yaml"
 
-	defaultPort          = 3210
-	defaultPyExecutable  = ".venv/Scripts/python.exe"
-	defaultPyScript      = "./internal/service/scanPy"
-	defaultPathToStorage = "storageJSONs"
-	defaultPathToLog     = "log/info.log"
+	DefaultPort          = 3210
+	DefaultPyExecutable  = ".venv/Scripts/python.exe"
+	DefaultPyScript      = "./internal/service/scanPy"
+	DefaultPathToStorage = "storageJSONs"
+	DefaultPathToLog     = "log/info.log"
 )
 
 type Config struct {
@@ -39,11 +39,11 @@ func MustLoad() *Config {
 	}
 
 	cfg := &Config{
-		Port:             defaultPort,
-		PythonExecutable: defaultPyExecutable,
-		PythonScript:     defaultPyScript,
-		StoragePath:      defaultPathToStorage,
-		LogPath:          defaultPathToLog,
+		Port:             DefaultPort,
+		PythonExecutable: DefaultPyExecutable,
+		PythonScript:     DefaultPyScript,
+		StoragePath:      DefaultPathToStorage,
+		LogPath:          DefaultPathToLog,
 	}
 
 	if err := cleanenv.ReadConfig(path, &cfg); err != nil {
@@ -60,11 +60,11 @@ func MustLoadWithPath(pathToConfig string) *Config {
 	}
 
 	cfg := &Config{
-		Port:             defaultPort,
-		PythonExecutable: defaultPyExecutable,
-		PythonScript:     defaultPyScript,
-		StoragePath:      defaultPathToStorage,
-		LogPath:          defaultPathToLog,
+		Port:             DefaultPort,
+		PythonExecutable: DefaultPyExecutable,
+		PythonScript:     DefaultPyScript,
+		StoragePath:      DefaultPathToStorage,
+		LogPath:          DefaultPathToLog,
 	}
 
 	if err := cleanenv.ReadConfig(pathToConfig, cfg); err != nil {
@@ -78,7 +78,7 @@ func MustLoadWithPath(pathToConfig string) *Config {
 func DefaultConfigPath() string {
 	exePath, err := os.Executable()
 	if err != nil {
-		return defaultPathToConfig
+		return DefaultPathToConfig
 	}
 
 	exeDir := filepath.Dir(exePath)
@@ -100,7 +100,7 @@ func fetchConfigPath() string {
 	}
 
 	if res == "" {
-		res = defaultPathToConfig
+		res = DefaultPathToConfig
 	}
 
 	return res

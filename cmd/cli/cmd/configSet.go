@@ -11,8 +11,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const defaultConfigPath = "C:\\Users\\Administrator\\Desktop\\githubTest\\PP2025-ProWeb\\config\\config.yaml"
-
 // ConfigSet - команда, позволяющая менять значения конфига внутри файла
 func ConfigSet(configPath string, port int, pythonExecutable, pythonScript, storagePath, logPath string) error {
 	if port == 0 {
@@ -41,9 +39,15 @@ func ConfigSet(configPath string, port int, pythonExecutable, pythonScript, stor
 	if storagePath != "" {
 		cfg.StoragePath = storagePath
 	}
+	if cfg.StoragePath == "" {
+		cfg.StoragePath = config.DefaultPathToStorage
+	}
 
 	if logPath != "" {
 		cfg.LogPath = logPath
+	}
+	if cfg.LogPath == "" {
+		cfg.LogPath = config.DefaultPathToLog
 	}
 
 	if err := saveConfig(cfg, configPath); err != nil {
@@ -70,9 +74,28 @@ func loadConfig(path string) (*config.Config, error) {
 }
 
 // setupDefaultConfig - устанавливает базовые значения для конфига
-func setupDefaultConfig() (cfg *config.Config, err error) {
-	//TODO: сделать установку базового конфига (базовые значения лежат в internal/config)
-	panic("implement me")
+func setupDefaultConfig(configPath string) error {
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		return fmt.Errorf("конфигурационный файл не найден: %s", configPath)
+	}
+
+	cfg, err := loadConfig(configPath)
+	if err != nil {
+		return fmt.Errorf("не удалось загрузить конфиг: %w", err)
+	}
+
+	cfg.Port = config.DefaultPort
+	cfg.PythonExecutable = config.DefaultPyExecutable
+	cfg.PythonScript = config.DefaultPyScript
+	cfg.StoragePath = config.DefaultPathToStorage
+	cfg.LogPath = config.DefaultPathToLog
+
+	if err := saveConfig(cfg, configPath); err != nil {
+		return fmt.Errorf("не удалось сохранить конфиг: %w", err)
+	}
+
+	fmt.Println("Конфигурация успешно обновлена")
+	return nil
 }
 
 // saveConfig - сохраняет конфиг в файл
@@ -119,6 +142,7 @@ func NewConfigSetCmd() *cobra.Command {
 		storagePath      string
 		logPath          string
 		configPath       string
+		useDefault       bool
 	)
 
 	cmd := &cobra.Command{
@@ -129,7 +153,11 @@ func NewConfigSetCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			finalConfigPath := configPath
 			if finalConfigPath == "" {
-				finalConfigPath = defaultConfigPath
+				finalConfigPath = config.DefaultConfigPath()
+			}
+
+			if useDefault {
+				return setupDefaultConfig(finalConfigPath)
 			}
 
 			return ConfigSet(finalConfigPath, port, pythonExecutable, pythonScript, storagePath, logPath)
@@ -139,6 +167,7 @@ func NewConfigSetCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&configPath, "config", "c", "", "Путь к конфигурационному файлу (необязательно, по умолчанию: config/config.yaml)")
+	cmd.Flags().BoolVar(&useDefault, "default", false, "Установить значения конфига по умолчанию(необязательно)")
 	cmd.Flags().IntVarP(&port, "port", "p", 0, "Порт приложения(обязательно)")
 	cmd.Flags().StringVar(&pythonExecutable, "python-executable", "", "Путь к Python интерпретатору(обязательно)")
 	cmd.Flags().StringVar(&pythonScript, "python-script", "", "Путь к Python скрипту(обязательно)")
