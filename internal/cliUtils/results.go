@@ -2,6 +2,7 @@ package cliUtils
 
 import (
 	"fmt"
+	"path/filepath"
 	"proWeb/internal/typesJSON/typesUtils"
 	"strings"
 	"time"
@@ -39,6 +40,15 @@ func CreateResult(fileName, docType, location string) Result {
 		CreatedAt: time.Now(),
 		DocType:   typesUtils.TypesDoc[docType],
 	}
+}
+
+func CreateResultWithFolder(fileName, docType, storagePath, folderName string) Result {
+	fullPath := storagePath
+	if folderName != "" {
+		fullPath = filepath.Join(storagePath, folderName)
+	}
+
+	return CreateResult(fileName, docType, fullPath)
 }
 
 // CreateOnceProcessResult - конструктор для создания результата выполнения CLI команды run_once

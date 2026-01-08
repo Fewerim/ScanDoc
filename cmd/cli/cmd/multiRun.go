@@ -15,7 +15,7 @@ import (
 
 // multiFiles - проверяет входные данные, создает подключение к серверу,
 // обрабатывает и сохраняет файлы локально
-func (a *App) multiFiles(directory string) (err error) {
+func (a *App) multiFiles(directory, createdFolderName string) (err error) {
 	const operation = "cli.multiFiles"
 
 	color.Blue("Команда run_multi начала свое выполнение, валидация входных данных и проверка предварительных условий")
@@ -54,7 +54,7 @@ func (a *App) multiFiles(directory string) (err error) {
 	a.Log.Info(operation, "начало обработки директории файлов")
 	color.Blue("Начало обработки директории файлов")
 
-	result, err, errs := cliWorks.MultiProcessFiles(directory, a.Cfg)
+	result, err, errs := cliWorks.MultiProcessFiles(directory, a.Cfg, createdFolderName)
 	if err != nil {
 		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.ServerError))
 		return err
@@ -85,13 +85,14 @@ func (a *App) multiFiles(directory string) (err error) {
 
 func newMultiRunCmd(a *App) *cobra.Command {
 	var directory string
+	var createdFolderName string
 
 	cmd := &cobra.Command{
 		Use:     "run_multi",
 		Short:   "Команда для обработки всех файлов в директории: run_multi -d='директория'",
-		Example: "scandoc.exe run_multi --dir='./packageToScan'\nотправит пакет файлов на обработку, результаты будут сохранены в локальное хранилище под теми же именами",
+		Example: "scandoc.exe run_multi --dir='./packageToScan' --name='test'\nотправит пакет файлов на обработку, результаты будут сохранены в подпапку с именем, переданным во флаге 'name', в локальное хранилище под теми же именами",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return a.multiFiles(directory)
+			return a.multiFiles(directory, createdFolderName)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,
@@ -99,6 +100,8 @@ func newMultiRunCmd(a *App) *cobra.Command {
 
 	cmd.Flags().StringVarP(&directory, "dir", "d", "", "путь к директории, которую требуется обработать")
 	cmd.MarkFlagRequired("dir")
+	cmd.Flags().StringVarP(&createdFolderName, "name", "n", "", "имя папки, в которую будут сохранены обработанные файлы")
+	cmd.MarkFlagRequired("name")
 
 	return cmd
 }
