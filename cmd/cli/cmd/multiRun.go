@@ -89,7 +89,7 @@ func newMultiRunCmd(a *App) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "run_multi",
 		Short:   "Команда для обработки всех файлов в директории: run_multi -d='директория'",
-		Example: "scanner.exe run_multi --dir='./packageToScan'\nотправит пакет файлов на обработку, результаты будут сохранены в локальное хранилище под теми же именами",
+		Example: "scandoc.exe run_multi --dir='./packageToScan'\nотправит пакет файлов на обработку, результаты будут сохранены в локальное хранилище под теми же именами",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return a.multiFiles(directory)
 		},

@@ -89,7 +89,7 @@ func newRunOnceCmd(a *App) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "run_once",
 		Short:   "Команда для обработки одного файла: run_once -f='путь к файлу' -n='название будущего файла'",
-		Example: "scanner.exe run_once --file='.test/scan.jpg' --name='result'\nотправит на обработку файл 'scan.jpg' и сохранит результат под именем 'result.json'",
+		Example: "scandoc.exe run_once --file='.test/scan.jpg' --name='result'\nотправит на обработку файл 'scan.jpg' и сохранит результат под именем 'result.json'",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return a.onceFile(pathToFile, nameNewFile)
 		},

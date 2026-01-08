@@ -38,7 +38,7 @@ func newInstallTesseract(a *App) *cobra.Command {
 	return &cobra.Command{
 		Use:           "install_tesseract",
 		Short:         "Запускает установщик tesseract",
-		Example:       "scanner.exe install_tesseract\nзапускает установщик tesseract",
+		Example:       "scandoc.exe install_tesseract\nзапускает установщик tesseract",
 		Args:          cobra.NoArgs,
 		RunE:          a.installTesseract,
 		SilenceErrors: true,

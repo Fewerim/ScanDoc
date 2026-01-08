@@ -76,7 +76,7 @@ func runStandardApp() {
 // runConfigSetOnly - запускает приложение только для установки значений конфига
 func runConfigSetOnly() {
 	rootCmd := &cobra.Command{
-		Use:   "scanner.exe",
+		Use:   "scandoc.exe",
 		Short: "ScanDoc - CLI для распознавания документов",
 	}
 

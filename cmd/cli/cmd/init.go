@@ -51,7 +51,7 @@ func newInitAppCmd(a *App) *cobra.Command {
 	return &cobra.Command{
 		Use:           "init",
 		Short:         "Устанавливает необходимые зависимости для корректной работы приложения",
-		Example:       "scanner.exe init\nустановит необходимые зависимости и локальное хранилище",
+		Example:       "scandoc.exe init\nустановит необходимые зависимости и локальное хранилище",
 		Args:          cobra.NoArgs,
 		RunE:          a.initApp,
 		SilenceErrors: true,

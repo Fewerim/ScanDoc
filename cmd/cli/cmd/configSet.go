@@ -71,6 +71,7 @@ func loadConfig(path string) (*config.Config, error) {
 
 // setupDefaultConfig - устанавливает базовые значения для конфига
 func setupDefaultConfig() (cfg *config.Config, err error) {
+	//TODO: сделать установку базового конфига (базовые значения лежат в internal/config)
 	panic("implement me")
 }
 
@@ -124,7 +125,7 @@ func NewConfigSetCmd() *cobra.Command {
 		Use:     "config_set",
 		Short:   "Изменить настройки конфигурационного файла",
 		Long:    "Изменить настройки конфига. Не все флаги обязательны - меняйте только то, что нужно.",
-		Example: "scanner.exe config_set --port 8080\nscanner.exe config_set --config my-config.yaml --python-executable \"python3\"",
+		Example: "scandoc.exe config_set --port 8080\nscandoc.exe config_set --config my-config.yaml --python-executable \"python3\"",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			finalConfigPath := configPath
 			if finalConfigPath == "" {
