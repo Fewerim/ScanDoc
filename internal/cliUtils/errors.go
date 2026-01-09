@@ -3,6 +3,7 @@ package cliUtils
 import (
 	"fmt"
 	"proWeb/internal/exitCodes"
+	"strings"
 
 	"github.com/fatih/color"
 )
@@ -23,6 +24,21 @@ type FileError struct {
 }
 
 type FileErrors []FileError
+
+// ToString - переводит ошибки в текст
+func (errs FileErrors) ToString() string {
+	fileNames := make([]string, 0)
+	for _, file := range errs {
+		fileNames = append(fileNames, file.FileName)
+	}
+	res := "Файлы, которые не были обработаны: " + strings.Join(fileNames, ", ")
+	return color.RedString(res)
+}
+
+// PrintErrors - выводит ошибки
+func (errs FileErrors) PrintErrors() {
+	fmt.Println(errs.ToString())
+}
 
 // newAppError - конструктор для создания новой ошибки приложения
 func newAppError(exitCode int, message string) *AppError {
@@ -69,8 +85,9 @@ func GetExitCode(err error, defaultCode int) int {
 	return defaultCode
 }
 
+// FilesNotProcessed - возвращает ошибки файлов, которые не были обработаны
 func FilesNotProcessed(filesErrs []FileError) {
 	filesNotSuccess := FileErrors{}
 	filesNotSuccess = filesErrs
-	filesNotSuccess.PrintNotSuccess()
+	filesNotSuccess.PrintErrors()
 }
