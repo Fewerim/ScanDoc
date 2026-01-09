@@ -46,12 +46,13 @@ func (a *App) initCommands() {
 		return nil
 	}
 	rootCmd.SetHelpCommand(newHelperCmd(a))
-	rootCmd.AddCommand(newInstallTesseract(a))
+	rootCmd.AddCommand(newInstallTesseractCmd(a))
 	rootCmd.AddCommand(newInitAppCmd(a))
 	rootCmd.AddCommand(newRunOnceCmd(a))
 	rootCmd.AddCommand(newMultiRunCmd(a))
 	rootCmd.AddCommand(NewConfigSetCmd())
 	rootCmd.AddCommand(newClearCmd(a))
+	rootCmd.AddCommand(newOpenLogCmd(a))
 }
 
 // Execute - делегирует запуск CLI приложения, вызываясь на экземпляре App

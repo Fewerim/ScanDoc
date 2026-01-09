@@ -34,7 +34,7 @@ func (a *App) installTesseract(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func newInstallTesseract(a *App) *cobra.Command {
+func newInstallTesseractCmd(a *App) *cobra.Command {
 	return &cobra.Command{
 		Use:           "install_tesseract",
 		Short:         "Запускает установщик tesseract",
