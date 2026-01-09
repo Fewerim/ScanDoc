@@ -2,10 +2,13 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -26,6 +29,55 @@ type Config struct {
 	LogPath          string `yaml:"log_path,omitempty"`
 }
 
+// NewDefaultConfig - конструктор дефолтного конфига
+func NewDefaultConfig() *Config {
+	return &Config{
+		Port:             DefaultPort,
+		PythonExecutable: DefaultPyExecutable,
+		PythonScript:     DefaultPyScript,
+		StoragePath:      DefaultPathToStorage,
+		LogPath:          DefaultPathToLog,
+	}
+}
+
+// SetupDefaultConfig - устанавливает дефолтные значения для конфига
+func (cfg *Config) SetupDefaultConfig() {
+	cfg.Port = DefaultPort
+	cfg.PythonExecutable = DefaultPyExecutable
+	cfg.PythonScript = DefaultPyScript
+	cfg.StoragePath = DefaultPathToStorage
+	cfg.LogPath = DefaultPathToLog
+}
+
+// SaveConfig - сохраняет конфиг в файл
+func (cfg *Config) SaveConfig(path string) error {
+	var yamlLines []string
+
+	yamlLines = append(yamlLines, fmt.Sprintf("port: %d", cfg.Port))
+	yamlLines = append(yamlLines, fmt.Sprintf("python_executable: \"%s\"", escapeYAMLString(cfg.PythonExecutable)))
+	yamlLines = append(yamlLines, fmt.Sprintf("python_script: \"%s\"", escapeYAMLString(cfg.PythonScript)))
+	if cfg.StoragePath != "" {
+		yamlLines = append(yamlLines, fmt.Sprintf("storage_path: \"%s\"", escapeYAMLString(cfg.StoragePath)))
+	}
+
+	if cfg.LogPath != "" {
+		yamlLines = append(yamlLines, fmt.Sprintf("log_path: \"%s\"", escapeYAMLString(cfg.LogPath)))
+	}
+
+	yamlContent := strings.Join(yamlLines, "\n")
+
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0777); err != nil {
+		return fmt.Errorf("ошибка создания директории: %w", err)
+	}
+
+	if err := os.WriteFile(path, []byte(yamlContent), 0777); err != nil {
+		return fmt.Errorf("ошибка записи файла: %w", err)
+	}
+
+	return nil
+}
+
 // MustLoad - читает конфиг и возвращает структуру конфига для работы приложения
 func MustLoad() *Config {
 	path := fetchConfigPath()
@@ -38,13 +90,7 @@ func MustLoad() *Config {
 		panic("пути к конфигу не найдено: " + path)
 	}
 
-	cfg := &Config{
-		Port:             DefaultPort,
-		PythonExecutable: DefaultPyExecutable,
-		PythonScript:     DefaultPyScript,
-		StoragePath:      DefaultPathToStorage,
-		LogPath:          DefaultPathToLog,
-	}
+	cfg := NewDefaultConfig()
 
 	if err := cleanenv.ReadConfig(path, &cfg); err != nil {
 		panic("ошибка при чтении конфига: " + err.Error())
@@ -53,19 +99,28 @@ func MustLoad() *Config {
 	return cfg
 }
 
+// LoadConfig - чтение конфига из файла
+func LoadConfig(path string) (*Config, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка чтения файла: %w", err)
+	}
+
+	var cfg Config
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return nil, fmt.Errorf("ошибка разбора YAML: %w", err)
+	}
+
+	return &cfg, nil
+}
+
 // MustLoadWithPath - читает конфиг по входящему пути и возвращает структуру конфига для работы приложения
 func MustLoadWithPath(pathToConfig string) *Config {
 	if _, err := os.Stat(pathToConfig); os.IsNotExist(err) {
 		panic("пути к конфигу не найдено: " + pathToConfig)
 	}
 
-	cfg := &Config{
-		Port:             DefaultPort,
-		PythonExecutable: DefaultPyExecutable,
-		PythonScript:     DefaultPyScript,
-		StoragePath:      DefaultPathToStorage,
-		LogPath:          DefaultPathToLog,
-	}
+	cfg := NewDefaultConfig()
 
 	if err := cleanenv.ReadConfig(pathToConfig, cfg); err != nil {
 		panic("ошибка при чтении конфига: " + err.Error())
@@ -86,6 +141,14 @@ func DefaultConfigPath() string {
 	return filepath.Join(rootDir, "config", "config.yaml")
 }
 
+// CheckConfigPathExists - проверяет наличие конфига по пути
+func CheckConfigPathExists(configPath string) error {
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		return fmt.Errorf("конфигурационный файл не найден: %s", configPath)
+	}
+	return nil
+}
+
 // fetchConfigPath - достает путь к конфигу через флаг в командной строке
 // priority: flag > env > default
 // default: DefaultPathToConfig
@@ -104,4 +167,11 @@ func fetchConfigPath() string {
 	}
 
 	return res
+}
+
+// escapeYAMLString - экранирует специальные символы в строке
+func escapeYAMLString(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	s = strings.ReplaceAll(s, `"`, `\"`)
+	return s
 }

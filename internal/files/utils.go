@@ -39,6 +39,14 @@ func getUniqFileName(fileName, fullDirectory string, overwrite bool) (string, st
 	}
 }
 
+func createFolder(nameFolder string) error {
+	if err := os.Mkdir(nameFolder, 0777); err != nil {
+		return fmt.Errorf("ошибка при создании папки %v", err)
+	}
+
+	return nil
+}
+
 // saveFileToDirectory - создает файл и сохраняет/перезаписывает в хранилище в локальной папке
 func saveFileToDirectory(fileName, directory string, data interface{}, overWrite bool) error {
 	fileNameWithExtension := addExtensionJSON(fileName)

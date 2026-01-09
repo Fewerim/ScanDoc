@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/fatih/color"
 )
 
 /*
@@ -21,7 +23,7 @@ type TestJson struct {
 }
 
 // Название локального хранилища
-// В будущем добавить чтобы .gitignore сам обновлялся если меняется nameStorage
+// TODO: В будущем добавить чтобы .gitignore сам обновлялся если меняется nameStorage
 var nameStorage = "storageJSONs"
 
 func InitStorage(storage string) {
@@ -32,10 +34,10 @@ func InitStorage(storage string) {
 
 // CreateStorageJSON - создает локальное хранилище для хранения JSON
 func CreateStorageJSON() error {
-	if err := os.Mkdir(nameStorage, 0777); err != nil {
-		return fmt.Errorf("ошибка при создании хранилища для JSON файлов: %v", err)
+	if err := createFolder(nameStorage); err != nil {
+		return err
 	}
-	log.Printf("Хранилище для обработанных файлов (%s) успешно создано", nameStorage)
+	color.Blue("Хранилище для обработанных файлов (%s) успешно создано", nameStorage)
 	return nil
 }
 

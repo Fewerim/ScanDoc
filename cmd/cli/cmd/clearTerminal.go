@@ -12,21 +12,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// clearTerminal - команда, очищающая терминал
 func (a *App) clearTerminal(cmd *cobra.Command, args []string) error {
 	const operation = "cli.clearTerminal"
 
 	a.Log.Info(operation, "очистка терминала")
 
 	if err := clearConsole(); err != nil {
-		a.Log.Error(operation, fmt.Sprintf("не удалось очистить терминал: %v", err), exitCodes.InternalError)
-		return cliUtils.InternalError(fmt.Sprintf("не удалось очистить терминал: %v", err))
+		info := fmt.Sprintf("не удалось очистить терминал: %v", err)
+		a.Log.Error(operation, info, exitCodes.InternalError)
+		return cliUtils.InternalError(info)
 	}
 
 	a.Log.Info(operation, "терминал успешно очищен")
-	color.Blue("терминал очищен")
+	color.Blue("Терминал очищен")
 	return nil
 }
 
+// clearConsole - очищает консоль от текста
 func clearConsole() error {
 	var cmd *exec.Cmd
 

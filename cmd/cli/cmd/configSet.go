@@ -2,34 +2,26 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
+	"proWeb/internal/cliUtils"
 	"proWeb/internal/config"
-	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
-// ConfigSet - команда, позволяющая менять значения конфига внутри файла
-func ConfigSet(configPath string, port int, pythonExecutable, pythonScript, storagePath, logPath string) error {
-	if port == 0 {
-		return fmt.Errorf("порт обязателен для указания")
-	}
-	if pythonExecutable == "" {
-		return fmt.Errorf("python-executable обязателен для указания")
-	}
-	if pythonScript == "" {
-		return fmt.Errorf("python-script обязателен для указания")
+// configSet - команда, позволяющая менять значения конфига внутри файла
+func configSet(configPath string, port int, pythonExecutable, pythonScript, storagePath, logPath string) error {
+	if err := checkRequiredFlags(port, pythonExecutable, pythonScript); err != nil {
+		return cliUtils.UserError(err.Error())
 	}
 
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return fmt.Errorf("конфигурационный файл не найден: %s", configPath)
+	if err := config.CheckConfigPathExists(configPath); err != nil {
+		return cliUtils.InternalError(err.Error())
 	}
 
-	cfg, err := loadConfig(configPath)
+	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
-		return fmt.Errorf("не удалось загрузить конфиг: %w", err)
+		return cliUtils.InternalError(err.Error())
 	}
 
 	cfg.Port = port
@@ -50,88 +42,48 @@ func ConfigSet(configPath string, port int, pythonExecutable, pythonScript, stor
 		cfg.LogPath = config.DefaultPathToLog
 	}
 
-	if err := saveConfig(cfg, configPath); err != nil {
-		return fmt.Errorf("не удалось сохранить конфиг: %w", err)
+	if err := cfg.SaveConfig(configPath); err != nil {
+		return err
 	}
 
-	fmt.Println("Конфигурация успешно обновлена")
+	color.Blue("Конфигурация успешно обновлена")
 	return nil
-}
-
-// loadConfig - чтение конфига из файла
-func loadConfig(path string) (*config.Config, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("ошибка чтения файла: %w", err)
-	}
-
-	var cfg config.Config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, fmt.Errorf("ошибка разбора YAML: %w", err)
-	}
-
-	return &cfg, nil
 }
 
 // setupDefaultConfig - устанавливает базовые значения для конфига
 func setupDefaultConfig(configPath string) error {
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return fmt.Errorf("конфигурационный файл не найден: %s", configPath)
+	if err := config.CheckConfigPathExists(configPath); err != nil {
+		return cliUtils.InternalError(err.Error())
 	}
 
-	cfg, err := loadConfig(configPath)
+	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
-		return fmt.Errorf("не удалось загрузить конфиг: %w", err)
+		return cliUtils.InternalError(err.Error())
 	}
 
-	cfg.Port = config.DefaultPort
-	cfg.PythonExecutable = config.DefaultPyExecutable
-	cfg.PythonScript = config.DefaultPyScript
-	cfg.StoragePath = config.DefaultPathToStorage
-	cfg.LogPath = config.DefaultPathToLog
+	cfg.SetupDefaultConfig()
 
-	if err := saveConfig(cfg, configPath); err != nil {
-		return fmt.Errorf("не удалось сохранить конфиг: %w", err)
+	if err := cfg.SaveConfig(configPath); err != nil {
+		return cliUtils.InternalError(err.Error())
 	}
 
-	fmt.Println("Конфигурация успешно обновлена")
+	color.Blue("Конфигурация успешно обновлена")
 	return nil
 }
 
-// saveConfig - сохраняет конфиг в файл
-func saveConfig(cfg *config.Config, path string) error {
-	var yamlLines []string
-
-	yamlLines = append(yamlLines, fmt.Sprintf("port: %d", cfg.Port))
-	yamlLines = append(yamlLines, fmt.Sprintf("python_executable: \"%s\"", escapeYAMLString(cfg.PythonExecutable)))
-	yamlLines = append(yamlLines, fmt.Sprintf("python_script: \"%s\"", escapeYAMLString(cfg.PythonScript)))
-	if cfg.StoragePath != "" {
-		yamlLines = append(yamlLines, fmt.Sprintf("storage_path: \"%s\"", escapeYAMLString(cfg.StoragePath)))
+// checkRequiredFlags - проверяет наличие обязательных флагов для установки конфига
+func checkRequiredFlags(port int, pyexe, pyScript string) error {
+	if port == 0 {
+		return fmt.Errorf("порт обязателен для указания")
 	}
-
-	if cfg.LogPath != "" {
-		yamlLines = append(yamlLines, fmt.Sprintf("log_path: \"%s\"", escapeYAMLString(cfg.LogPath)))
+	if pyexe == "" {
+		return fmt.Errorf("python-executable обязателен для указания")
 	}
-
-	yamlContent := strings.Join(yamlLines, "\n")
-
-	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0777); err != nil {
-		return fmt.Errorf("ошибка создания директории: %w", err)
-	}
-
-	if err := os.WriteFile(path, []byte(yamlContent), 0777); err != nil {
-		return fmt.Errorf("ошибка записи файла: %w", err)
+	if pyScript == "" {
+		return fmt.Errorf("python-script обязателен для указания")
 	}
 
 	return nil
-}
-
-// escapeYAMLString - экранирует специальные символы в строке
-func escapeYAMLString(s string) string {
-	s = strings.ReplaceAll(s, `\`, `\\`)
-	s = strings.ReplaceAll(s, `"`, `\"`)
-	return s
 }
 
 func NewConfigSetCmd() *cobra.Command {
@@ -160,7 +112,7 @@ func NewConfigSetCmd() *cobra.Command {
 				return setupDefaultConfig(finalConfigPath)
 			}
 
-			return ConfigSet(finalConfigPath, port, pythonExecutable, pythonScript, storagePath, logPath)
+			return configSet(finalConfigPath, port, pythonExecutable, pythonScript, storagePath, logPath)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,

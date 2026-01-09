@@ -99,8 +99,9 @@ func newMultiRunCmd(a *App) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&directory, "dir", "d", "", "путь к директории, которую требуется обработать")
-	cmd.MarkFlagRequired("dir")
 	cmd.Flags().StringVarP(&createdFolderName, "name", "n", "", "имя папки, в которую будут сохранены обработанные файлы")
+
+	cmd.MarkFlagRequired("dir")
 	cmd.MarkFlagRequired("name")
 
 	return cmd
