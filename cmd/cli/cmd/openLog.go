@@ -15,13 +15,13 @@ import (
 func (a *App) logs(cmd *cobra.Command, args []string) error {
 	const operation = "cli.openLog"
 
-	a.Log.Info(operation, "открытие папки с логами")
+	a.Log.Info(operation, "открытие файла с логами")
 	if err := openLog(a.Cfg.LogPath); err != nil {
-		info := fmt.Sprintf("ошибка при открытии папки с логами: %v", err)
+		info := fmt.Sprintf("ошибка при открытии файла с логами: %v", err)
 		a.Log.Error(operation, info, exitCodes.InternalError)
 		return cliUtils.InternalError(info)
 	}
-	color.Blue("Папка с логами открыта")
+	color.Blue("Файл с логами открыт")
 	return nil
 }
 
@@ -32,19 +32,18 @@ func openLog(pathToLog string) error {
 		return fmt.Errorf("неверный путь к файлу с логами")
 	}
 
-	cmd := exec.Command("explorer", "/select,", fullPath)
-	err = cmd.Run()
-	if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
-		return nil
+	cmd := exec.Command("notepad.exe", fullPath)
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("не удалось открыть: %v", err)
 	}
 
-	return fmt.Errorf("не удалось открыть: %v", err)
+	return nil
 }
 
 func newOpenLogCmd(a *App) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "open_log",
-		Short:         "открывает папку с логами",
+		Short:         "открывает файл с логами",
 		Example:       "scandoc.exe openLog",
 		RunE:          a.logs,
 		SilenceErrors: true,
