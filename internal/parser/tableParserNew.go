@@ -1,8 +1,38 @@
 package parser
 
 import (
+	"encoding/json"
+	"strings"
+
 	"github.com/iancoleman/orderedmap"
 )
+
+// UpdateTableInData - меняет поле table в json на читаемую таблицу
+func UpdateTableInData(data interface{}) (interface{}, error) {
+	dataBytes, errs := json.Marshal(data)
+	if errs != nil {
+		return nil, errs
+	}
+
+	var dataMap map[string]interface{}
+	if err := json.Unmarshal(dataBytes, &dataMap); err != nil {
+		return nil, err
+	}
+
+	tableBytes, err := GetTableFromJson(dataMap)
+	if err != nil {
+		return nil, err
+	}
+
+	items, err := ParseNewTable(tableBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	dataMap["table"] = items
+
+	return dataMap, nil
+}
 
 // ParseNewTable - парсит поле table в читаемый вид
 func ParseNewTable(jsonData []byte) (*Items, error) {
@@ -20,6 +50,7 @@ func ParseNewTable(jsonData []byte) (*Items, error) {
 	return items, nil
 }
 
+// GetAllLines - преобразует таблицу в структурированный список элементов (Items)
 func GetAllLines(table *Table) *Items {
 	titlesNames, fin := GetAllTitlesNames(table)
 
@@ -40,6 +71,7 @@ func GetAllLines(table *Table) *Items {
 	return &items
 }
 
+// GetAllTitlesNames - извлекает имена заголовков столбцов из таблицы
 func GetAllTitlesNames(table *Table) ([]string, int) {
 	var titles []Cell
 	var doubleTitles []Cell
@@ -92,4 +124,23 @@ func GetAllTitlesNames(table *Table) ([]string, int) {
 		titlesNames = append(titlesNames, currentTitle)
 	}
 	return titlesNames, fin
+}
+
+// ParseTable - десериализует JSON-данные в структуру Table и очищает переносы строк в ячейках.
+func ParseTable(jsonData []byte) (*Table, error) {
+	var table Table
+	if err := json.Unmarshal(jsonData, &table); err != nil {
+		return nil, err
+	}
+
+	for i := range table.Rows {
+		table.Rows[i].Text = cleanText(table.Rows[i].Text)
+	}
+
+	return &table, nil
+}
+
+// cleanText - очищает текст от символов новой строки, заменяя их на пробелы.
+func cleanText(text string) string {
+	return strings.ReplaceAll(text, "\n", " ")
 }
