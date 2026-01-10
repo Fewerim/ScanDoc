@@ -22,6 +22,7 @@ func (a *App) logs(clearFlag bool) error {
 			return cliUtils.InternalError(info)
 		}
 		a.Log.Info(operation, "файла с логами был очищен")
+		color.Blue("Файл с логами был очищен")
 	}
 
 	a.Log.Info(operation, "открытие файла с логами")
@@ -30,6 +31,7 @@ func (a *App) logs(clearFlag bool) error {
 		a.Log.Error(operation, info, exitCodes.InternalError)
 		return cliUtils.InternalError(info)
 	}
+
 	color.Blue("Файл с логами открыт")
 	return nil
 }
