@@ -1,0 +1,185 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Montserrat", sans-serif;
+}
+
+body {
+    height: 100vh;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.page {
+    align-content: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.4s ease;
+}
+
+#app {
+    text-align: center;
+}
+
+h1 {
+    font-size: 4.5rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.footer h1.nameOrg {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 2rem;
+    opacity: 0.8;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+p {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 2.5rem;
+    opacity: 0.9;
+}
+
+button {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 15px 40px;
+    margin: 0 15px;
+    font-size: 1.3rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+button:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+
+h1.nameApp {
+    font-size: 5.5rem;
+    font-weight: bold;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    cursor: pointer !important;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+h1.nameApp:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+}
+
+.welcome_block {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+}
+
+.welcome_block ul {
+    display: flex;           /* Flex горизонтально */
+    flex-direction: column;     /* Кнопки в ряд */
+    justify-content: center;  /* "меню" СЛЕВА | "выход" СПРАВА */
+    gap: 2rem;               /* Дополнительный зазор */
+    width: 100%;             /* На всю ширину блока */
+    max-width: 500px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.welcome_block li {
+    list-style: none;
+}
+
+.menu_block {
+    display: flex;
+    align-content: center;
+    flex-direction: row-reverse;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+    gap: 6rem;
+}
+
+.menu_block > div:first-child {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.menu_block > div:last-child {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.bodyMenu {
+    flex: 0 0 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 1rem;
+}
+
+.bodyMenu h2 {
+    margin-left: 1rem;
+    margin-bottom: 0;
+    font-size: 2.8rem;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+    max-width: 380px;
+}
+
+.bodyMenu li {
+    list-style: none;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    width: 100%;
+    max-width: 380px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.menu li button {
+    width: 100%;
+    padding: 1.3rem 1.5rem;
+    min-height: 4.2rem;
+    text-align: center;
+    font-size: 1.1rem;
+    border-radius: 18px;
+}
+
+.menu li button:hover {
+    background: rgba(255,255,255,0.35);
+    transform: translateY(-3px);
+}
+
+
