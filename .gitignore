@@ -4,6 +4,7 @@
 /.venv
 /Output
 /thirdparty
+/cmd/scandoc-gui
 scanner.iss
 run_scanner.bat
 /forsetup

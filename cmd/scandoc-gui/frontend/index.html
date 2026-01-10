@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SCANDOC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+<div id="app">
+    <div class="page" id="mainPage">
+        <div class="welcome_block">
+            <h1 class="nameApp">SCANDOC</h1>
+            <p>Приложение для распознавания бухгалтерских документов</p>
+            <ul>
+                <li><button id="menuBtn">меню</button></li>
+                <li><button id="exitBtn">выход</button></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="page hidden" id="menuPage">
+        <div class="menu_block">
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+            </div>
+            <div class="bodyMenu">
+                <div>
+                    <h2>Меню</h2>
+                </div>
+                <div>
+                    <ul class="menu">
+                        <li><button id="init">Инициализация</button></li>
+                        <li><button id="run_once">Однофайловая обработка</button></li>
+                        <li><button id="run_multi">Пакетная обработка</button></li>
+                        <li><button id="results">Результаты обработки</button></li>
+                        <li><button id="exitBtn">Выход</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <h1 class="nameOrg">ProWeb</h1>
+    </div>
+</div>
+<script src="./src/main.js" type="module"></script>
+</body>
+</html>
