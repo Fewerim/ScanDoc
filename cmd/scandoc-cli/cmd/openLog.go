@@ -71,7 +71,7 @@ func newOpenLogCmd(a *App) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "open_log",
 		Short:   "Открывает файл с логами",
-		Example: "scandoc.exe openLog",
+		Example: "scandoc.exe open_log",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clearFlag, err := cmd.Flags().GetBool("clear")
 			if err != nil {

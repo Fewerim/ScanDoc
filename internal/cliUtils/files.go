@@ -10,8 +10,9 @@ import (
 const (
 	//docxFormat = ".docx" в данный момент не поддерживается
 	//pdfFormat  = ".pdf"  в данный момент не поддерживается
-	jpgFormat = ".jpg"
-	pngFormat = ".png"
+	jpgFormat  = ".jpg"
+	pngFormat  = ".png"
+	jpegFormat = ".jpeg"
 	//xlsxFormat = ".xlsx" в данный момент не поддерживается
 )
 
@@ -19,8 +20,9 @@ const (
 var allowedFormats = map[string]struct{}{
 	//docxFormat: {},
 	//pdfFormat:  {},
-	jpgFormat: {},
-	pngFormat: {},
+	jpgFormat:  {},
+	pngFormat:  {},
+	jpegFormat: {},
 	//xlsxFormat: {},
 }
 
