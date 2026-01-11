@@ -53,6 +53,7 @@ func (a *App) initCommands() {
 	rootCmd.AddCommand(NewConfigSetCmd())
 	rootCmd.AddCommand(newClearCmd(a))
 	rootCmd.AddCommand(newOpenLogCmd(a))
+	rootCmd.AddCommand(newOpenStorageCmd(a))
 }
 
 // Execute - делегирует запуск CLI приложения, вызываясь на экземпляре App
