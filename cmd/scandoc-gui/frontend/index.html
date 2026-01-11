@@ -33,12 +33,86 @@
                 </div>
                 <div>
                     <ul class="menu">
-                        <li><button id="init">Инициализация</button></li>
-                        <li><button id="run_once">Однофайловая обработка</button></li>
-                        <li><button id="run_multi">Пакетная обработка</button></li>
-                        <li><button id="results">Результаты обработки</button></li>
+                        <li><button id="initBtn">Инициализация</button></li>
+                        <li><button id="run_onceBtn">Однофайловая обработка</button></li>
+                        <li><button id="run_multiBtn">Пакетная обработка</button></li>
+                        <li><button id="resultsBtn">Результаты обработки</button></li>
                         <li><button id="exitBtn">Выход</button></li>
                     </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden" id="initPage">
+        <div class="init_block">
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+                <div class="init_buttons">
+                    <button id="startInitBtn">Начать инициализацию</button>
+                    <button id="openLogBtn">Лог</button>
+                </div>
+                <h2>Статус выполнения: status</h2>
+            </div>
+            <div class="init_body">
+                <h2>Инициализация</h2>
+                <div class="text_row">
+                    <p>Приложение установит/обновит необходимые зависимости</p>
+                    <p>Проверит наличие хранилища для результатов обработки</p>
+                    <p>Если статус выполнения не равен <mark>success</mark>, проверьте лог</p>
+                </div>
+                <button id="backBtn">Назад</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden" id="run_oncePage">
+        <div class="run_once_block">
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+            </div>
+            <div class="run_once_body">
+                <div>
+                    <h2>Однофайловая обработка</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden" id="run_multiPage">
+        <div class="run_multi_block">
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+            </div>
+            <div class="run_multi_body">
+                <div>
+                    <h2>Пакетная обработка</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden" id="resultsPage">
+        <div class="results_block">
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+            </div>
+            <div class="results_body">
+                <div>
+                    <h2>Хранилище результатов</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden" id="editPage">
+        <div class="edit_block">
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+            </div>
+            <div class="edit_body">
+                <div>
+                    <h2>Редактирование</h2>
                 </div>
             </div>
         </div>

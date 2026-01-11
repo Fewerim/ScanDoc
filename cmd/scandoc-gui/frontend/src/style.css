@@ -14,6 +14,14 @@ body {
     color: white;
 }
 
+mark {
+    background: rgba(255,255,255,0.25);  /* Полупрозрачный фон */
+    color: white;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 900;
+}
+
 .hidden {
     display: none !important;
 }
@@ -180,6 +188,71 @@ h1.nameApp:hover {
 .menu li button:hover {
     background: rgba(255,255,255,0.35);
     transform: translateY(-3px);
+}
+
+.init_block {
+    display: flex;
+    align-content: center;
+    flex-direction: row-reverse;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+    gap: 6rem;
+}
+
+.init_buttons {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+    gap: 2rem;
+}
+
+.init_body {
+    flex: 0 0 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 1rem;
+}
+
+.init_body h2 {
+    margin: 0 0 1rem 0;
+    font-size: 2.4rem;
+    font-weight: bold;
+    align-self: center;  /* h2 по центру */
+}
+
+.text_row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.25rem;
+    gap: 0;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.text_row p {
+    flex: 1;
+    margin: 0;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    text-align: left;
+    color: rgba(255,255,255,0.95);
+}
+
+.text_row p:last-child {
+    flex: 1;
+    margin-top: 1.25rem;
+    font-size: 1.15rem;
+    font-weight: bold;
+    line-height: 1.6;
+    text-align: left;
+    color: rgba(0,0,0,0.75);
 }
 
 
