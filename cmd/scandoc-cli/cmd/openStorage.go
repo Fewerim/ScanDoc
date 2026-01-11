@@ -20,17 +20,17 @@ func (a *App) storage(clearFlag bool) error {
 
 	if clearFlag {
 		if err := clearStorage(storagePath); err != nil {
-			info := fmt.Sprintf("ошибка очистки storage: %v", err)
+			info := fmt.Sprintf("ошибка очистки локального хранилища: %v", err)
 			a.Log.Error(operation, info, exitCodes.InternalError)
 			return cliUtils.InternalError(info)
 		}
-		a.Log.Info(operation, "папка storage была очищена")
-		color.Blue("Папка storage была очищена")
+		a.Log.Info(operation, "локальное хранилище было очищено")
+		color.Blue("Локальное хранилище было очищено")
 	}
 
-	a.Log.Info(operation, "открытие папки storage")
+	a.Log.Info(operation, "открытие локального хранилища")
 	if err := openStorage(storagePath); err != nil {
-		info := fmt.Sprintf("ошибка при открытии папки storage: %v", err)
+		info := fmt.Sprintf("ошибка при открытии локального хранилища: %v", err)
 		a.Log.Error(operation, info, exitCodes.InternalError)
 		return cliUtils.InternalError(info)
 	}
@@ -108,7 +108,7 @@ func clearStorage(storagePath string) error {
 func newOpenStorageCmd(a *App) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "open_storage",
-		Short:   "Открывает папку storage",
+		Short:   "Открывает локальное хранилище",
 		Example: "scandoc.exe open_storage",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clearFlag, err := cmd.Flags().GetBool("clear")
