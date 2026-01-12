@@ -3,10 +3,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"proWeb/internal/cliUtils"
-	"proWeb/internal/cliUtils/cliWorks"
-	"proWeb/internal/exitCodes"
-	"proWeb/internal/tesseract"
+	"proWeb/lib/cliUtils"
+	"proWeb/lib/cliUtils/cliWorks"
+	"proWeb/lib/exitCodes"
+	"proWeb/lib/tesseract"
 	"time"
 
 	"github.com/fatih/color"

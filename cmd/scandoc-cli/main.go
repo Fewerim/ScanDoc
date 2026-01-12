@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 	"proWeb/cmd/scandoc-cli/cmd"
-	"proWeb/internal/cliUtils"
-	"proWeb/internal/exitCodes"
-	"proWeb/internal/logger"
+	"proWeb/lib/cliUtils"
+	"proWeb/lib/exitCodes"
+	"proWeb/lib/logger"
 	"strings"
 
 	"github.com/fatih/color"

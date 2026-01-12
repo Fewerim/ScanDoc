@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"proWeb/internal/cliUtils"
-	"proWeb/internal/tesseract"
+	"proWeb/lib/cliUtils"
+	"proWeb/lib/tesseract"
 	"strings"
 
 	"github.com/fatih/color"

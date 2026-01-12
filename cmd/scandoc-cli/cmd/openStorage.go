@@ -5,8 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"proWeb/internal/cliUtils"
-	"proWeb/internal/exitCodes"
+	"proWeb/lib/cliUtils"
+	"proWeb/lib/exitCodes"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"

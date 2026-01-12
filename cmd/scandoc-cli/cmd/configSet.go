@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"proWeb/internal/cliUtils"
-	"proWeb/internal/config"
+	"proWeb/lib/cliUtils"
+	"proWeb/lib/config"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"

@@ -3,10 +3,10 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"proWeb/internal/cliUtils"
-	"proWeb/internal/config"
-	"proWeb/internal/files"
-	"proWeb/internal/logger"
+	"proWeb/lib/cliUtils"
+	"proWeb/lib/config"
+	"proWeb/lib/files"
+	"proWeb/lib/logger"
 )
 
 type App struct {

@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"proWeb/internal/cliUtils"
-	"proWeb/internal/exitCodes"
-	"proWeb/internal/tesseract"
+	"proWeb/lib/cliUtils"
+	"proWeb/lib/exitCodes"
+	"proWeb/lib/tesseract"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"

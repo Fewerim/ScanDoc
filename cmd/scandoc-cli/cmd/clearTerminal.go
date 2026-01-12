@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"proWeb/internal/cliUtils"
-	"proWeb/internal/exitCodes"
+	"proWeb/lib/cliUtils"
+	"proWeb/lib/exitCodes"
 	"runtime"
 
 	"github.com/fatih/color"
