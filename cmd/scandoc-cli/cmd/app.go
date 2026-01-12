@@ -39,7 +39,7 @@ func (a *App) SetupLogger(pathToFile string) {
 // InitPythonVenv - инициализирует venv для python, если файла нет, создает
 func (a *App) InitPythonVenv() error {
 	if _, err := os.Stat(".venv"); os.IsNotExist(err) {
-		if err = cliUtils.CreateVenv(); err != nil {
+		if err = cliUtils.CreateVenv(a.Cfg.PythonVenvPath); err != nil {
 			return err
 		}
 	}

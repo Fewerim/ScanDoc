@@ -10,7 +10,9 @@ import (
 )
 
 // CreateVenv - создает виртуальное окружения для python
-func CreateVenv() error {
+func CreateVenv(pathToCreate string) error {
+	venvPath := filepath.Join(pathToCreate, ".venv")
+
 	if _, err := os.Stat(".venv"); err == nil {
 		return nil
 	}
@@ -20,10 +22,11 @@ func CreateVenv() error {
 		return InternalError(err.Error())
 	}
 
-	cmd := exec.Command(py, "-m", "venv", ".venv")
+	cmd := exec.Command(py, "-m", "venv", venvPath)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Dir = pathToCreate
 
 	if err = cmd.Run(); err != nil {
 		info := fmt.Sprintf("ошибка создания venv: %w", err)

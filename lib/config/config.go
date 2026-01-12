@@ -15,6 +15,7 @@ const (
 	DefaultPathToConfig = "./config/config.yaml"
 
 	DefaultPort          = 3210
+	DefaultPyVenv        = ""
 	DefaultPyExecutable  = ".venv/Scripts/python.exe"
 	DefaultPyScript      = "./lib/service/scanPy"
 	DefaultPathToStorage = "storageJSONs"
@@ -23,6 +24,7 @@ const (
 
 type Config struct {
 	Port             int    `yaml:"port" required:"true"`
+	PythonVenvPath   string `yaml:"python_venv" required:"true"`
 	PythonExecutable string `yaml:"python_executable"`
 	PythonScript     string `yaml:"python_script"`
 	StoragePath      string `yaml:"storage_path,omitempty"`
@@ -33,6 +35,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		Port:             DefaultPort,
+		PythonVenvPath:   DefaultPyVenv,
 		PythonExecutable: DefaultPyExecutable,
 		PythonScript:     DefaultPyScript,
 		StoragePath:      DefaultPathToStorage,
@@ -43,12 +46,14 @@ func NewDefaultConfig() *Config {
 // SetupDefaultConfig - устанавливает дефолтные значения для конфига
 func (cfg *Config) SetupDefaultConfig() {
 	cfg.Port = DefaultPort
+	cfg.PythonVenvPath = DefaultPyVenv
 	cfg.PythonExecutable = DefaultPyExecutable
 	cfg.PythonScript = DefaultPyScript
 	cfg.StoragePath = DefaultPathToStorage
 	cfg.LogPath = DefaultPathToLog
 }
 
+// TODO: добавить PythonVenv
 // SaveConfig - сохраняет конфиг в файл
 func (cfg *Config) SaveConfig(path string) error {
 	var yamlLines []string
