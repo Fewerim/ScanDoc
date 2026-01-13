@@ -4,9 +4,13 @@ import {context} from '../models';
 
 export function CheckInitStatus():Promise<string>;
 
+export function GetFilesFromStorage():Promise<any>;
+
 export function OpenLog():Promise<void>;
 
 export function OpenStorage():Promise<void>;
+
+export function ReadFileFromStorage(arg1:string):Promise<string>;
 
 export function SetupApp(arg1:context.Context):Promise<void>;
 

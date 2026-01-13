@@ -6,12 +6,20 @@ export function CheckInitStatus() {
   return window['go']['main']['App']['CheckInitStatus']();
 }
 
+export function GetFilesFromStorage() {
+  return window['go']['main']['App']['GetFilesFromStorage']();
+}
+
 export function OpenLog() {
   return window['go']['main']['App']['OpenLog']();
 }
 
 export function OpenStorage() {
   return window['go']['main']['App']['OpenStorage']();
+}
+
+export function ReadFileFromStorage(arg1) {
+  return window['go']['main']['App']['ReadFileFromStorage'](arg1);
 }
 
 export function SetupApp(arg1) {

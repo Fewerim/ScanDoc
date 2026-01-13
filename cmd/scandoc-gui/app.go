@@ -38,6 +38,10 @@ func (a *App) SetupApp(ctx context.Context) error {
 		return err
 	}
 
+	if err := a.app.CheckStorageJSON(); err != nil {
+		return err
+	}
+
 	a.ctx = ctx
 	a.app.Log.Info(a.Name+op, "успешный старт")
 	return nil
@@ -98,4 +102,27 @@ func (a *App) CheckInitStatus() string {
 		return "already-init"
 	}
 	return "ready"
+}
+
+func (a *App) GetFilesFromStorage() interface{} {
+	const op = ".get_files_from_storage"
+
+	files, err := a.app.GetFilesFromStorage(a.Name + op)
+	if err != nil {
+		runtime.LogErrorf(a.ctx, err.Error())
+		return nil
+	}
+
+	return files
+}
+
+func (a *App) ReadFileFromStorage(fileName string) string {
+	const op = ".read_file_from_storage"
+
+	content, err := a.app.ReadFileFromStorage(a.Name+op, fileName)
+	if err != nil {
+		runtime.LogErrorf(a.ctx, err.Error())
+		return ""
+	}
+	return content
 }

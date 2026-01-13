@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	appUtils2 "proWeb/internal/appUtils"
 	"proWeb/internal/exitCodes"
+	"proWeb/internal/storage"
 
 	"github.com/fatih/color"
 )
@@ -34,6 +35,29 @@ func (a *App) OpenStorage(operation string, clearFlag bool) error {
 
 	color.Blue("Локальное хранилище открыто")
 	return nil
+}
+
+// GetFilesFromStorage - команда, которая получает все файлы из локального хранилища
+func (a *App) GetFilesFromStorage(operation string) ([]storage.File, error) {
+	a.Log.Info(operation, "Получение файлов из хранилища")
+	files, err := storage.GetStorageFiles(a.Cfg.StoragePath)
+	if err != nil {
+		a.Log.Error(operation, err.Error(), exitCodes.InternalError)
+		return nil, appUtils2.InternalError(err.Error())
+	}
+	a.Log.Info(operation, "Файлы из хранилища успешно получены")
+	return files, nil
+}
+
+func (a *App) ReadFileFromStorage(operation, fileName string) (string, error) {
+	a.Log.Info(operation, fmt.Sprintf("Чтение содержимого файла: %s", fileName))
+	content, err := storage.ReadFileFromStorage(a.Cfg.StoragePath, fileName)
+	if err != nil {
+		a.Log.Error(operation, err.Error(), exitCodes.InternalError)
+		return "", appUtils2.InternalError(err.Error())
+	}
+	a.Log.Info(operation, fmt.Sprintf("Файл %s успешно прочитан", fileName))
+	return content, nil
 }
 
 func openStorage(storagePath string) error {

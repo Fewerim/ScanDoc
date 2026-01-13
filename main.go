@@ -2,10 +2,17 @@ package main
 
 import (
 	"fmt"
-	"proWeb/lib/config"
+	"log"
+	"proWeb/internal/storage"
 )
 
 func main() {
-	projectRoot, _ := config.FindProjectRoot(".")
-	fmt.Println(projectRoot)
+	pathToStorage := "C:\\Projects\\PP2025-ProWeb\\storageJSONs"
+	files, err := storage.GetStorageFiles(pathToStorage)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, file := range files {
+		fmt.Println(file)
+	}
 }

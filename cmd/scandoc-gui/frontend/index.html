@@ -14,7 +14,7 @@
     <div class="page" id="mainPage">
         <div class="welcome_block">
             <h1 class="nameApp">SCANDOC</h1>
-            <p>Приложение для распознавания бухгалтерских документов</p>
+            <h2 class="text_row">Приложение для распознавания бухгалтерских документов</h2>
             <ul>
                 <li><button id="menuBtn">меню</button></li>
                 <li><button id="exitBtn">выход</button></li>
@@ -24,12 +24,9 @@
 
     <div class="page hidden" id="menuPage">
         <div class="menu_block">
-            <div>
-                <h1 class="nameApp">SCANDOC</h1>
-            </div>
             <div class="bodyMenu">
                 <div>
-                    <h2>Меню</h2>
+                    <h2 class="titlePage">Меню</h2>
                 </div>
                 <div>
                     <ul class="menu">
@@ -41,11 +38,23 @@
                     </ul>
                 </div>
             </div>
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+            </div>
         </div>
     </div>
 
     <div class="page hidden" id="initPage">
-        <div class="init_block">
+        <div class="page_block">
+            <div class="page_body">
+                <h2 class="titlePage">Инициализация</h2>
+                <div class="text_row">
+                    <p>Приложение установит/обновит необходимые зависимости</p>
+                    <p>Проверит наличие хранилища для результатов обработки</p>
+                    <p>Если статус равен <mark>error</mark>, проверьте лог</p>
+                </div>
+                <button id="backBtn">Назад</button>
+            </div>
             <div>
                 <h1 class="nameApp">SCANDOC</h1>
                 <div class="init_buttons">
@@ -55,59 +64,115 @@
                 <h2>Статус инициализации:</h2>
                 <h2 class="init_page_status"><mark><span id="status" class="status-ready"></span></mark></h2>
             </div>
-            <div class="init_body">
-                <h2>Инициализация</h2>
-                <div class="text_row">
-                    <p>Приложение установит/обновит необходимые зависимости</p>
-                    <p>Проверит наличие хранилища для результатов обработки</p>
-                    <p>Если статус равен <mark>error</mark>, проверьте лог</p>
-                </div>
-                <button id="backBtn">Назад</button>
-            </div>
         </div>
     </div>
 
     <div class="page hidden" id="run_oncePage">
-        <div class="run_once_block">
+        <div class="page_block">
+            <div class="page_body">
+                <div>
+                    <h2 class="titlePage">Однофайловая обработка</h2>
+                    <div class="text_row">
+                        <p>Приложение обрабатывает файл</p>
+                        <p>Результат сохраняется в локальное хранилище в формате <mark>.json</mark></p>
+                        <div class="inputs">
+                            <div class="input_group">
+                                <p><label>Файл:</label></p>
+                                <div class="file_input_wrapper">
+                                    <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,application/pdf"  class="select_folder">
+                                </div>
+                            </div>
+                            <div class="input_group">
+                                <p><label>Название:</label></p>
+                                <input type="text" id="filenameInput" autocomplete="off" placeholder="Введите имя файла">
+                            </div>
+                        </div>
+                        <p>Если статус равен <mark>error</mark>, проверьте лог</p>
+                    </div>
+                    <button id="backBtn">Назад</button>
+                </div>
+            </div>
             <div>
                 <h1 class="nameApp">SCANDOC</h1>
-            </div>
-            <div class="run_once_body">
-                <div>
-                    <h2>Однофайловая обработка</h2>
+                <div class="work_buttons">
+                    <button id="start_run_onceBtn">Начать обработку</button>
+                    <div class="lower_buttons">
+                        <button id="open_resultsBtn">Результат</button>
+                        <button id="openLogBtn">Лог</button>
+                    </div>
                 </div>
+                <h2>Статус обработки:</h2>
+                <h2><mark><span id="status_run_once" class="status-ready">status</span></mark></h2>
             </div>
         </div>
     </div>
 
     <div class="page hidden" id="run_multiPage">
-        <div class="run_multi_block">
+        <div class="page_block">
+            <div class="page_body">
+                <div>
+                    <h2 class="titlePage">Пакетная обработка</h2>
+                    <div class="text_row">
+                        <p>Приложение обрабатывает папку</p>
+                        <p>Результаты сохраняются в локальное хранилище в формате <mark>.json</mark></p>
+                        <div class="inputs">
+                            <div class="input_group">
+                                <p><label>Папка:</label></p>
+                                <div class="file_input_wrapper">
+                                    <input type="file" id="fileInput" class="select_folder">
+                                </div>
+                            </div>
+                            <div class="input_group">
+                                <p><label>Название:</label></p>
+                                <input type="text" id="filenameInput" autocomplete="off" placeholder="Введите имя папки">
+                            </div>
+                        </div>
+                        <p>Если статус равен <mark>error</mark>, проверьте лог</p>
+                    </div>
+                    <button id="backBtn">Назад</button>
+                </div>
+            </div>
             <div>
                 <h1 class="nameApp">SCANDOC</h1>
-            </div>
-            <div class="run_multi_body">
-                <div>
-                    <h2>Пакетная обработка</h2>
+                <div class="work_buttons">
+                    <button id="start_run_multiBtn">Начать обработку</button>
+                    <div class="lower_buttons">
+                        <button id="open_resultsBtn">Результат</button>
+                        <button id="openLogBtn">Лог</button>
+                    </div>
                 </div>
+                <h2>Статус обработки:</h2>
+                <h2><mark><span id="status_run_multi" class="status-ready">status</span></mark></h2>
             </div>
         </div>
     </div>
 
     <div class="page hidden" id="resultsPage">
-        <div class="results_block">
+        <div class="page_block">
+            <div class="page_body">
+                <div>
+                    <h2 class="titlePage">Хранилище результатов</h2>
+                    <p class="text_row">Результаты</p>
+                    <div class="scroll-container">
+                        <div id="filesList" class="files-list">
+                        </div>
+                    </div>
+                </div>
+                <button id="backBtn">Назад</button>
+            </div>
             <div>
                 <h1 class="nameApp">SCANDOC</h1>
-            </div>
-            <div class="results_body">
-                <div>
-                    <h2>Хранилище результатов</h2>
+                <div id="previewTitle" class="preview-title"><h2>Выберите файл для просмотра</h2></div>
+                <div class="preview-block">
+                    <div id="fileContent" class="file-content"></div>
                 </div>
+                <button id="editBtn">Редактировать</button>
             </div>
         </div>
     </div>
 
     <div class="page hidden" id="editPage">
-        <div class="edit_block">
+        <div class="page_block">
             <div>
                 <h1 class="nameApp">SCANDOC</h1>
             </div>
