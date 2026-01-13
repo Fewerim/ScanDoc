@@ -1,4 +1,5 @@
-import { OpenLog, StartInit } from "../wailsjs/go/main/App"
+import { OpenLog, StartInit, CheckInitStatus } from "../wailsjs/go/main/App"
+import { EventsOn } from "../wailsjs/runtime/runtime"
 
 const menuButtons = [
     {id: "initBtn", page: "initPage", event: "initPage-clicked"},
@@ -37,6 +38,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuBtn = document.getElementById('menuBtn');
     const backBtn = document.getElementById('backBtn');
 
+    EventsOn("init_status", (...args) => {
+
+        const status = args[0]
+        const errorMsg = args[1] || null
+
+        const statusEl = document.getElementById("status")
+        if (statusEl && status) {
+            statusEl.textContent = getStatusText(status)
+            statusEl.className = `status-${status}`
+        }
+    })
+
     setupButton("menuBtn", ()=>{
         showPage('menuPage');
         window.runtime.EventsEmit("menu-clicked");
@@ -62,6 +75,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+function updateInitStatus(status, errorMsg) {
+    const statusEl = document.getElementById("status")
+    const initBtn = document.getElementById("startInitBtn")
+
+    if (!statusEl || !initBtn) return
+
+    statusEl.textContent = getStatusText(status)
+    statusEl.className = `status-${status}`
+
+    if (status === "success" || status === "already-init" || status === "done") {
+        initBtn.disabled = true
+        initBtn.textContent = "Инициализация завершена"
+        initBtn.classList.add("completed")
+    } else {
+        initBtn.disabled = false
+        initBtn.textContent = "Начать инициализацию"
+        initBtn.classList.remove("completed")
+    }
+
+    if (status === "error" && errorMsg) {
+        statusEl.textContent += `: ${errorMsg}`
+        console.error("Init error:", errorMsg)
+    }
+}
+
+function getStatusText(status) {
+    const texts = {
+        "ready": "Готов к инициализации",
+        "process": "Выполняется...",
+        "success": "Успешно завершено",
+        "already-init": "Инициализация уже выполнена",
+        "done": "Готово"
+    }
+    return texts[status] || status
+}
+
 // setupButton - устанавливает кнопку
 function setupButton(id, handler) {
     const btn = document.getElementById(id)
@@ -79,5 +128,18 @@ function showPage(pageId) {
     });
     document.getElementById(pageId).classList.remove('hidden');
     window.history.pushState({page: pageId}, '', `#${pageId}`);
+
+    if (pageId === "initPage") {
+        checkInitOnPageLoad()
+    }
+}
+
+async function checkInitOnPageLoad() {
+    try {
+        const status = await CheckInitStatus()
+        updateInitStatus(status)
+    } catch (error) {
+        updateInitStatus("error", error.message)
+    }
 }
 

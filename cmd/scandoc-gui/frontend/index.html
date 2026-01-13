@@ -52,14 +52,15 @@
                     <button id="startInitBtn">Начать инициализацию</button>
                     <button id="openLogBtn">Лог</button>
                 </div>
-                <h2>Статус выполнения: status</h2>
+                <h2>Статус инициализации:</h2>
+                <h2 class="init_page_status"><mark><span id="status" class="status-ready"></span></mark></h2>
             </div>
             <div class="init_body">
                 <h2>Инициализация</h2>
                 <div class="text_row">
                     <p>Приложение установит/обновит необходимые зависимости</p>
                     <p>Проверит наличие хранилища для результатов обработки</p>
-                    <p>Если статус выполнения не равен <mark>success</mark>, проверьте лог</p>
+                    <p>Если статус равен <mark>error</mark>, проверьте лог</p>
                 </div>
                 <button id="backBtn">Назад</button>
             </div>

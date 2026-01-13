@@ -72,7 +72,30 @@ func (a *App) OpenStorage() {
 func (a *App) StartInit() {
 	const op = ".init"
 
-	if err := a.app.InitApp(a.Name + op); err != nil {
-		runtime.LogErrorf(a.ctx, err.Error())
+	if ok, _ := a.app.CheckInit(a.Name + op); ok {
+		runtime.EventsEmit(a.ctx, "init_status", "already-init")
+		return
 	}
+
+	runtime.EventsEmit(a.ctx, "init_status", "process")
+
+	if err := a.app.InitApp(a.Name + op); err != nil {
+		runtime.EventsEmit(a.ctx, "init_status", "error")
+		return
+	}
+	runtime.EventsEmit(a.ctx, "init_status", "success")
+}
+
+// CheckInitStatus - проверяет, проинициализировано приложение или нет
+func (a *App) CheckInitStatus() string {
+	const op = ".check_init_status"
+
+	ok, err := a.app.CheckInit(a.Name + op)
+	if err != nil {
+		return "error"
+	}
+	if ok {
+		return "already-init"
+	}
+	return "ready"
 }

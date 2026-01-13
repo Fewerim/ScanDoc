@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"proWeb/internal/tesseract"
-	"proWeb/lib/config"
 )
 
 // CreateVenv - создает виртуальное окружения для python
@@ -117,13 +116,13 @@ func checkInternetConnection() bool {
 }
 
 // CheckInitWasUsed - проверяет был ли уже запущен init, чтобы все зависисмости были установлены
-func CheckInitWasUsed() (bool, error) {
-	projectRoot, err := config.FindProjectRoot(".")
-	if err != nil {
-		return false, InternalError(err.Error())
-	}
+func CheckInitWasUsed(pathToVenv string) (bool, error) {
+	//projectRoot, err := config.FindProjectRoot(".")
+	//if err != nil {
+	//	return false, InternalError(err.Error())
+	//}
 
-	venvPath := filepath.Join(projectRoot, ".venv", "Lib", "site-packages")
+	venvPath := filepath.Join(pathToVenv, ".venv", "Lib", "site-packages")
 
 	entries, err := os.ReadDir(venvPath)
 	if err != nil {

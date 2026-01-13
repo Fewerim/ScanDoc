@@ -22,7 +22,7 @@ func (a *App) MultiFiles(operation, directory, createdFolderName string) (err er
 		return appUtils2.UserError("tesseract не добавлен в PATH")
 	}
 
-	initUsed, err := appUtils2.CheckInitWasUsed()
+	initUsed, err := appUtils2.CheckInitWasUsed(a.Cfg.PythonVenvPath)
 	if err != nil {
 		a.Log.Error(operation, "ошибка чтения папки с зависимостями", exitCodes.InternalError)
 		return appUtils2.InternalError("ошибка чтения папки с зависимостями")

@@ -15,7 +15,7 @@ body {
 }
 
 mark {
-    background: rgba(255,255,255,0.25);  /* Полупрозрачный фон */
+    background: rgba(255,255,255,0.25);
     color: white;
     padding: 0.2rem 0.4rem;
     border-radius: 4px;
@@ -227,6 +227,10 @@ h1.nameApp:hover {
     align-self: center;  /* h2 по центру */
 }
 
+.init_page_status {
+    margin-top: 0.5rem;
+}
+
 .text_row {
     display: flex;
     flex-direction: column;
@@ -255,4 +259,7 @@ h1.nameApp:hover {
     color: rgba(0,0,0,0.75);
 }
 
+.status-done, .status-already-init, .status-success { color: white; }
+.status-process { color: white; animation: pulse 1.5s infinite; }
+.status-error { color: white; }
 

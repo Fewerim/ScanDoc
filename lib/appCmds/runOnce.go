@@ -22,7 +22,7 @@ func (a *App) OnceFile(operation, filePath, createdFileName string) (err error) 
 		return appUtils.UserError("tesseract не добавлен в PATH")
 	}
 
-	initUsed, err := appUtils.CheckInitWasUsed()
+	initUsed, err := appUtils.CheckInitWasUsed(a.Cfg.PythonVenvPath)
 	if err != nil {
 		a.Log.Error(operation, "ошибка чтения папки с зависимостями", exitCodes.InternalError)
 		return appUtils.InternalError("ошибка чтения папки с зависимостями")

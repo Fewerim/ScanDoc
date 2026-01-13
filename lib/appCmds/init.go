@@ -44,3 +44,15 @@ func (a *App) InitApp(operation string) error {
 	a.Log.Info(operation, "зависимости успешно установлены")
 	return nil
 }
+
+// CheckInit - проверяет, был ли init до вызова функции
+func (a *App) CheckInit(operation string) (bool, error) {
+	a.Log.Info(operation, "Проверка инициализации приложения")
+
+	ok, err := appUtils.CheckInitWasUsed(a.Cfg.PythonVenvPath)
+	if err != nil {
+		a.Log.Error(operation, err.Error(), exitCodes.InternalError)
+		return false, err
+	}
+	return ok, nil
+}
