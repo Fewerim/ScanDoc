@@ -2,16 +2,18 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
 	"proWeb/lib/cliUtils"
 	"proWeb/lib/config"
+	"runtime"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
 // configSet - команда, позволяющая менять значения конфига внутри файла
-func configSet(configPath string, port int, pythonExecutable, pythonScript, storagePath, logPath string) error {
-	if err := checkRequiredFlags(port, pythonExecutable, pythonScript); err != nil {
+func configSet(configPath string, port int, pythonExecutable, pythonScript, storagePath, logPath, pyVenvPath string) error {
+	if err := checkRequiredFlags(port, pythonExecutable, pythonScript, pyVenvPath); err != nil {
 		return cliUtils.UserError(err.Error())
 	}
 
@@ -27,19 +29,29 @@ func configSet(configPath string, port int, pythonExecutable, pythonScript, stor
 	cfg.Port = port
 	cfg.PythonExecutable = pythonExecutable
 	cfg.PythonScript = pythonScript
+	cfg.PythonVenvPath = pyVenvPath
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return fmt.Errorf("не удалось определить путь к корню проекта")
+	}
+
+	cliUtilsDir := filepath.Dir(filename)
+
+	projectRoot := filepath.Dir(filepath.Dir(cliUtilsDir))
 
 	if storagePath != "" {
 		cfg.StoragePath = storagePath
 	}
 	if cfg.StoragePath == "" {
-		cfg.StoragePath = config.DefaultPathToStorage
+		cfg.StoragePath = filepath.Join(projectRoot, config.DefaultPathToStorage)
 	}
 
 	if logPath != "" {
 		cfg.LogPath = logPath
 	}
 	if cfg.LogPath == "" {
-		cfg.LogPath = config.DefaultPathToLog
+		cfg.LogPath = filepath.Join(projectRoot, config.DefaultPathToLog)
 	}
 
 	if err := cfg.SaveConfig(configPath); err != nil {
@@ -72,7 +84,7 @@ func setupDefaultConfig(configPath string) error {
 }
 
 // checkRequiredFlags - проверяет наличие обязательных флагов для установки конфига
-func checkRequiredFlags(port int, pyexe, pyScript string) error {
+func checkRequiredFlags(port int, pyexe, pyScript, pyVenvPath string) error {
 	if port == 0 {
 		return fmt.Errorf("порт обязателен для указания")
 	}
@@ -81,6 +93,9 @@ func checkRequiredFlags(port int, pyexe, pyScript string) error {
 	}
 	if pyScript == "" {
 		return fmt.Errorf("python-script обязателен для указания")
+	}
+	if pyVenvPath == "" {
+		return fmt.Errorf("python-venv обязателен для указания")
 	}
 
 	return nil
@@ -95,6 +110,7 @@ func NewConfigSetCmd() *cobra.Command {
 		logPath          string
 		configPath       string
 		useDefault       bool
+		pyVenvPath       string
 	)
 
 	cmd := &cobra.Command{
@@ -112,7 +128,7 @@ func NewConfigSetCmd() *cobra.Command {
 				return setupDefaultConfig(finalConfigPath)
 			}
 
-			return configSet(finalConfigPath, port, pythonExecutable, pythonScript, storagePath, logPath)
+			return configSet(finalConfigPath, port, pythonExecutable, pythonScript, storagePath, logPath, pyVenvPath)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,
@@ -125,6 +141,7 @@ func NewConfigSetCmd() *cobra.Command {
 	cmd.Flags().StringVar(&pythonScript, "python-script", "", "Путь к Python скрипту(обязательно)")
 	cmd.Flags().StringVarP(&storagePath, "storage-path", "s", "", "Путь к хранилищу данных(необязательно)")
 	cmd.Flags().StringVarP(&logPath, "log-path", "l", "", "Путь к логам(необязательно)")
+	cmd.Flags().StringVar(&pyVenvPath, "python-venv", "", "путь к зависимостям(обязательно)")
 
 	return cmd
 }

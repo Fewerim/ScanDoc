@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -17,7 +18,7 @@ const (
 	DefaultPort          = 3210
 	DefaultPyVenv        = ""
 	DefaultPyExecutable  = ".venv/Scripts/python.exe"
-	DefaultPyScript      = "./lib/service/scanPy"
+	DefaultPyScript      = "/lib/service/scanPy"
 	DefaultPathToStorage = "storageJSONs"
 	DefaultPathToLog     = "log/info.log"
 )
@@ -45,12 +46,20 @@ func NewDefaultConfig() *Config {
 
 // SetupDefaultConfig - устанавливает дефолтные значения для конфига
 func (cfg *Config) SetupDefaultConfig() {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return
+	}
+
+	cliUtilsDir := filepath.Dir(filename)
+
+	projectRoot := filepath.Dir(filepath.Dir(cliUtilsDir))
 	cfg.Port = DefaultPort
-	cfg.PythonVenvPath = DefaultPyVenv
-	cfg.PythonExecutable = DefaultPyExecutable
-	cfg.PythonScript = DefaultPyScript
-	cfg.StoragePath = DefaultPathToStorage
-	cfg.LogPath = DefaultPathToLog
+	cfg.PythonVenvPath = filepath.Join(projectRoot, DefaultPyVenv)
+	cfg.PythonExecutable = filepath.Join(projectRoot, DefaultPyExecutable)
+	cfg.PythonScript = filepath.Join(projectRoot, DefaultPyScript)
+	cfg.StoragePath = filepath.Join(projectRoot, DefaultPathToStorage)
+	cfg.LogPath = filepath.Join(projectRoot, DefaultPathToLog)
 }
 
 // TODO: добавить PythonVenv
@@ -59,6 +68,7 @@ func (cfg *Config) SaveConfig(path string) error {
 	var yamlLines []string
 
 	yamlLines = append(yamlLines, fmt.Sprintf("port: %d", cfg.Port))
+	yamlLines = append(yamlLines, fmt.Sprintf("python_venv: \"%s\"", escapeYAMLString(cfg.PythonVenvPath)))
 	yamlLines = append(yamlLines, fmt.Sprintf("python_executable: \"%s\"", escapeYAMLString(cfg.PythonExecutable)))
 	yamlLines = append(yamlLines, fmt.Sprintf("python_script: \"%s\"", escapeYAMLString(cfg.PythonScript)))
 	if cfg.StoragePath != "" {

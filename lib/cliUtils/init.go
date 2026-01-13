@@ -114,6 +114,7 @@ func checkInternetConnection() bool {
 	return cmd.Run() == nil
 }
 
+// CheckInitWasUsed - проверяет был ли уже запущен init, чтобы все зависисмости были установлены
 func CheckInitWasUsed() (bool, error) {
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
