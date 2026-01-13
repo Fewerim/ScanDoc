@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"proWeb/lib/appCmds"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 const NameApp = "scandoc-GUI"
@@ -50,7 +51,28 @@ func (a *App) startup(ctx context.Context) {
 	}
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+// OpenLog - открывает папку с логами
+func (a *App) OpenLog() {
+	const op = ".open_log"
+
+	if err := a.app.OpenLogFolder(a.Name+op, false); err != nil {
+		runtime.LogErrorf(a.ctx, err.Error())
+	}
+}
+
+// OpenStorage - открывает локальное хранилище
+func (a *App) OpenStorage() {
+	const op = ".open_storage"
+
+	if err := a.app.OpenStorage(a.Name+op, false); err != nil {
+		runtime.LogErrorf(a.ctx, err.Error())
+	}
+}
+
+func (a *App) StartInit() {
+	const op = ".init"
+
+	if err := a.app.InitApp(a.Name + op); err != nil {
+		runtime.LogErrorf(a.ctx, err.Error())
+	}
 }

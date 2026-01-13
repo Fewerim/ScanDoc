@@ -40,13 +40,13 @@ func CreateVenv(pathToCreate string) error {
 }
 
 // InstallRequirements - устанавливает все необходимые зависимости для python скрипта
-func InstallRequirements(pathToScript string) error {
+func InstallRequirements(pathToVenv, pathToScript string) error {
 	reqsPath := filepath.Join(pathToScript, "requirements.txt")
 	if _, err := os.Stat(reqsPath); os.IsNotExist(err) {
 		return UserError("файл requirements.txt не найден")
 	}
 
-	pipPath := filepath.Join(".venv", "Scripts", "pip.exe")
+	pipPath := filepath.Join(pathToVenv, ".venv", "Scripts", "pip.exe")
 	if _, err := os.Stat(pipPath); os.IsNotExist(err) {
 		info := fmt.Sprintf("pip не найден в .venv: %s", pipPath)
 		return UserError(info)

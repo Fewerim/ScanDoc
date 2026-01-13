@@ -1,3 +1,5 @@
+import { OpenLog, StartInit } from "../wailsjs/go/main/App"
+
 const menuButtons = [
     {id: "initBtn", page: "initPage", event: "initPage-clicked"},
     {id: "run_onceBtn", page: "run_oncePage", event: "run_oncePage-clicked"},
@@ -5,6 +7,30 @@ const menuButtons = [
     {id: "resultsBtn", page: "resultsPage", event: "resultsPage-clicked"},
     {id: "backBtn", page: "menuPage", event: "back-clicked"}
 ]
+
+document.getElementById("openLogBtn").addEventListener("click", async () => {
+    try {
+        await OpenLog()
+    } catch (error) {
+        console.error("Ошибка:", error)
+    }
+})
+
+document.getElementById("startInitBtn").addEventListener("click", async () => {
+    try {
+        await StartInit()
+    } catch (error) {
+        console.error("Ошибка:", error)
+    }
+})
+
+// document.getElementById("openStorageBtn").addEventListener("click", async () => {
+//     try {
+//         await OpenStorage()
+//     } catch (error) {
+//         console.error("Ошибка:", error)
+//     }
+// })
 
 // Инициализация после загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {

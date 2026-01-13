@@ -11,8 +11,8 @@ import (
 	"github.com/fatih/color"
 )
 
-// Storage - команда, открывающая папку storage
-func (a *App) Storage(operation string, clearFlag bool) error {
+// OpenStorage - команда, открывающая папку storage
+func (a *App) OpenStorage(operation string, clearFlag bool) error {
 	storagePath := a.Cfg.StoragePath
 
 	if clearFlag {

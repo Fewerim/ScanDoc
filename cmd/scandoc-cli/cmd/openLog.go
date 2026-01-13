@@ -18,7 +18,7 @@ func newOpenLogCmd(a *AppCLI) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("ошибка чтения флага: %v", err)
 			}
-			return a.App.Logs(a.Name+op, clearFlag)
+			return a.App.OpenLogFolder(a.Name+op, clearFlag)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,

@@ -11,8 +11,8 @@ import (
 	"github.com/fatih/color"
 )
 
-// Logs - команда, открывающая папку с логами
-func (a *App) Logs(operation string, clearFlag bool) error {
+// OpenLogFolder - команда, открывающая папку с логами
+func (a *App) OpenLogFolder(operation string, clearFlag bool) error {
 	if clearFlag {
 		if err := clearLog(a.Cfg.LogPath); err != nil {
 			info := fmt.Sprintf("ошибка удаления: %v", err)
