@@ -2,13 +2,10 @@ package main
 
 import (
 	"fmt"
-	"proWeb/internal/appUtils"
+	"proWeb/lib/config"
 )
 
 func main() {
-	b, err := appUtils.CheckInitWasUsed()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(b)
+	projectRoot, _ := config.FindProjectRoot(".")
+	fmt.Println(projectRoot)
 }

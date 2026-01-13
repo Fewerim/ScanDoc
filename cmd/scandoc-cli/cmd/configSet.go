@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"proWeb/internal/appUtils"
 	"proWeb/lib/config"
-	"runtime"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -31,14 +30,10 @@ func configSet(configPath string, port int, pythonExecutable, pythonScript, stor
 	cfg.PythonScript = pythonScript
 	cfg.PythonVenvPath = pyVenvPath
 
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		return appUtils.InternalError("не удалось определить путь к корню проекта")
+	projectRoot, err := config.FindProjectRoot(".")
+	if err != nil {
+		return appUtils.ServerError(err.Error())
 	}
-
-	cliUtilsDir := filepath.Dir(filename)
-
-	projectRoot := filepath.Dir(filepath.Dir(cliUtilsDir))
 
 	if storagePath != "" {
 		cfg.StoragePath = storagePath

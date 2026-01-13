@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -46,14 +45,11 @@ func NewDefaultConfig() *Config {
 
 // SetupDefaultConfig - устанавливает дефолтные значения для конфига
 func (cfg *Config) SetupDefaultConfig() {
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
+	projectRoot, err := FindProjectRoot(".")
+	if err != nil {
 		return
 	}
 
-	cliUtilsDir := filepath.Dir(filename)
-
-	projectRoot := filepath.Dir(filepath.Dir(cliUtilsDir))
 	cfg.Port = DefaultPort
 	cfg.PythonVenvPath = filepath.Join(projectRoot, DefaultPyVenv)
 	cfg.PythonExecutable = filepath.Join(projectRoot, DefaultPyExecutable)
@@ -199,4 +195,19 @@ func escapeYAMLString(s string) string {
 	s = strings.ReplaceAll(s, `\`, `\\`)
 	s = strings.ReplaceAll(s, `"`, `\"`)
 	return s
+}
+
+func FindProjectRoot(start string) (string, error) {
+	dir := start
+	for i := 0; i < 10; i++ {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			projectRoot, err := filepath.Abs(dir)
+			if err != nil {
+				return "", err
+			}
+			return projectRoot, nil
+		}
+		dir = filepath.Dir(dir)
+	}
+	return "", fmt.Errorf("корень проекта не найден")
 }
