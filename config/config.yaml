@@ -1,6 +1,6 @@
 port: 3210
-python_venv: "C:/Projects/PP2025-ProWeb"
-python_executable: "C:/Projects/PP2025-ProWeb/.venv/Scripts/python.exe"
-python_script: "C:/Projects/PP2025-ProWeb/lib/service/scanPy"
-storage_path: "C:/Projects/PP2025-ProWeb/storageJSONs"
-log_path: "C:/Projects/PP2025-ProWeb/log/info.log"
+python_venv: "C:/Users/Administrator/Desktop/githubTest/PP2025-ProWeb"
+python_executable: "C:/Users/Administrator/Desktop/githubTest/PP2025-ProWeb/.venv/Scripts/python.exe"
+python_script: "C:/Users/Administrator/Desktop/githubTest/PP2025-ProWeb/lib/service/scanPy"
+storage_path: "C:/Users/Administrator/Desktop/githubTest/PP2025-ProWeb/storageJSONs"
+log_path: "C:/Users/Administrator/Desktop/githubTest/PP2025-ProWeb/log/info.log"

@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"proWeb/lib/tesseract"
+	"runtime"
 )
 
 // CreateVenv - создает виртуальное окружения для python
@@ -111,4 +112,29 @@ func findSystemPython() (string, error) {
 func checkInternetConnection() bool {
 	cmd := exec.Command("ping", "-n", "1", "-w", "3000", "pypi.org")
 	return cmd.Run() == nil
+}
+
+func CheckInitWasUsed() (bool, error) {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return false, fmt.Errorf("не удалось определить путь к папке с зависимостями")
+	}
+
+	cliUtilsDir := filepath.Dir(filename)
+
+	projectRoot := filepath.Dir(filepath.Dir(cliUtilsDir))
+	venvPath := filepath.Join(projectRoot, ".venv", "Lib", "site-packages")
+
+	entries, err := os.ReadDir(venvPath)
+	if err != nil {
+		return false, fmt.Errorf("ошибка чтения папки с зависимостями или ее отсутствие: %w", err)
+	}
+
+	for _, entry := range entries {
+		if entry.Name() == "yaml" && entry.IsDir() {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

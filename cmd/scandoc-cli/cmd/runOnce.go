@@ -25,6 +25,16 @@ func (a *App) onceFile(filePath, createdFileName string) (err error) {
 		return cliUtils.UserError("tesseract не добавлен в PATH")
 	}
 
+	initUsed, err := cliUtils.CheckInitWasUsed()
+	if err != nil {
+		a.Log.Error(operation, "ошибка чтения папки с зависимостями", exitCodes.InternalError)
+		return cliUtils.InternalError("ошибка чтения папки с зависимостями")
+	}
+	if !initUsed {
+		a.Log.Error(operation, "приложение не было инициализировано. Необходимо запустить команду init", exitCodes.UserError)
+		return cliUtils.UserError("приложение не было инициализировано. Необходимо запустить команду init")
+	}
+
 	if err := cliUtils.CheckIsAutorunCorrect(); err != nil {
 		a.Log.Error(operation, err.Error(), cliUtils.GetExitCode(err, exitCodes.UserError))
 		return err
