@@ -45,12 +45,18 @@ func handleError(err error, log logger.Logger) {
 // catchPanic - ловит панику, если такая случилась
 func catchPanic() {
 	if r := recover(); r != nil {
-		msg := fmt.Sprintf("%v", r)
-		if strings.Contains(msg, "nil pointer") {
-			pan := fmt.Sprintf("программа завершилась с паникой: возможно, команда получила не все аргументы. проверьте ввод")
-			color.Red(pan)
+		var msg string
+		if err, ok := r.(error); ok {
+			msg = err.Error()
 		} else {
-			color.Red("программа завершилась с паникой: ", r)
+			msg = fmt.Sprintf("%v", r)
+		}
+		msg = strings.TrimSuffix(msg, ": Access is denied.")
+
+		if strings.Contains(msg, "nil pointer") {
+			color.Red("программа завершилась с паникой: возможно, команда получила не все аргументы. проверьте ввод")
+		} else {
+			color.Red("программа завершилась с паникой: " + msg)
 		}
 		os.Exit(3)
 	}

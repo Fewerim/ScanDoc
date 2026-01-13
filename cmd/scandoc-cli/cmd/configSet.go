@@ -33,7 +33,7 @@ func configSet(configPath string, port int, pythonExecutable, pythonScript, stor
 
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
-		return fmt.Errorf("не удалось определить путь к корню проекта")
+		return cliUtils.InternalError("не удалось определить путь к корню проекта")
 	}
 
 	cliUtilsDir := filepath.Dir(filename)
@@ -135,7 +135,7 @@ func NewConfigSetCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&configPath, "config", "c", "", "Путь к конфигурационному файлу (необязательно, по умолчанию: config/config.yaml)")
-	cmd.Flags().BoolVar(&useDefault, "default", false, "Установить значения конфига по умолчанию(необязательно)")
+	cmd.Flags().BoolVar(&useDefault, "default", false, "Установить значения конфига по умолчанию(обязательно)")
 	cmd.Flags().IntVarP(&port, "port", "p", 0, "Порт приложения(обязательно)")
 	cmd.Flags().StringVar(&pythonExecutable, "python-executable", "", "Путь к Python интерпретатору(обязательно)")
 	cmd.Flags().StringVar(&pythonScript, "python-script", "", "Путь к Python скрипту(обязательно)")

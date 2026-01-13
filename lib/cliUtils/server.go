@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -41,6 +42,7 @@ func StartPythonServer(port int, pythonExecutable, pathToScript string) (*exec.C
 	}
 	portStr := fmt.Sprintf("%d", port)
 	pathToScript = filepath.Join(pathToScript, "src/run_api.py")
+	log.Printf(pathToScript)
 
 	cmd := exec.Command(pythonExecutable, pathToScript, "--port", portStr)
 

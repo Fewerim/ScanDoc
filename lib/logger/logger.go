@@ -29,13 +29,13 @@ func NewFileLog(filePath string) (*Log, error) {
 	dir := filepath.Dir(filePath)
 	if dir != "" && dir != "." {
 		if err := os.MkdirAll(dir, 0775); err != nil {
-			return nil, fmt.Errorf("failed to create log directory '%s': %w", dir, err)
+			return nil, fmt.Errorf("ошибка создания папки для логов: '%v': %w", dir, err)
 		}
 	}
 
 	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open log file '%s': %w", filePath, err)
+		return nil, fmt.Errorf("ошибка открытия папки для логов: '%v': %w", filePath, err)
 	}
 	return New(file), nil
 }

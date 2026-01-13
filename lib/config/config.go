@@ -62,7 +62,6 @@ func (cfg *Config) SetupDefaultConfig() {
 	cfg.LogPath = filepath.Join(projectRoot, DefaultPathToLog)
 }
 
-// TODO: добавить PythonVenv
 // SaveConfig - сохраняет конфиг в файл
 func (cfg *Config) SaveConfig(path string) error {
 	var yamlLines []string
@@ -122,7 +121,7 @@ func LoadConfig(path string) (*Config, error) {
 	}
 
 	var cfg Config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	if err = yaml.Unmarshal(data, &cfg); err != nil {
 		return nil, fmt.Errorf("ошибка разбора YAML: %w", err)
 	}
 
