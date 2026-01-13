@@ -1,8 +1,8 @@
 package appCmds
 
 import (
-	"proWeb/lib/appUtils"
-	"proWeb/lib/tesseract"
+	"proWeb/internal/appUtils"
+	"proWeb/internal/tesseract"
 	"strings"
 
 	"github.com/fatih/color"

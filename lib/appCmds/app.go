@@ -3,10 +3,11 @@ package appCmds
 import (
 	"fmt"
 	"os"
-	"proWeb/lib/appUtils"
+	"path/filepath"
+	"proWeb/internal/appUtils"
+	"proWeb/internal/files"
+	"proWeb/internal/logger"
 	"proWeb/lib/config"
-	"proWeb/lib/files"
-	"proWeb/lib/logger"
 )
 
 type App struct {
@@ -41,7 +42,9 @@ func (a *App) SetupLogger(pathToFile string) {
 
 // InitPythonVenv - инициализирует venv для python, если файла нет, создает
 func (a *App) InitPythonVenv() error {
-	if _, err := os.Stat(".venv"); os.IsNotExist(err) {
+	venvPath := filepath.Join(a.Cfg.PythonVenvPath, ".venv")
+
+	if _, err := os.Stat(venvPath); os.IsNotExist(err) {
 		if err = appUtils.CreateVenv(a.Cfg.PythonVenvPath); err != nil {
 			return err
 		}

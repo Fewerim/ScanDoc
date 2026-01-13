@@ -3,98 +3,42 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-	"proWeb/lib/appUtils"
-	"proWeb/lib/config"
-	"proWeb/lib/files"
-	"proWeb/lib/logger"
+	"proWeb/lib/appCmds"
 )
+
+const NameApp = "scandoc-GUI"
 
 // App struct
 type App struct {
-	ctx     context.Context
-	CfgPath string
-	Log     logger.Logger
-	Cfg     *config.Config
+	Name string
+	ctx  context.Context
+	app  *appCmds.App
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{
-		ctx:     context.Background(),
-		CfgPath: "",
-		Log:     nil,
-		Cfg:     nil,
+		Name: NameApp,
+		ctx:  context.Background(),
+		app:  appCmds.New(),
 	}
-}
-
-// LoadConfig - загружает конфиг по пути из поля App, если путь пустой, устанавливает его
-func (a *App) LoadConfig() {
-	path := a.CfgPath
-	if path == "" {
-		path = config.DefaultConfigPath()
-	}
-
-	a.CfgPath = path
-	a.Cfg = config.MustLoadWithPath(path)
-}
-
-// SetupLogger - устанавливает логгер, который пишет в файл по переданному пути
-func (a *App) SetupLogger(pathToFile string) {
-	a.Log = logger.MustSetup(pathToFile)
-}
-
-// InitPythonVenv - инициализирует venv для python, если файла нет, создает
-func (a *App) InitPythonVenv() error {
-	if _, err := os.Stat(".venv"); os.IsNotExist(err) {
-		if err = appUtils.CreateVenv(a.Cfg.PythonVenvPath); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// CheckPythonScripts - проверяет наличие пути к python скрипту и наличие venv файла для успешного запуска скрипта
-func (a *App) CheckPythonScripts() error {
-	pyVenv := a.Cfg.PythonExecutable
-	pyScript := a.Cfg.PythonScript
-
-	if _, err := os.Stat(pyVenv); os.IsNotExist(err) {
-		return fmt.Errorf("python из venv не найден: %s", pyVenv)
-	}
-	if _, err := os.Stat(pyScript); os.IsNotExist(err) {
-		return fmt.Errorf("серверный скрипт не найден: %s", pyScript)
-	}
-	return nil
-}
-
-// CheckStorageJSON - проверяет наличие локального хранилища, если его нет, создает новое
-func (a *App) CheckStorageJSON() error {
-	files.InitStorage(a.Cfg.StoragePath)
-
-	if !files.StorageExists() {
-		if err := files.CreateStorageJSON(); err != nil {
-			return fmt.Errorf("ошибка создания локального хранилища: %v", err)
-		}
-	}
-	return nil
 }
 
 func (a *App) SetupApp(ctx context.Context) error {
-	const op = "scandoc-gui.startup"
-	a.LoadConfig()
-	a.SetupLogger(a.Cfg.LogPath)
+	const op = ".startup"
+	a.app.LoadConfig()
+	a.app.SetupLogger(a.app.Cfg.LogPath)
 
-	if err := a.InitPythonVenv(); err != nil {
+	if err := a.app.InitPythonVenv(); err != nil {
 		return err
 	}
 
-	if err := a.CheckPythonScripts(); err != nil {
+	if err := a.app.CheckPythonScripts(); err != nil {
 		return err
 	}
 
 	a.ctx = ctx
-	a.Log.Info(op, "успешный старт")
+	a.app.Log.Info(a.Name+op, "успешный старт")
 	return nil
 }
 

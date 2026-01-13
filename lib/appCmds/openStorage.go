@@ -5,8 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"proWeb/lib/appUtils"
-	"proWeb/lib/exitCodes"
+	appUtils2 "proWeb/internal/appUtils"
+	"proWeb/internal/exitCodes"
 
 	"github.com/fatih/color"
 )
@@ -19,7 +19,7 @@ func (a *App) Storage(operation string, clearFlag bool) error {
 		if err := clearStorage(storagePath); err != nil {
 			info := fmt.Sprintf("ошибка очистки локального хранилища: %v", err)
 			a.Log.Error(operation, info, exitCodes.InternalError)
-			return appUtils.InternalError(info)
+			return appUtils2.InternalError(info)
 		}
 		a.Log.Info(operation, "локальное хранилище было очищено")
 		color.Blue("Локальное хранилище было очищено")
@@ -29,7 +29,7 @@ func (a *App) Storage(operation string, clearFlag bool) error {
 	if err := openStorage(storagePath); err != nil {
 		info := fmt.Sprintf("ошибка при открытии локального хранилища: %v", err)
 		a.Log.Error(operation, info, exitCodes.InternalError)
-		return appUtils.InternalError(info)
+		return appUtils2.InternalError(info)
 	}
 
 	color.Blue("Локальное хранилище открыто")
@@ -42,7 +42,7 @@ func openStorage(storagePath string) error {
 		return fmt.Errorf("неверный путь к папке storage")
 	}
 
-	if err := appUtils.CheckExistsPath(fullPath); err != nil {
+	if err := appUtils2.CheckExistsPath(fullPath); err != nil {
 		if err := os.MkdirAll(fullPath, 0755); err != nil {
 			return fmt.Errorf("не удалось создать папку storage: %v", err)
 		}
@@ -62,7 +62,7 @@ func clearStorage(storagePath string) error {
 		return fmt.Errorf("неверный путь к папке storage")
 	}
 
-	if err := appUtils.CheckExistsPath(fullPath); err != nil {
+	if err := appUtils2.CheckExistsPath(fullPath); err != nil {
 		if err := os.MkdirAll(fullPath, 0755); err != nil {
 			return fmt.Errorf("не удалось создать папку storage: %v", err)
 		}

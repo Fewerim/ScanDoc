@@ -5,8 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"proWeb/lib/appUtils"
-	"proWeb/lib/exitCodes"
+	"proWeb/internal/appUtils"
+	"proWeb/internal/exitCodes"
 
 	"github.com/fatih/color"
 )

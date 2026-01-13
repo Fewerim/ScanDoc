@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"proWeb/lib/appUtils"
+	"proWeb/internal/appUtils"
 )
 
 func main() {

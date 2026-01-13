@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"path/filepath"
-	"proWeb/lib/appUtils"
+	"proWeb/internal/appUtils"
 	"proWeb/lib/config"
 	"runtime"
 
