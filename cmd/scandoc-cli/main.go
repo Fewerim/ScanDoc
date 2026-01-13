@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"proWeb/cmd/scandoc-cli/cmd"
-	"proWeb/lib/cliUtils"
+	"proWeb/lib/appUtils"
 	"proWeb/lib/exitCodes"
 	"proWeb/lib/logger"
 	"strings"
@@ -25,16 +25,16 @@ func main() {
 
 // handleError - ловит ошибки и выводит статус выхода
 func handleError(err error, log logger.Logger) {
-	const operation = "scandoc-cli.main.handleError"
+	const operation = "scandoc-CLI.main.handleError"
 
-	var appErr *cliUtils.AppError
+	var appErr *appUtils.AppError
 	if errors.As(err, &appErr) {
 		fmt.Println(appErr.ToString())
 		os.Exit(appErr.ExitCode())
 	}
 
 	if log != nil {
-		log.Error(operation, fmt.Sprintf("непредвиденная ошибка: %v", err), cliUtils.GetExitCode(err, exitCodes.InternalError))
+		log.Error(operation, fmt.Sprintf("непредвиденная ошибка: %v", err), appUtils.GetExitCode(err, exitCodes.InternalError))
 	}
 
 	msg := fmt.Sprintf("непредвиденная ошибка: %v", err)
@@ -64,18 +64,18 @@ func catchPanic() {
 
 // runStandardApp - запускает приложение в обычном режиме
 func runStandardApp() {
-	const op = "scandoc-cli.main"
+	const op = ".main"
 	defer catchPanic()
 
-	app := cmd.NewApp()
+	a := cmd.NewApp()
 
-	if err := app.Execute(); err != nil {
-		handleError(err, app.Log)
+	if err := a.Execute(); err != nil {
+		handleError(err, a.App.Log)
 		return
 	}
 
-	if app.Log != nil {
-		app.Log.Info(op, "приложение успешно завершено")
+	if a.App.Log != nil {
+		a.App.Log.Info(a.Name+op, "приложение успешно завершено")
 	}
 }
 

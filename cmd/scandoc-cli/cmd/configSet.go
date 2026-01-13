@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"path/filepath"
-	"proWeb/lib/cliUtils"
+	"proWeb/lib/appUtils"
 	"proWeb/lib/config"
 	"runtime"
 
@@ -14,16 +14,16 @@ import (
 // configSet - команда, позволяющая менять значения конфига внутри файла
 func configSet(configPath string, port int, pythonExecutable, pythonScript, storagePath, logPath, pyVenvPath string) error {
 	if err := checkRequiredFlags(port, pythonExecutable, pythonScript, pyVenvPath); err != nil {
-		return cliUtils.UserError(err.Error())
+		return appUtils.UserError(err.Error())
 	}
 
 	if err := config.CheckConfigPathExists(configPath); err != nil {
-		return cliUtils.InternalError(err.Error())
+		return appUtils.InternalError(err.Error())
 	}
 
 	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
-		return cliUtils.InternalError(err.Error())
+		return appUtils.InternalError(err.Error())
 	}
 
 	cfg.Port = port
@@ -33,7 +33,7 @@ func configSet(configPath string, port int, pythonExecutable, pythonScript, stor
 
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
-		return cliUtils.InternalError("не удалось определить путь к корню проекта")
+		return appUtils.InternalError("не удалось определить путь к корню проекта")
 	}
 
 	cliUtilsDir := filepath.Dir(filename)
@@ -65,18 +65,18 @@ func configSet(configPath string, port int, pythonExecutable, pythonScript, stor
 // setupDefaultConfig - устанавливает базовые значения для конфига
 func setupDefaultConfig(configPath string) error {
 	if err := config.CheckConfigPathExists(configPath); err != nil {
-		return cliUtils.InternalError(err.Error())
+		return appUtils.InternalError(err.Error())
 	}
 
 	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
-		return cliUtils.InternalError(err.Error())
+		return appUtils.InternalError(err.Error())
 	}
 
 	cfg.SetupDefaultConfig()
 
 	if err := cfg.SaveConfig(configPath); err != nil {
-		return cliUtils.InternalError(err.Error())
+		return appUtils.InternalError(err.Error())
 	}
 
 	color.Blue("Конфигурация успешно обновлена")

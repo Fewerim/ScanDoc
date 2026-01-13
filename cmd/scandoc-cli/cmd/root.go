@@ -15,7 +15,7 @@ var (
 
 // initCommands - инициализирует CLI команды, предварительно обработав флаг для получения пути к конфигу
 // если флаг не был введен, используется дефолтный путь.
-func (a *App) initCommands() {
+func (a *AppCLI) initCommands() {
 	rootCmd.PersistentFlags().StringVar(&configFlag, "config", "", "путь к конфигурации приложения")
 	rootCmd.LocalFlags().BoolP("help", "h", false, "показать справку по команде")
 
@@ -29,17 +29,17 @@ func (a *App) initCommands() {
 		}
 
 		if configFlag == "" {
-			a.CfgPath = configFlag
+			a.App.CfgPath = configFlag
 		}
 
-		a.LoadConfig()
-		a.SetupLogger(a.Cfg.LogPath)
+		a.App.LoadConfig()
+		a.App.SetupLogger(a.App.Cfg.LogPath)
 
-		if err := a.InitPythonVenv(); err != nil {
+		if err := a.App.InitPythonVenv(); err != nil {
 			return err
 		}
 
-		if err := a.CheckPythonScripts(); err != nil {
+		if err := a.App.CheckPythonScripts(); err != nil {
 			return err
 		}
 
@@ -57,7 +57,7 @@ func (a *App) initCommands() {
 }
 
 // Execute - делегирует запуск CLI приложения, вызываясь на экземпляре App
-func (a *App) Execute() error {
+func (a *AppCLI) Execute() error {
 	a.initCommands()
 	return rootCmd.Execute()
 }

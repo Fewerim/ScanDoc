@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"proWeb/lib/cliUtils"
+	"proWeb/lib/appUtils"
 	"proWeb/lib/config"
 	"proWeb/lib/files"
 	"proWeb/lib/logger"
@@ -47,7 +47,7 @@ func (a *App) SetupLogger(pathToFile string) {
 // InitPythonVenv - инициализирует venv для python, если файла нет, создает
 func (a *App) InitPythonVenv() error {
 	if _, err := os.Stat(".venv"); os.IsNotExist(err) {
-		if err = cliUtils.CreateVenv(a.Cfg.PythonVenvPath); err != nil {
+		if err = appUtils.CreateVenv(a.Cfg.PythonVenvPath); err != nil {
 			return err
 		}
 	}

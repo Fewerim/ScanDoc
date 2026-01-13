@@ -3,7 +3,7 @@ package cmd
 import "github.com/spf13/cobra"
 
 // newHelperCmd - меняет дефолтную справку на русский аналог
-func newHelperCmd(a *App) *cobra.Command {
+func newHelperCmd(a *AppCLI) *cobra.Command {
 	return &cobra.Command{
 		Use:   "help",
 		Short: "Справка по командам",

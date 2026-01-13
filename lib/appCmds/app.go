@@ -1,0 +1,76 @@
+package appCmds
+
+import (
+	"fmt"
+	"os"
+	"proWeb/lib/appUtils"
+	"proWeb/lib/config"
+	"proWeb/lib/files"
+	"proWeb/lib/logger"
+)
+
+type App struct {
+	CfgPath string
+	Cfg     *config.Config
+	Log     logger.Logger
+}
+
+func New() *App {
+	return &App{
+		CfgPath: "",
+		Cfg:     nil,
+		Log:     nil,
+	}
+}
+
+// LoadConfig - загружает конфиг по пути из поля App, если путь пустой, устанавливает его
+func (a *App) LoadConfig() {
+	path := a.CfgPath
+	if path == "" {
+		path = config.DefaultConfigPath()
+	}
+
+	a.CfgPath = path
+	a.Cfg = config.MustLoadWithPath(path)
+}
+
+// SetupLogger - устанавливает логгер, который пишет в файл по переданному пути
+func (a *App) SetupLogger(pathToFile string) {
+	a.Log = logger.MustSetup(pathToFile)
+}
+
+// InitPythonVenv - инициализирует venv для python, если файла нет, создает
+func (a *App) InitPythonVenv() error {
+	if _, err := os.Stat(".venv"); os.IsNotExist(err) {
+		if err = appUtils.CreateVenv(a.Cfg.PythonVenvPath); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CheckPythonScripts - проверяет наличие пути к python скрипту и наличие venv файла для успешного запуска скрипта
+func (a *App) CheckPythonScripts() error {
+	pyVenv := a.Cfg.PythonExecutable
+	pyScript := a.Cfg.PythonScript
+
+	if _, err := os.Stat(pyVenv); os.IsNotExist(err) {
+		return fmt.Errorf("python из venv не найден: %s", pyVenv)
+	}
+	if _, err := os.Stat(pyScript); os.IsNotExist(err) {
+		return fmt.Errorf("серверный скрипт не найден: %s", pyScript)
+	}
+	return nil
+}
+
+// CheckStorageJSON - проверяет наличие локального хранилища, если его нет, создает новое
+func (a *App) CheckStorageJSON() error {
+	files.InitStorage(a.Cfg.StoragePath)
+
+	if !files.StorageExists() {
+		if err := files.CreateStorageJSON(); err != nil {
+			return fmt.Errorf("ошибка создания локального хранилища: %v", err)
+		}
+	}
+	return nil
+}

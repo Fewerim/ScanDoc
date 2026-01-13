@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"proWeb/lib/cliUtils"
+	"proWeb/lib/appUtils"
 )
 
 func main() {
-	b, err := cliUtils.CheckInitWasUsed()
+	b, err := appUtils.CheckInitWasUsed()
 	if err != nil {
 		fmt.Println(err)
 	}
