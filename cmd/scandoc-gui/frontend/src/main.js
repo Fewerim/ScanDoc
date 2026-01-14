@@ -1,44 +1,67 @@
 import { OpenLog, StartInit, CheckInitStatus, GetFilesFromStorage, ReadFileFromStorage } from "../wailsjs/go/main/App"
 import { EventsOn } from "../wailsjs/runtime/runtime"
 
+let selectedFile = null;
+let navigationStack = ['menuPage'];
+let isProcessing = false;
+let isInitialized = false;
+
 const menuButtons = [
     {id: "initBtn", page: "initPage", event: "initPage-clicked"},
     {id: "run_onceBtn", page: "run_oncePage", event: "run_oncePage-clicked"},
     {id: "run_multiBtn", page: "run_multiPage", event: "run_multiPage-clicked"},
-    {id: "resultsBtn", page: "resultsPage", event: "resultsPage-clicked"},
-    {id: "backBtn", page: "menuPage", event: "back-clicked"}
+    {id: "resultsBtn", page: "resultsPage", event: "resultsPage-clicked"}
 ]
 
 document.addEventListener('DOMContentLoaded', bindAllButtons)
 
-// Инициализация после загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
-    const menuBtn = document.getElementById('menuBtn');
-    const backBtn = document.getElementById('backBtn');
-
     EventsOn("init_status", (...args) => {
+        const status = args[0];
+        const errorMsg = args[1] || null;
+        const statusEl = document.getElementById("status");
 
-        const status = args[0]
-        const errorMsg = args[1] || null
-
-        const statusEl = document.getElementById("status")
         if (statusEl && status) {
-            statusEl.textContent = getStatusText(status)
-            statusEl.className = `status-${status}`
+            statusEl.textContent = getStatusText(status);
+            statusEl.className = `status-${status}`;
         }
-    })
 
-    setupButton("menuBtn", ()=>{
-        showPage('menuPage');
-        window.runtime.EventsEmit("menu-clicked");
-    })
+        if (status === "process") {
+            setProcessing(true);
+        } else if (status === "success" || status === "already-init" || status === "done") {
+            setProcessing(false);
+            isInitialized = true;
+            updateAllButtons();
+        } else {
+            setProcessing(false);
+        }
 
+        if (status === "error") {
+            setProcessing(false);
+        }
+    });
+
+    EventsOn("processing_start", () => {
+        setProcessing(true);
+    });
+
+    EventsOn("processing_end", () => {
+        setProcessing(false);
+    });
+
+    setupMenuButton("menuBtn", 'menuPage', "menu-clicked");
     menuButtons.forEach(({id, page, event}) => {
-        setupButton(id, () => {
-            showPage(page)
-            window.runtime.EventsEmit(event)
-        })
-    })
+        setupMenuButton(id, page, event);
+    });
+
+    setupButton("editBtn", () => {
+        if (!selectedFile || isProcessing) {
+            if (!selectedFile) alert('Сначала выберите файл!');
+            return;
+        }
+        pushPage('editPage');
+        window.runtime.EventsEmit("editPage-clicked");
+    });
 
     document.querySelectorAll('[id*="exitBtn"]').forEach(btn => {
         btn.onclick = () => window.runtime.Quit();
@@ -47,112 +70,195 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('h1.nameApp').forEach(scandoc => {
         scandoc.style.cursor = 'pointer';
         scandoc.style.userSelect = 'none';
-        scandoc.onclick = (e) => showPage('mainPage');
+        scandoc.onclick = (e) => pushPage('mainPage');
         scandoc.onmouseenter = () => scandoc.style.opacity = '0.85';
         scandoc.onmouseleave = () => scandoc.style.opacity = '1';
     });
+
+    setupPageObserver();
+    checkInitOnPageLoad();
 });
 
-function updateInitStatus(status, errorMsg) {
-    const statusEl = document.getElementById("status")
-    const initBtn = document.getElementById("startInitBtn")
-
-    if (!statusEl || !initBtn) return
-
-    statusEl.textContent = getStatusText(status)
-    statusEl.className = `status-${status}`
-
-    if (status === "success" || status === "already-init" || status === "done") {
-        initBtn.disabled = true
-        initBtn.textContent = "Инициализация завершена"
-        initBtn.classList.add("completed")
+// ✅ Функция для меню кнопок (всегда активны + подсказка для RUN)
+function setupMenuButton(id, page, event) {
+    const btn = document.getElementById(id);
+    if (btn) {
+        btn.onclick = () => {
+            pushPage(page);
+            window.runtime.EventsEmit(event);
+        };
+        updateRunButtonState(btn);
     } else {
-        initBtn.disabled = false
-        initBtn.textContent = "Начать инициализацию"
-        initBtn.classList.remove("completed")
-    }
-
-    if (status === "error" && errorMsg) {
-        statusEl.textContent += `: ${errorMsg}`
-        console.error("Init error:", errorMsg)
+        console.warn(`Menu button #${id} not found`);
     }
 }
 
-function getStatusText(status) {
-    const texts = {
-        "ready": "Готов к инициализации",
-        "process": "Выполняется...",
-        "success": "Успешно завершено",
-        "already-init": "Инициализация уже выполнена",
-        "done": "Готово"
+function updateRunButtonState(btn) {
+    if (!isInitialized && (btn.id === 'run_onceBtn' || btn.id === 'run_multiBtn')) {
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        btn.style.cursor = 'not-allowed';
+        btn.title = 'Сначала выполните инициализацию!';
+        btn.dataset.disabledReason = 'requires-init';
+
+        if (!btn.querySelector('.init-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'init-badge';
+            badge.textContent = 'требуется инициализация';
+            badge.style.cssText =
+                'display: block; ' +
+                'font-size: 0.8em; font-weight: bold; ' +
+                'color: #D5C9F1FF; ' +
+                'margin-top: 2px; ' +
+                'opacity: 1;';
+            btn.appendChild(badge);
+        }
+
+    } else {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.title = '';
+        delete btn.dataset.disabledReason;
+
+        const badge = btn.querySelector('.init-badge');
+        if (badge) badge.remove();
     }
-    return texts[status] || status
+}
+
+
+function setProcessing(processing) {
+    isProcessing = processing;
+    document.body.classList.toggle('processing', isProcessing);
+    updateAllButtons();
+}
+
+// ✅ Безопасная функция без сложных селекторов
+function updateAllButtons() {
+    // Обновляем RUN кнопки с подсказкой
+    document.querySelectorAll('#run_onceBtn, #run_multiBtn').forEach(updateRunButtonState);
+
+    // ПРОСТЫЕ селекторы
+    const buttons = document.querySelectorAll('button');
+    const inputs = document.querySelectorAll('input[type="button"], input[type="submit"]');
+    const links = document.querySelectorAll('a[href]');
+    const selects = document.querySelectorAll('select');
+    const textareas = document.querySelectorAll('textarea');
+    const onclicks = document.querySelectorAll('[onclick]');
+
+    // Объединяем все элементы
+    [...buttons, ...inputs, ...links, ...selects, ...textareas, ...onclicks].forEach(el => {
+        // Исключаем меню кнопки
+        const menuIds = ['menuBtn', 'initBtn', 'run_onceBtn', 'run_multiBtn', 'resultsBtn'];
+        if (menuIds.includes(el.id) || el.matches('h1.nameApp') || el.id?.includes('exitBtn')) {
+            return;
+        }
+
+        if (isProcessing) {
+            el.disabled = true;
+            el.style.opacity = '0.5';
+            el.style.cursor = 'not-allowed';
+            el.style.pointerEvents = 'none';
+            el.title = 'Выполнение в процессе...';
+        } else {
+            el.disabled = false;
+            el.style.opacity = '1';
+            el.style.cursor = '';
+            el.style.pointerEvents = '';
+            el.title = '';
+        }
+    });
+}
+
+function pushPage(pageId) {
+    navigationStack.push(pageId);
+    showPage(pageId);
+}
+
+function goBack() {
+    if (navigationStack.length > 1) {
+        navigationStack.pop();
+        const previousPage = navigationStack[navigationStack.length - 1];
+        showPage(previousPage);
+    } else {
+        showPage('menuPage');
+    }
+}
+
+function showPage(pageId) {
+    if (document.getElementById('resultsPage') && !document.getElementById('resultsPage').classList.contains('hidden')) {
+        if (pageId !== 'resultsPage') {
+            resetResultsState();
+        }
+    }
+
+    bindAllButtons();
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.add('hidden');
+    });
+    document.getElementById(pageId)?.classList.remove('hidden');
+
+    switch (pageId) {
+        case 'initPage':
+            checkInitOnPageLoad();
+            break;
+        case 'resultsPage':
+            loadFiles();
+            break;
+    }
+
+    window.history.pushState({page: pageId}, '', `#${pageId}`);
 }
 
 function bindAllButtons() {
-    // openLogBtn на ВСЕХ страницах
     document.querySelectorAll('#openLogBtn').forEach(btn => {
         btn.onclick = async (e) => {
-            e.stopPropagation()
-            await OpenLog()
-        }
-    })
+            e.stopPropagation();
+            if (isProcessing) return;
+            await OpenLog();
+        };
+    });
 
-    // backBtn на ВСЕХ страницах
     document.querySelectorAll('#backBtn').forEach(btn => {
         btn.onclick = (e) => {
-            e.stopPropagation()
-            showPage('menuPage')
-        }
-    })
+            e.stopPropagation();
+            goBack();
+        };
+    });
 
-    // startInitBtn
+    document.querySelectorAll('#open_resultsBtn').forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            if (isProcessing) return;
+            pushPage('resultsPage');
+        };
+    });
+
     document.querySelectorAll('#startInitBtn').forEach(btn => {
         btn.onclick = async (e) => {
-            e.stopPropagation()
-            await StartInit()
-        }
-    })
+            e.stopPropagation();
+            if (isProcessing) return;
+            await StartInit();
+        };
+    });
 }
 
-// setupButton - устанавливает кнопку
 function setupButton(id, handler) {
-    const btn = document.getElementById(id)
+    const btn = document.getElementById(id);
     if (btn) {
-        btn.onclick = handler;
+        btn.onclick = (e) => {
+            if (isProcessing && id !== 'editBtn') return;
+            handler(e);
+        };
     } else {
         console.warn(`Button #${id} not found`);
     }
 }
 
-// showPage - показывает страницу, удаляя у нее класс 'hidden'
-function showPage(pageId) {
-    bindAllButtons()
-
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.add('hidden');
-    });
-    document.getElementById(pageId).classList.remove('hidden');
-    window.history.pushState({page: pageId}, '', `#${pageId}`);
-
-    if (pageId === "initPage") {
-        checkInitOnPageLoad()
-    }
-    if (pageId === 'resultsPage') {
-        loadFiles()
-    }
-}
-
-async function checkInitOnPageLoad() {
-    try {
-        const status = await CheckInitStatus()
-        updateInitStatus(status)
-    } catch (error) {
-        updateInitStatus("error", error.message)
-    }
-}
-
 async function loadFiles() {
+    selectedFile = null;
+    updateEditButton(false);
+
     try {
         const files = await GetFilesFromStorage();
         const list = document.getElementById('filesList');
@@ -169,7 +275,14 @@ async function loadFiles() {
             item.className = 'file-item';
             item.dataset.filename = filename;
             item.innerHTML = `<strong>${filename}</strong>`;
-            item.addEventListener('click', () => loadFileContent(filename));
+            item.style.cursor = isProcessing ? 'not-allowed' : 'pointer';
+            item.style.opacity = isProcessing ? '0.5' : '1';
+            item.addEventListener('click', () => {
+                if (isProcessing) return;
+                selectedFile = filename;
+                loadFileContent(filename);
+                updateEditButton(true);
+            });
             list.appendChild(item);
         });
     } catch (error) {
@@ -177,9 +290,95 @@ async function loadFiles() {
     }
 }
 
+async function loadFileContent(filename) {
+    try {
+        document.getElementById('previewTitle').textContent = `Файл: ${filename}`;
+        const content = await ReadFileFromStorage(filename);
+        document.getElementById('fileContent').textContent = content || 'Файл пустой';
+    } catch (error) {
+        document.getElementById('fileContent').textContent = 'Ошибка: ' + error;
+    }
+}
+
+function updateEditButton(enabled) {
+    const editBtn = document.getElementById('editBtn');
+    if (!editBtn) return;
+
+    if (isProcessing) {
+        editBtn.disabled = true;
+        editBtn.style.opacity = '0.5';
+        editBtn.style.cursor = 'not-allowed';
+        return;
+    }
+
+    const resultsPage = document.getElementById('resultsPage');
+    if (resultsPage?.classList.contains('hidden')) {
+        editBtn.disabled = true;
+        editBtn.style.opacity = '0.5';
+        editBtn.style.cursor = 'not-allowed';
+        selectedFile = null;
+        return;
+    }
+
+    if (enabled && selectedFile) {
+        editBtn.disabled = false;
+        editBtn.style.opacity = '1';
+        editBtn.style.cursor = 'pointer';
+    } else {
+        editBtn.disabled = true;
+        editBtn.style.opacity = '0.5';
+        editBtn.style.cursor = 'not-allowed';
+        selectedFile = null;
+        resetPreview();
+    }
+}
+
 function resetPreview() {
-    document.getElementById('previewTitle').textContent = 'Выберите файл для просмотра';
-    document.getElementById('fileContent').textContent = '';
+    const previewTitle = document.getElementById('previewTitle');
+    const fileContent = document.getElementById('fileContent');
+    if (previewTitle) previewTitle.textContent = 'Выберите файл для просмотра';
+    if (fileContent) fileContent.textContent = '';
+}
+
+function resetResultsState() {
+    selectedFile = null;
+    updateEditButton(false);
+}
+
+function updateInitStatus(status, errorMsg) {
+    const statusEl = document.getElementById("status");
+    const initBtn = document.getElementById("startInitBtn");
+
+    if (!statusEl || !initBtn) return;
+
+    statusEl.textContent = getStatusText(status);
+    statusEl.className = `status-${status}`;
+
+    if (status === "success" || status === "already-init" || status === "done") {
+        initBtn.disabled = true;
+        initBtn.textContent = "Инициализация завершена";
+        initBtn.classList.add("completed");
+    } else {
+        initBtn.disabled = false;
+        initBtn.textContent = "Начать инициализацию";
+        initBtn.classList.remove("completed");
+    }
+
+    if (status === "error" && errorMsg) {
+        statusEl.textContent += `: ${errorMsg}`;
+        console.error("Init error:", errorMsg);
+    }
+}
+
+function getStatusText(status) {
+    const texts = {
+        "ready": "Готов к инициализации",
+        "process": "Выполняется...",
+        "success": "Успешно завершено",
+        "already-init": "Инициализация уже выполнена",
+        "done": "Готово"
+    };
+    return texts[status] || status;
 }
 
 function setupPageObserver() {
@@ -190,40 +389,25 @@ function setupPageObserver() {
         mutations.forEach((mutation) => {
             if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 if (resultsPage.classList.contains('hidden')) {
-                    // Страница скрыта — сбрасываем preview
                     resetPreview();
                 } else {
-                    // Страница показана — загружаем файлы
                     loadFiles();
                 }
             }
         });
     });
-
-    // Наблюдаем за классом hidden
     observer.observe(resultsPage, { attributes: true });
 }
 
-async function loadFileContent(filename) {
+async function checkInitOnPageLoad() {
     try {
-        document.getElementById('previewTitle').textContent = `Файл: ${filename}`;
-        const content = await ReadFileFromStorage(filename);  // Ваша функция
-        document.getElementById('fileContent').textContent = content || 'Файл пустой';
+        const status = await CheckInitStatus();
+        if (status === "success" || status === "already-init" || status === "done") {
+            isInitialized = true;
+        }
+        updateInitStatus(status);
+        updateAllButtons();
     } catch (error) {
-        document.getElementById('fileContent').textContent = 'Ошибка: ' + error;
+        updateInitStatus("error", error.message);
     }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const observer = new MutationObserver(() => {
-        if (!document.getElementById('resultsPage').classList.contains('hidden')) {
-            loadFiles();
-        }
-    });
-    observer.observe(document.getElementById('resultsPage'), { attributes: true });
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    setupPageObserver();
-});
-

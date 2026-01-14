@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"proWeb/lib/appCmds"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -83,10 +85,13 @@ func (a *App) StartInit() {
 
 	runtime.EventsEmit(a.ctx, "init_status", "process")
 
+	runtime.EventsEmit(a.ctx, "processing_start", nil)
 	if err := a.app.InitApp(a.Name + op); err != nil {
 		runtime.EventsEmit(a.ctx, "init_status", "error")
+		runtime.EventsEmit(a.ctx, "processing_end", nil)
 		return
 	}
+	runtime.EventsEmit(a.ctx, "processing_end", nil)
 	runtime.EventsEmit(a.ctx, "init_status", "success")
 }
 
@@ -124,5 +129,10 @@ func (a *App) ReadFileFromStorage(fileName string) string {
 		runtime.LogErrorf(a.ctx, err.Error())
 		return ""
 	}
-	return content
+	var pretty bytes.Buffer
+	if err = json.Indent(&pretty, []byte(content), "", "  "); err != nil {
+		runtime.LogErrorf(a.ctx, "JSON format error: %v", err)
+		return content
+	}
+	return pretty.String()
 }

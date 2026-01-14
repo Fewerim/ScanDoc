@@ -100,6 +100,29 @@ button:hover {
     padding: 1rem;
 }
 
+body.processing {
+    pointer-events: none;
+    opacity: 0.7;
+    position: relative;
+}
+
+body.processing::before {
+    content: 'Обработка в процессе... Пожалуйста подождите';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+    z-index: 9999;
+    font-size: 16px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+
 h1.nameApp {
     font-size: 5.5rem;
     font-weight: bold;
@@ -245,7 +268,8 @@ h2.titlePage {
     padding: 1rem;
 }
 
-#start_run_onceBtn {
+#start_run_onceBtn,
+#start_run_multiBtn {
     order: -1;
     width: 100%;
     min-width: 300px;
@@ -259,6 +283,32 @@ h2.titlePage {
     width: 100%;
     justify-content: center;
 }
+
+.init-badge {
+    animation: badgePulse 3s infinite ease-in-out; /* ✅ Медленная ненавязчивая */
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        opacity: 0.85;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+}
+
+button[data-disabled-reason="requires-init"]:hover .init-badge {
+    color: #ff0000 !important;
+    animation-duration: 1s;
+}
+
+button[data-disabled-reason="requires-init"]:hover {
+    background-color: #484242 !important;
+    border-color: #d5c9f1 !important;
+}
+
 
 .text_row {
     display: flex;
