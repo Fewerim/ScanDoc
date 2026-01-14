@@ -93,6 +93,16 @@ func SaveFileToStorage(pathToStorage, filename, content string) error {
 	return nil
 }
 
+// DeleteFileFromStorage - удаляет файл из локального хранилища
+func DeleteFileFromStorage(pathToStorage, fileName string) error {
+	fullPath := filepath.Join(pathToStorage, fileName)
+
+	if err := os.Remove(fullPath); err != nil {
+		return fmt.Errorf("ошибка удаления файла из локального хранилища")
+	}
+	return nil
+}
+
 // formatSize - форматирует размер в человеческий вид
 func formatSize(size int64) string {
 	var suffixes = []string{"B", "KB", "MB", "GB"}

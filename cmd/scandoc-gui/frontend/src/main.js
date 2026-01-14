@@ -129,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
     checkInitOnPageLoad();
 });
 
-// ✅ Функция для меню кнопок (всегда активны + подсказка для RUN)
 function setupMenuButton(id, page, event) {
     const btn = document.getElementById(id);
     if (btn) {
