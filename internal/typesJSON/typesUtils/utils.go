@@ -13,7 +13,7 @@ type DocFactory func() interface{}
 var docFactories = map[string]DocFactory{
 	"upd":     func() interface{} { return &typesJSON2.Upd{} },
 	"invoice": func() interface{} { return &typesJSON2.TheInvoice{} },
-	"torg":    func() interface{} { return &typesJSON2.Torg12{} },
+	"torg12":  func() interface{} { return &typesJSON2.Torg12{} },
 }
 
 // normalize - нормализует строку переводя ее в верхний регистр и убирая лишние пробелы
