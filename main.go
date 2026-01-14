@@ -2,17 +2,16 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"proWeb/internal/storage"
+	"proWeb/internal/appUtils"
 )
 
 func main() {
-	pathToStorage := "C:\\Projects\\PP2025-ProWeb\\storageJSONs"
-	files, err := storage.GetStorageFiles(pathToStorage)
+	var filePath string
+	fmt.Scan(&filePath)
+
+	img, err := appUtils.ConvertPdfToImg(filePath)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
-	for _, file := range files {
-		fmt.Println(file)
-	}
+	fmt.Println(img)
 }

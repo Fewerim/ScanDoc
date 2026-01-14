@@ -7,7 +7,7 @@ require (
 	github.com/iancoleman/orderedmap v0.3.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/spf13/cobra v1.10.2
-	golang.org/x/sys v0.30.0
+	golang.org/x/sys v0.33.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

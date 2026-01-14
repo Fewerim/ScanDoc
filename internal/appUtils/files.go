@@ -9,18 +9,20 @@ import (
 
 const (
 	//docxFormat = ".docx" в данный момент не поддерживается
-	//pdfFormat  = ".pdf"  в данный момент не поддерживается
-	jpgFormat = ".jpg"
-	pngFormat = ".png"
+	pdfFormat  = ".pdf"
+	jpgFormat  = ".jpg"
+	pngFormat  = ".png"
+	jpegFormat = ".jpeg"
 	//xlsxFormat = ".xlsx" в данный момент не поддерживается
 )
 
 // Для проверки поддерживаемых форматов
 var allowedFormats = map[string]struct{}{
 	//docxFormat: {},
-	//pdfFormat:  {},
-	jpgFormat: {},
-	pngFormat: {},
+	pdfFormat:  {},
+	jpgFormat:  {},
+	jpegFormat: {},
+	pngFormat:  {},
 	//xlsxFormat: {},
 }
 
@@ -101,4 +103,10 @@ func GetFilesFromDirectory(directoryPath string) ([]string, string) {
 	}
 
 	return filePaths, ""
+}
+
+// ConvertPdfToImg - конвертирует pdf в image и сохраняет в tmp папке
+func ConvertPdfToImg(filePath string) (string, error) {
+	//TODO: сделать конвертацию из pdf в image + найти необходимые библиотеки (в крайнем случае через какое-то приложение)
+	return "", nil
 }
