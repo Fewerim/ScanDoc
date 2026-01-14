@@ -162,30 +162,42 @@
             </div>
             <div>
                 <h1 class="nameApp">SCANDOC</h1>
-                <div id="previewTitle" class="preview-title"><h2>Выберите файл для просмотра</h2></div>
+                <div id="previewTitle"><h2 class="titlePage">Выберите файл для просмотра</h2></div>
                 <div class="preview-block">
                     <div id="fileContent" class="file-content"></div>
                 </div>
                 <button id="editBtn">Редактировать</button>
+                <button id="delBtn">Удалить</button>
             </div>
         </div>
     </div>
 
     <div class="page hidden" id="editPage">
         <div class="page_block">
+            <div class="page_body">
+                <div>
+                    <h2 class="titlePage">Редактирование результата</h2>
+                    <div class="text_row">
+                        <p>Вы можете редактировать результаты</p>
+                        <p>Отредактированные файлы сохраняются в локальном хранилище в формате <mark>.json</mark></p>
+                        <p>Если в файле не отобразились изменения, проверьте лог</p>
+                    </div>
+                </div>
+                <div>
+                    <button id="backBtn">Назад</button>
+                    <button id="openLogBtn">Лог</button>
+                </div>
+            </div>
             <div>
                 <h1 class="nameApp">SCANDOC</h1>
-            </div>
-            <div class="edit_body">
                 <div>
-                    <h2 class="titlePage">Редактирование</h2>
+                    <h2 class="titlePage" id="editFilename">Файл: </h2>
                 </div>
                 <div class="edit_area">
                     <textarea id="editor" spellcheck="false"></textarea>
                 </div>
-
-                <div class="edit_actions">
-                    <button id="saveEditBtn">Сохранить изменения</button>
+                <div class="edit_buttons">
+                    <button id="saveEditBtn">Сохранить</button>
                     <button id="cancelEditBtn">Отмена</button>
                 </div>
             </div>

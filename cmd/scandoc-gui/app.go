@@ -136,3 +136,12 @@ func (a *App) ReadFileFromStorage(fileName string) string {
 	}
 	return pretty.String()
 }
+
+func (a *App) SaveFileToStorage(fileName string, content string) error {
+	const op = ".save_file_to_storage"
+	if err := a.app.SaveFileToStorage(a.Name+op, fileName, content); err != nil {
+		runtime.LogErrorf(a.ctx, err.Error())
+		return err
+	}
+	return nil
+}

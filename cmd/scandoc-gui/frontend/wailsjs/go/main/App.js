@@ -22,6 +22,10 @@ export function ReadFileFromStorage(arg1) {
   return window['go']['main']['App']['ReadFileFromStorage'](arg1);
 }
 
+export function SaveFileToStorage(arg1, arg2) {
+  return window['go']['main']['App']['SaveFileToStorage'](arg1, arg2);
+}
+
 export function SetupApp(arg1) {
   return window['go']['main']['App']['SetupApp'](arg1);
 }

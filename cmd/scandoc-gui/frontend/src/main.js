@@ -1,10 +1,12 @@
-import { OpenLog, StartInit, CheckInitStatus, GetFilesFromStorage, ReadFileFromStorage } from "../wailsjs/go/main/App"
+import { OpenLog, StartInit, CheckInitStatus, GetFilesFromStorage, ReadFileFromStorage, SaveFileToStorage } from "../wailsjs/go/main/App"
 import { EventsOn } from "../wailsjs/runtime/runtime"
 
 let selectedFile = null;
 let navigationStack = ['menuPage'];
 let isProcessing = false;
 let isInitialized = false;
+let originalEditContent = "";
+let currentEditFilename = null;
 
 const menuButtons = [
     {id: "initBtn", page: "initPage", event: "initPage-clicked"},
@@ -54,14 +56,18 @@ document.addEventListener('DOMContentLoaded', () => {
         setupMenuButton(id, page, event);
     });
 
-    setupButton("editBtn", () => {
+    setupButton("editBtn", async () => {
         if (!selectedFile || isProcessing) {
             if (!selectedFile) alert('Сначала выберите файл!');
             return;
         }
+
+        currentEditFilename = selectedFile;
+
         pushPage('editPage');
-        window.runtime.EventsEmit("editPage-clicked");
+        await openEditorForFile(currentEditFilename);
     });
+
 
     document.querySelectorAll('[id*="exitBtn"]').forEach(btn => {
         btn.onclick = () => window.runtime.Quit();
@@ -74,6 +80,50 @@ document.addEventListener('DOMContentLoaded', () => {
         scandoc.onmouseenter = () => scandoc.style.opacity = '0.85';
         scandoc.onmouseleave = () => scandoc.style.opacity = '1';
     });
+
+    document.querySelectorAll('#cancelEditBtn').forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            if (isProcessing) return;
+
+            const editorEl = document.getElementById("editor");
+            if (editorEl) editorEl.value = originalEditContent;
+
+            showNotice("Изменения отменены", "warn", 1600);
+        };
+    });
+
+    document.querySelectorAll('#delBtn').forEach(btn => {
+        btn.onclick = (e) => {
+
+            showNotice("Файл удален", "warn", 1600);
+        };
+    });
+
+    document.querySelectorAll('#saveEditBtn').forEach(btn => {
+        btn.onclick = async (e) => {
+            e.stopPropagation();
+            if (isProcessing) return; // блокировка только когда init/run
+
+            if (!currentEditFilename) {
+                showNotice("Файл не выбран", "error", 2200);
+                return;
+            }
+
+            const editorEl = document.getElementById("editor");
+            const newContent = editorEl ? editorEl.value : "";
+
+            try {
+                await SaveFileToStorage(currentEditFilename, newContent);
+                originalEditContent = newContent;
+                showNotice("Файл сохранён", "success", 1800);
+            } catch (err) {
+                console.error("SaveFileToStorage error:", err);
+                showNotice("Ошибка сохранения: " + (err?.message || err), "error", 2600);
+            }
+        };
+    });
+
 
     setupPageObserver();
     checkInitOnPageLoad();
@@ -241,6 +291,8 @@ function bindAllButtons() {
             await StartInit();
         };
     });
+
+
 }
 
 function setupButton(id, handler) {
@@ -410,4 +462,46 @@ async function checkInitOnPageLoad() {
     } catch (error) {
         updateInitStatus("error", error.message);
     }
+}
+
+
+async function openEditorForFile(filename) {
+    try {
+        currentEditFilename = filename;
+
+        const titleEl = document.getElementById("editFilename");
+        if (titleEl) titleEl.textContent = `Файл: ${filename}`;
+
+        const content = await ReadFileFromStorage(filename);
+        originalEditContent = content || "";
+
+        const editorEl = document.getElementById("editor");
+        if (editorEl) editorEl.value = originalEditContent;
+
+    } catch (e) {
+        console.error("ReadFileFromStorage error:", e);
+        showNotice("Ошибка чтения файла: " + (e?.message || e), "error", 2400);
+    }
+}
+
+
+let noticeTimer = null;
+
+function showNotice(text, type = "success", timeoutMs = 1800) {
+    const old = document.getElementById("appNotice");
+    if (old) old.remove();
+    if (noticeTimer) clearTimeout(noticeTimer);
+
+    const el = document.createElement("div");
+    el.id = "appNotice";
+    el.className = `notice ${type}`;
+    el.textContent = text;
+
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add("show"));
+
+    noticeTimer = setTimeout(() => {
+        el.classList.remove("show");
+        setTimeout(() => el.remove(), 250);
+    }, timeoutMs);
 }

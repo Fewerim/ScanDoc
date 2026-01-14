@@ -12,6 +12,8 @@ export function OpenStorage():Promise<void>;
 
 export function ReadFileFromStorage(arg1:string):Promise<string>;
 
+export function SaveFileToStorage(arg1:string,arg2:string):Promise<void>;
+
 export function SetupApp(arg1:context.Context):Promise<void>;
 
 export function StartInit():Promise<void>;
