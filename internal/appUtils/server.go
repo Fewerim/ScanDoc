@@ -104,6 +104,13 @@ func SendFileToServer(filePath string, port int) (interface{}, string, error) {
 		decodeDataWithTable = decodeData
 	}
 
+	if t == "torg12" {
+		decodeDataWithTable, err = parser2.AddTotalFields(decodeDataWithTable)
+		if err != nil {
+			return data, "", InternalError(err.Error())
+		}
+	}
+
 	return decodeDataWithTable, t, nil
 }
 
