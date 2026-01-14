@@ -60,6 +60,17 @@ func (a *App) ReadFileFromStorage(operation, fileName string) (string, error) {
 	return content, nil
 }
 
+func (a *App) SaveFileToStorage(operation, fileName string, content string) error {
+	a.Log.Info(operation, "Сохранение файла в локальное хранилище")
+	err := storage.SaveFileToStorage(a.Cfg.StoragePath, fileName, content)
+	if err != nil {
+		a.Log.Error(operation, err.Error(), exitCodes.InternalError)
+		return appUtils2.InternalError(err.Error())
+	}
+	a.Log.Info(operation, "Успешное сохранение файла в локальное хранилище")
+	return nil
+}
+
 func openStorage(storagePath string) error {
 	fullPath, err := filepath.Abs(storagePath)
 	if err != nil {

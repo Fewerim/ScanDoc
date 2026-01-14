@@ -83,6 +83,16 @@ func ReadFileFromStorage(pathToStorage, fileName string) (string, error) {
 	return string(content), nil
 }
 
+// SaveFileToStorage - сохраняет файл в локальное хранилище
+func SaveFileToStorage(pathToStorage, filename, content string) error {
+	fullPath := filepath.Join(pathToStorage, filename)
+
+	if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
+		return fmt.Errorf("ошибка сохранения файла в локальное хранилище: %v", err)
+	}
+	return nil
+}
+
 // formatSize - форматирует размер в человеческий вид
 func formatSize(size int64) string {
 	var suffixes = []string{"B", "KB", "MB", "GB"}
