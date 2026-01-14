@@ -3,7 +3,9 @@ package appUtils
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -107,6 +109,64 @@ func GetFilesFromDirectory(directoryPath string) ([]string, string) {
 
 // ConvertPdfToImg - конвертирует pdf в image и сохраняет в tmp папке
 func ConvertPdfToImg(filePath string) (string, error) {
-	//TODO: сделать конвертацию из pdf в image + найти необходимые библиотеки (в крайнем случае через какое-то приложение)
-	return "", nil
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return "", fmt.Errorf("файл не найден: %s", filePath)
+	}
+
+	baseName := strings.TrimSuffix(filepath.Base(filePath), ".pdf")
+	tmpDir := filepath.Join(os.TempDir(), "pdf_jpgs_"+baseName)
+	if err := os.MkdirAll(tmpDir, 0o755); err != nil {
+		return "", err
+	}
+
+	gsExe := "gswin64c.exe"
+	if runtime.GOOS != "windows" {
+		gsExe = "gs"
+	}
+
+	cmd := exec.Command(gsExe,
+		"-sDEVICE=jpeg",
+		"-r300", // DPI
+		"-dNOPAUSE",
+		"-dBATCH",
+		"-dSAFER",
+		"-dFirstPage=1",
+		"-dLastPage=999",
+		fmt.Sprintf("-o%s/page_%%03d.jpg", tmpDir),
+		filePath,
+	)
+
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return "", fmt.Errorf("Ghostscript:\n%s\n%s\nСкачайте: https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10031/gs10031w64.exe", err, out)
+	}
+
+	return tmpDir, nil
+
+}
+
+func GetJpgFromPdf(filePath string) (string, error) {
+	dir, err := ConvertPdfToImg(filePath)
+	if err != nil {
+		return "", err
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return "", fmt.Errorf("ошибка чтения папки: %w", err)
+	}
+
+	var files []string
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			files = append(files, filepath.Join(dir, entry.Name()))
+		}
+	}
+
+	switch len(files) {
+	case 0:
+		return "", fmt.Errorf("папка пуста: %s", dir)
+	case 1:
+		return files[0], nil
+	default:
+		return "", fmt.Errorf("в документе слишком много страниц (%d)", len(files))
+	}
 }

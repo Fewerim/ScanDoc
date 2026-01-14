@@ -68,6 +68,15 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config, folderName stri
 				return
 			}
 
+			if ext := filepath.Ext(filePath); ext == ".pdf" {
+				filePath, err = appUtils2.GetJpgFromPdf(filePath)
+				if err != nil {
+					info := err.Error()
+					errorsFileProcessing <- appUtils2.FileError{fileName, appUtils2.UserError(info)}
+					return
+				}
+			}
+
 			data, docType, err := appUtils2.SendFileToServer(filePath, cfg.Port)
 			if err != nil {
 				info := fmt.Sprintf("ошибка при отправке файла: %v", err)

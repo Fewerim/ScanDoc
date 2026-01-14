@@ -4,17 +4,20 @@ go 1.25
 
 require (
 	github.com/fatih/color v1.18.0
+	github.com/gen2brain/go-fitz v1.24.15
 	github.com/iancoleman/orderedmap v0.3.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/spf13/cobra v1.10.2
-	golang.org/x/sys v0.33.0
+	golang.org/x/sys v0.37.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
+	github.com/ebitengine/purego v0.8.4 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/jupiterrider/ffi v0.5.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

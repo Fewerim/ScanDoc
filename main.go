@@ -6,12 +6,10 @@ import (
 )
 
 func main() {
-	var filePath string
-	fmt.Scan(&filePath)
-
-	img, err := appUtils.ConvertPdfToImg(filePath)
+	dir, err := appUtils.ConvertPdfToImg("C:\\Users\\Administrator\\Downloads\\Telegram Desktop\\4ТОРГ-12.pdf")
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Ошибка:", err)
+		return
 	}
-	fmt.Println(img)
+	fmt.Println("JPG сохранены в:", dir)
 }

@@ -65,12 +65,20 @@ func (a *App) OnceFile(operation, filePath, createdFileName string) (err error) 
 
 	if err = appUtils.ValidateExtensionFile(filePath); err != nil {
 		a.Log.Error(operation, err.Error(), appUtils.GetExitCode(err, exitCodes.UserError), filepath.Base(filePath))
-		return err
+		return appUtils.UserError(err.Error())
 	}
 
 	if err = appUtils.CheckExistsFile(filePath); err != nil {
 		a.Log.Error(operation, err.Error(), appUtils.GetExitCode(err, exitCodes.UserError))
-		return err
+		return appUtils.UserError(err.Error())
+	}
+
+	if ext := filepath.Ext(filePath); ext == ".pdf" {
+		filePath, err = appUtils.GetJpgFromPdf(filePath)
+		if err != nil {
+			a.Log.Error(operation, err.Error(), appUtils.GetExitCode(err, exitCodes.UserError))
+			return appUtils.UserError(err.Error())
+		}
 	}
 
 	a.Log.Info(operation, "начало обработки файла")
