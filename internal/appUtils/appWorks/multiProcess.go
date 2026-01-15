@@ -3,13 +3,12 @@ package appWorks
 import (
 	"fmt"
 	"path/filepath"
-	appUtils2 "proWeb/internal/appUtils"
+	"proWeb/internal/appUtils"
 	"proWeb/internal/files"
+	"proWeb/internal/storage"
 	"proWeb/lib/config"
 	"strings"
 	"sync"
-
-	"github.com/fatih/color"
 )
 
 const maxParallelOperations = 5
@@ -17,34 +16,34 @@ const maxParallelOperations = 5
 // MultiProcessFiles - подключение к серверу, обработка файлов в директории, сохранение результатов в локальное хранилище.
 // Обрабатывает сразу все файлы из директории, возвращает результаты выполнения CLI команды, ошибку при подключении сервера или проверки директории,
 // слайс ошибок, возникших при обработке конкретных файлов
-func MultiProcessFiles(directoryPath string, cfg *config.Config, folderName string) (appUtils2.MultiProcessResult, error, []appUtils2.FileError) {
-	filePaths, errorInfo := appUtils2.GetFilesFromDirectory(directoryPath)
+func MultiProcessFiles(directoryPath string, cfg *config.Config, folderName string) (appUtils.MultiProcessResult, error, []appUtils.FileError) {
+	filePaths, errorInfo := appUtils.GetFilesFromDirectory(directoryPath)
 	if errorInfo != "" {
-		return appUtils2.MultiProcessResult{}, appUtils2.UserError(errorInfo), nil
+		return appUtils.MultiProcessResult{}, appUtils.UserError(errorInfo), nil
 	}
 
-	cmd, err := appUtils2.StartPythonServer(cfg.Port, cfg.PythonExecutable, cfg.PythonScript)
+	cmd, err := appUtils.StartPythonServer(cfg.Port, cfg.PythonExecutable, cfg.PythonScript)
 	if err != nil {
-		if err.Error() == appUtils2.ErrorNoPython {
+		if err.Error() == appUtils.ErrorNoPython {
 			info := fmt.Sprintf("python не установлен или его нет в PATH, обратитесь к администратору")
-			return appUtils2.MultiProcessResult{}, appUtils2.InternalError(info), nil
+			return appUtils.MultiProcessResult{}, appUtils.InternalError(info), nil
 		}
 
 		info := fmt.Sprintf("ошибка при старте сервера: %v", err)
-		return appUtils2.MultiProcessResult{}, appUtils2.ServerError(info), nil
+		return appUtils.MultiProcessResult{}, appUtils.ServerError(info), nil
 	}
 
-	defer appUtils2.KillServer(cmd)
+	defer appUtils.KillServer(cmd)
 
 	if len(filePaths) > 5 {
-		color.Blue("Система одновременно может обрабатывать не более 5 файлов, если файлов больше, то на это требуется больше времени")
+		appUtils.InfoMessage("Система одновременно может обрабатывать не более 5 файлов, если файлов больше, то на это требуется больше времени")
 	}
 
 	maxWorkers := maxParallelOperations
 	semaphore := make(chan struct{}, maxWorkers)
 
-	results := make(chan appUtils2.Result, len(filePaths))
-	errorsFileProcessing := make(chan appUtils2.FileError, len(filePaths))
+	results := make(chan appUtils.Result, len(filePaths))
+	errorsFileProcessing := make(chan appUtils.FileError, len(filePaths))
 
 	var wg sync.WaitGroup
 
@@ -61,37 +60,38 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config, folderName stri
 			extension := filepath.Ext(fileName)
 			fileNameWithoutExt := strings.TrimSuffix(fileName, extension)
 
-			err := appUtils2.ValidateExtensionFile(filePath)
+			err := appUtils.ValidateExtensionFile(filePath)
 			if err != nil {
 				info := fmt.Sprintf("Расширение файла не поддерживается: %v", err)
-				errorsFileProcessing <- appUtils2.FileError{fileName, appUtils2.UserError(info)}
+				errorsFileProcessing <- appUtils.FileError{fileName, appUtils.UserError(info)}
 				return
 			}
 
 			if ext := filepath.Ext(filePath); ext == ".pdf" {
-				filePath, err = appUtils2.GetJpgFromPdf(filePath)
+				filePath, err = appUtils.GetJpgFromPdf(filePath)
 				if err != nil {
 					info := err.Error()
-					errorsFileProcessing <- appUtils2.FileError{fileName, appUtils2.UserError(info)}
+					errorsFileProcessing <- appUtils.FileError{fileName, appUtils.UserError(info)}
 					return
 				}
 			}
 
-			data, docType, err := appUtils2.SendFileToServer(filePath, cfg.Port)
+			data, docType, err := appUtils.SendFileToServer(filePath, cfg.Port)
 			if err != nil {
 				info := fmt.Sprintf("ошибка при отправке файла: %v", err)
-				errorsFileProcessing <- appUtils2.FileError{fileName, appUtils2.ServerError(info)}
+				errorsFileProcessing <- appUtils.FileError{fileName, appUtils.ServerError(info)}
 				return
 			}
 
-			errNew := files.SaveFileToDirectory(fileNameWithoutExt, folderName, data)
+			//errNew := files.SaveFileToDirectory(fileNameWithoutExt, folderName, data, files.NotOverwrite)
+			errNew := storage.SaveFileToStorage(cfg.StoragePath, folderName, fileNameWithoutExt, data, files.NotOverwrite)
 			if errNew != nil {
 				info := fmt.Sprintf("ошибка при попытке сохранить файл: %v", errNew)
-				errorsFileProcessing <- appUtils2.FileError{fileName, appUtils2.ServerError(info)}
+				errorsFileProcessing <- appUtils.FileError{fileName, appUtils.ServerError(info)}
 				return
 			}
 
-			result := appUtils2.CreateResultWithFolder(fileNameWithoutExt, docType, cfg.StoragePath, folderName)
+			result := appUtils.CreateResultWithFolder(fileNameWithoutExt, docType, cfg.StoragePath, folderName)
 			results <- result
 		}(filePath)
 	}
@@ -100,8 +100,8 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config, folderName stri
 	close(results)
 	close(errorsFileProcessing)
 
-	multiProcessResult := appUtils2.CreateMultiProcessResult()
-	var allErrorsFileProcessing []appUtils2.FileError
+	multiProcessResult := appUtils.CreateMultiProcessResult()
+	var allErrorsFileProcessing []appUtils.FileError
 
 	for result := range results {
 		multiProcessResult.SetResult(result)

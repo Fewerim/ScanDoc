@@ -4,62 +4,54 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-
-	"github.com/fatih/color"
+	"sort"
+	"strings"
+	"time"
 )
 
-/*
-Пакет используется для работы с файлами JSON и локальным хранилищем
-*/
-type TestJson struct {
-	Name       string   `json:"name"`
-	Age        int      `json:"age"`
-	Profession string   `json:"profession"`
-	Skills     []string `json:"skills"`
+const (
+	Overwrite    = true
+	NotOverwrite = false
+)
+
+type File struct {
+	Name     string `json:"name"`
+	Ext      string `json:"ext"`
+	Size     int64  `json:"size"`
+	Modified string `json:"modified"`
 }
 
-// Название локального хранилища
-// TODO: В будущем добавить чтобы .gitignore сам обновлялся если меняется nameStorage
-var nameStorage = "storageJSONs"
-
-func InitStorage(storage string) {
-	if storage != "" {
-		nameStorage = storage
+func newFile(name, ext, modified string, size int64) File {
+	return File{
+		Name:     name,
+		Ext:      ext,
+		Size:     size,
+		Modified: modified,
 	}
 }
 
-// CreateStorageJSON - создает локальное хранилище для хранения JSON
-func CreateStorageJSON() error {
-	if err := createFolder(nameStorage); err != nil {
-		return err
+// SaveFileToDirectory - создает файл и сохраняет/перезаписывает в хранилище в локальной папке
+func SaveFileToDirectory(fileName, directory string, data interface{}, overwrite bool) error {
+	fileNameWithExtension := addExtensionJSON(fileName)
+
+	fileName, filePath := getUniqFileName(fileNameWithExtension, directory, overwrite)
+
+	if err := os.MkdirAll(directory, 0777); err != nil {
+		return fmt.Errorf("ошибка создания %s директории: %v", directory, err)
 	}
-	color.Blue("Хранилище для обработанных файлов (%s) успешно создано", nameStorage)
+
+	jsonData, err := json.MarshalIndent(data, "", "	")
+	if err != nil {
+		return fmt.Errorf("ошибка маршаллинга json: %v", err)
+	}
+
+	if err = os.WriteFile(filePath, jsonData, 0666); err != nil {
+		return fmt.Errorf("ошибка записи файла: %v", err)
+	}
 	return nil
-}
-
-// StorageExists - проверяет наличие локального хранилища
-func StorageExists() bool {
-	_, err := os.Stat(nameStorage)
-	return !os.IsNotExist(err)
-}
-
-// SaveFileToDirectory - сохраняет файл без перезаписи, если такой есть (создается уникальный)
-func SaveFileToDirectory(fileName, directory string, data interface{}) error {
-	return saveFileToDirectory(fileName, directory, data, false)
-}
-
-// SaveFileToStorage - сохраняет файл без перезаписи в локальное хранилище
-func SaveFileToStorage(fileName string, data interface{}) error {
-	return saveFileToDirectory(fileName, "", data, false)
-}
-
-// OverwriteFileToDirectory - сохраняет файл c перезаписью, если такой есть (перезаписывает существующий)
-func OverwriteFileToDirectory(fileName, directory string, data interface{}) error {
-	return saveFileToDirectory(fileName, directory, data, true)
 }
 
 // DeleteFileFromDirectory - удаляет файл по пути
@@ -67,40 +59,62 @@ func DeleteFileFromDirectory(filePath string) error {
 	if err := os.RemoveAll(filePath); err != nil {
 		return fmt.Errorf("ошибка при удалении файла %s: %v", filePath, err)
 	}
-	log.Printf("файл по пути %s был успешно удален", filePath)
 	return nil
 }
 
-// ReadJSONFile - читает файл по пути
-func ReadJSONFile(filePath string, result interface{}) error {
+// ReadFileFromDirectory - читает файл из необходимой директории
+func ReadFileFromDirectory(filePath string) (content []byte, err error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return fmt.Errorf("ошибка при чтении файла: %v", err)
+		return nil, fmt.Errorf("ошибка при чтении файла: %v", err)
 	}
-
-	if err = json.Unmarshal(data, result); err != nil {
-		return fmt.Errorf("ошибка парсинга JSON: %v", err)
-	}
-
-	return nil
+	return data, nil
 }
 
-// GetListFilesInDirectory - выдает весь список файлов лежащих в хранилище
-func GetListFilesInDirectory(directory string) ([]string, error) {
-	fullPath := filepath.Join(nameStorage, directory)
+// GetFilesFromDirectory - выдает весь список файлов лежащих в хранилище
+func GetFilesFromDirectory(directory string) ([]File, error) {
+	var results []File
 
-	entries, err := os.ReadDir(fullPath)
-	if err != nil {
-		return nil, fmt.Errorf("ошибка при чтении директории %s: %v", directory, err)
-	}
-
-	fileNames := make([]string, 0)
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			fileNames = append(fileNames, entry.Name())
+	err := filepath.WalkDir(directory, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
 		}
+
+		if d.IsDir() || strings.HasPrefix(d.Name(), ".") {
+			return nil
+		}
+
+		info, err := d.Info()
+		if err != nil {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(directory, path)
+		if err != nil {
+			relPath = d.Name()
+		}
+
+		results = append(results, newFile(
+			relPath,
+			filepath.Ext(relPath),
+			info.ModTime().Format("2006-01-02 15:04"),
+			info.Size(),
+		),
+		)
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
-	return fileNames, nil
+
+	sort.Slice(results, func(i, j int) bool {
+		ti, _ := time.Parse("2006-01-02 15:04", results[i].Modified)
+		tj, _ := time.Parse("2006-01-02 15:04", results[j].Modified)
+		return ti.After(tj)
+	})
+
+	return results, nil
 }
 
 // DownloadFile - скачивает файл с url и создает в target пути
@@ -121,13 +135,18 @@ func DownloadFile(url, target string) error {
 	return err
 }
 
-// ProjectRoot - возвращает путь к корню проекта, если не удалось получить путь возвращает ошибку
-func ProjectRoot() (string, error) {
-	exePath, err := os.Executable()
-	if err != nil {
-		return "", err
+// FindProjectRoot - возвращает путь к корню проекта, если не удалось получить путь возвращает ошибку
+func FindProjectRoot(start string) (string, error) {
+	dir := start
+	for i := 0; i < 10; i++ {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			projectRoot, err := filepath.Abs(dir)
+			if err != nil {
+				return "", err
+			}
+			return projectRoot, nil
+		}
+		dir = filepath.Dir(dir)
 	}
-
-	binDir := filepath.Dir(exePath)
-	return filepath.Dir(binDir), nil
+	return "", fmt.Errorf("корень проекта не найден")
 }

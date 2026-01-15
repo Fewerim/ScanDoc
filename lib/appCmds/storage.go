@@ -7,9 +7,8 @@ import (
 	"path/filepath"
 	"proWeb/internal/appUtils"
 	"proWeb/internal/exitCodes"
+	"proWeb/internal/files"
 	"proWeb/internal/storage"
-
-	"github.com/fatih/color"
 )
 
 // OpenStorage - команда приложения. Открывает хранилище
@@ -23,7 +22,7 @@ func (a *App) OpenStorage(operation string, clearFlag bool) error {
 			return appUtils.InternalError(info)
 		}
 		a.Log.Info(operation, "локальное хранилище было очищено")
-		color.Blue("Локальное хранилище было очищено")
+		appUtils.InfoMessage("Локальное хранилище было очищено")
 	}
 
 	a.Log.Info(operation, "открытие локального хранилища")
@@ -33,20 +32,20 @@ func (a *App) OpenStorage(operation string, clearFlag bool) error {
 		return appUtils.InternalError(info)
 	}
 
-	color.Blue("Локальное хранилище открыто")
+	appUtils.InfoMessage("Локальное хранилище открыто")
 	return nil
 }
 
 // GetFilesFromStorage - команда приложения. Получает все файлы из хранилища
-func (a *App) GetFilesFromStorage(operation string) ([]storage.File, error) {
+func (a *App) GetFilesFromStorage(operation string) ([]files.File, error) {
 	a.Log.Info(operation, "Получение файлов из хранилища")
-	files, err := storage.GetStorageFiles(a.Cfg.StoragePath)
+	results, err := storage.GetStorageFiles(a.Cfg.StoragePath)
 	if err != nil {
 		a.Log.Error(operation, err.Error(), exitCodes.InternalError)
 		return nil, appUtils.InternalError(err.Error())
 	}
 	a.Log.Info(operation, "Файлы из хранилища успешно получены")
-	return files, nil
+	return results, nil
 }
 
 // ReadFileFromStorage - команда приложения. Читает содержимое файла из хранилища
@@ -62,9 +61,9 @@ func (a *App) ReadFileFromStorage(operation, fileName string) (string, error) {
 }
 
 // SaveFileToStorage - команда приложения. Сохраняет файл в хранилище
-func (a *App) SaveFileToStorage(operation, fileName string, content string) error {
+func (a *App) SaveFileToStorage(operation, fileName, folder string, content interface{}) error {
 	a.Log.Info(operation, fmt.Sprintf("Сохранение файла %v в хранилище", fileName))
-	err := storage.SaveFileToStorage(a.Cfg.StoragePath, fileName, content)
+	err := storage.SaveFileToStorage(a.Cfg.StoragePath, folder, fileName, content, files.Overwrite)
 	if err != nil {
 		a.Log.Error(operation, err.Error(), exitCodes.InternalError)
 		return appUtils.InternalError(err.Error())

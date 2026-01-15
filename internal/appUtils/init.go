@@ -81,6 +81,7 @@ func InstallTesseract() error {
 		return UserError("проверьте подключение к интернету")
 	}
 
+	InfoMessage("Установка Tesseract")
 	if err := tesseract.Install(tempDir); err != nil {
 		return InternalError(err.Error())
 	}
@@ -115,13 +116,8 @@ func checkInternetConnection() bool {
 	return cmd.Run() == nil
 }
 
-// CheckInitWasUsed - проверяет был ли уже запущен init, чтобы все зависисмости были установлены
+// CheckInitWasUsed - проверяет, был ли уже запущен init, чтобы все зависисмости были установлены
 func CheckInitWasUsed(pathToVenv string) (bool, error) {
-	//projectRoot, err := config.FindProjectRoot(".")
-	//if err != nil {
-	//	return false, InternalError(err.Error())
-	//}
-
 	venvPath := filepath.Join(pathToVenv, ".venv", "Lib", "site-packages")
 
 	entries, err := os.ReadDir(venvPath)

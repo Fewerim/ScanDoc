@@ -32,12 +32,12 @@ func (errs FileErrors) ToString() string {
 		fileNames = append(fileNames, file.FileName)
 	}
 	res := "Файлы, которые не были обработаны: " + strings.Join(fileNames, ", ")
-	return color.RedString(res)
+	return res
 }
 
 // PrintErrors - выводит ошибки
 func (errs FileErrors) PrintErrors() {
-	fmt.Println(errs.ToString())
+	FailMessage(errs.ToString())
 }
 
 // newAppError - конструктор для создания новой ошибки приложения

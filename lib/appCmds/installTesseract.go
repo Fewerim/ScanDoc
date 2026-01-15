@@ -4,14 +4,12 @@ import (
 	"proWeb/internal/appUtils"
 	"proWeb/internal/tesseract"
 	"strings"
-
-	"github.com/fatih/color"
 )
 
 // InstallTesseract - устанавливает Tesseract
 func (a *App) InstallTesseract() error {
 	if err := tesseract.CheckTesseract(); err == nil {
-		color.Blue("Tesseract успешно установлен и добавлен в PATH")
+		appUtils.InfoMessage("Tesseract успешно установлен и добавлен в PATH")
 		return nil
 	}
 
@@ -20,7 +18,7 @@ func (a *App) InstallTesseract() error {
 	}
 
 	if !tesseract.IsTesseractInstalled() {
-		color.Blue("Завершите мастер установки и повторите попытку")
+		appUtils.InfoMessage("Завершите мастер установки и повторите попытку")
 		return nil
 	}
 
@@ -30,6 +28,6 @@ func (a *App) InstallTesseract() error {
 	info.WriteString("windows: можете попробовать команду 'setx /M PATH \"<путь к каталогу с tesseract>;%PATH%\"\n'")
 	info.WriteString("--примечания:\n\tдля успешного добавления в PATH требуются права администратора\n\tпосле добавления в PATH перезапустите консоль")
 
-	color.Blue(info.String())
+	appUtils.InfoMessage(info.String())
 	return nil
 }

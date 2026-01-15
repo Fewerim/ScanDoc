@@ -3,8 +3,9 @@ package appWorks
 import (
 	"context"
 	"fmt"
-	appUtils2 "proWeb/internal/appUtils"
+	"proWeb/internal/appUtils"
 	"proWeb/internal/files"
+	"proWeb/internal/storage"
 	"proWeb/lib/config"
 	"time"
 )
@@ -12,35 +13,36 @@ import (
 const processTimeout = 180 * time.Second
 
 // ProcessOnceFile - подключение к серверу, отправка файла, обработка результата, сохранение в локальное хранилище
-func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (appUtils2.OnceProcessResult, error) {
+func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (appUtils.OnceProcessResult, error) {
 	_, cancel := context.WithTimeout(context.Background(), processTimeout)
 	defer cancel()
 
-	cmd, err := appUtils2.StartPythonServer(cfg.Port, cfg.PythonExecutable, cfg.PythonScript)
+	cmd, err := appUtils.StartPythonServer(cfg.Port, cfg.PythonExecutable, cfg.PythonScript)
 	if err != nil {
-		if err.Error() == appUtils2.ErrorNoPython {
+		if err.Error() == appUtils.ErrorNoPython {
 			info := fmt.Sprintf("python не установлен или его нет в PATH, обратитесь к администратору")
-			return appUtils2.OnceProcessResult{}, appUtils2.InternalError(info)
+			return appUtils.OnceProcessResult{}, appUtils.InternalError(info)
 		}
 
 		info := fmt.Sprintf("ошибка при старте сервера: %v", err)
-		return appUtils2.OnceProcessResult{}, appUtils2.ServerError(info)
+		return appUtils.OnceProcessResult{}, appUtils.ServerError(info)
 	}
 
-	defer appUtils2.KillServer(cmd)
+	defer appUtils.KillServer(cmd)
 
-	data, docType, err := appUtils2.SendFileToServer(filePath, cfg.Port)
+	data, docType, err := appUtils.SendFileToServer(filePath, cfg.Port)
 	if err != nil {
 		info := fmt.Sprintf("ошибка при отправке файла: %v", err)
-		return appUtils2.OnceProcessResult{}, appUtils2.ServerError(info)
+		return appUtils.OnceProcessResult{}, appUtils.ServerError(info)
 	}
 
-	err = files.SaveFileToStorage(createdNameFile, data)
+	//err = files.SaveFileToDirectory(createdNameFile, "", data, files.NotOverwrite)
+	err = storage.SaveFileToStorage(cfg.StoragePath, "", createdNameFile, data, files.NotOverwrite)
 	if err != nil {
 		info := fmt.Sprintf("ошибка при попытке сохранить файл: %v", err)
-		return appUtils2.OnceProcessResult{}, appUtils2.ServerError(info)
+		return appUtils.OnceProcessResult{}, appUtils.ServerError(info)
 	}
 
-	onceProcessResult := appUtils2.CreateOnceProcessResult(createdNameFile, docType, cfg.StoragePath)
+	onceProcessResult := appUtils.CreateOnceProcessResult(createdNameFile, docType, cfg.StoragePath)
 	return onceProcessResult, nil
 }

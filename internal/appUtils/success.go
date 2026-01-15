@@ -3,8 +3,6 @@ package appUtils
 import (
 	"fmt"
 	"proWeb/internal/exitCodes"
-
-	"github.com/fatih/color"
 )
 
 type Message interface {
@@ -26,12 +24,12 @@ func NewSuccess(message Message) *AppSuccess {
 }
 
 // ToString - возвращает строку для вывода статуса успеха приложения
-func (app *AppSuccess) ToString() string {
-	result := fmt.Sprintf("Статус выполнения: %d\nОписание результата:\n%s", app.Status, app.Message.ToString())
-	return color.GreenString(result)
+func (res *AppSuccess) ToString() string {
+	result := fmt.Sprintf("Статус выполнения: %d\nОписание результата:\n%s", res.Status, res.Message.ToString())
+	return result
 }
 
 // PrintSuccess - выводит в консоль статус успеха приложения
-func (app *AppSuccess) PrintSuccess() {
-	fmt.Println(app.ToString())
+func (res *AppSuccess) PrintSuccess() {
+	SuccessMessage(res.ToString())
 }

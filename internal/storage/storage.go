@@ -2,73 +2,42 @@ package storage
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"path/filepath"
-	"sort"
-	"strings"
-	"time"
+	"proWeb/internal/appUtils"
+	"proWeb/internal/files"
 )
 
-type File struct {
-	Name     string `json:"name"`
-	Ext      string `json:"ext"`
-	Size     string `json:"size"`
-	Modified string `json:"modified"`
-}
+var defaultNameStorage = "storageJSONs"
 
-func newFile(name, ext, modified, size string) File {
-	return File{
-		Name:     name,
-		Ext:      ext,
-		Size:     size,
-		Modified: modified,
+// InitStorage - инициализирует название локального хранилище
+func InitStorage(storage string) {
+	if storage != "" {
+		defaultNameStorage = storage
 	}
 }
 
-// GetStorageFiles - все файлы из storage и подпапок
-func GetStorageFiles(pathToStorage string) ([]File, error) {
-	var results []File
+// CreateStorageJSON - создает локальное хранилище для хранения обработанных файлов
+func CreateStorageJSON() error {
+	if err := files.CreateFolder(defaultNameStorage); err != nil {
+		return err
+	}
+	appUtils.InfoMessage(fmt.Sprintf("Хранилище для обработанных файлов (%s) успешно создано", defaultNameStorage))
+	return nil
+}
 
-	err := filepath.WalkDir(pathToStorage, func(path string, d os.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
+// CheckStorageExists - проверяет наличие локального хранилища
+func CheckStorageExists() bool {
+	_, err := os.Stat(defaultNameStorage)
+	return !os.IsNotExist(err)
+}
 
-		if d.IsDir() || strings.HasPrefix(d.Name(), ".") {
-			return nil
-		}
-
-		info, err := d.Info()
-		if err != nil {
-			return nil
-		}
-
-		relPath, err := filepath.Rel(pathToStorage, path)
-		if err != nil {
-			relPath = d.Name()
-		}
-
-		results = append(results, newFile(
-			relPath,
-			filepath.Ext(relPath),
-			info.ModTime().Format("2006-01-02 15:04"),
-			formatSize(info.Size()),
-		),
-		)
-		return nil
-	})
-
+// GetStorageFiles - достает все файлы из хранилища и подпапок
+func GetStorageFiles(pathToStorage string) ([]files.File, error) {
+	results, err := files.GetFilesFromDirectory(pathToStorage)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ошибка получения файлов из хранилища")
 	}
-
-	sort.Slice(results, func(i, j int) bool {
-		ti, _ := time.Parse("2006-01-02 15:04", results[i].Modified)
-		tj, _ := time.Parse("2006-01-02 15:04", results[j].Modified)
-		return ti.After(tj)
-	})
-
 	return results, nil
 }
 
@@ -76,18 +45,18 @@ func GetStorageFiles(pathToStorage string) ([]File, error) {
 func ReadFileFromStorage(pathToStorage, fileName string) (string, error) {
 	filePath := filepath.Join(pathToStorage, fileName)
 
-	content, err := os.ReadFile(filePath)
+	content, err := files.ReadFileFromDirectory(filePath)
 	if err != nil {
-		return "", fmt.Errorf("ошибка чтения файла из локального хранилища")
+		return "", err
 	}
 	return string(content), nil
 }
 
 // SaveFileToStorage - сохраняет файл в локальное хранилище
-func SaveFileToStorage(pathToStorage, filename, content string) error {
-	fullPath := filepath.Join(pathToStorage, filename)
+func SaveFileToStorage(pathToStorage, folder, filename string, content interface{}, overwrite bool) error {
+	fullPath := filepath.Join(pathToStorage, folder)
 
-	if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
+	if err := files.SaveFileToDirectory(filename, fullPath, content, overwrite); err != nil {
 		return fmt.Errorf("ошибка сохранения файла в локальное хранилище: %v", err)
 	}
 	return nil
@@ -97,18 +66,8 @@ func SaveFileToStorage(pathToStorage, filename, content string) error {
 func DeleteFileFromStorage(pathToStorage, fileName string) error {
 	fullPath := filepath.Join(pathToStorage, fileName)
 
-	if err := os.Remove(fullPath); err != nil {
+	if err := files.DeleteFileFromDirectory(fullPath); err != nil {
 		return fmt.Errorf("ошибка удаления файла из локального хранилища")
 	}
 	return nil
-}
-
-// formatSize - форматирует размер в человеческий вид
-func formatSize(size int64) string {
-	var suffixes = []string{"B", "KB", "MB", "GB"}
-	if size == 0 {
-		return "0 B"
-	}
-	i := int(math.Log2(float64(size)) / 10)
-	return fmt.Sprintf("%.1f %s", float64(size)/math.Pow(1024, float64(i)), suffixes[i])
 }

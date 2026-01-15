@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"proWeb/lib/appCmds"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -23,7 +24,7 @@ func NewApp() *App {
 	return &App{
 		Name: NameApp,
 		ctx:  context.Background(),
-		app:  appCmds.New(),
+		app:  appCmds.NewApp(),
 	}
 }
 
@@ -139,7 +140,14 @@ func (a *App) ReadFileFromStorage(fileName string) string {
 
 func (a *App) SaveFileToStorage(fileName string, content string) error {
 	const op = ".save_file_to_storage"
-	if err := a.app.SaveFileToStorage(a.Name+op, fileName, content); err != nil {
+	var data interface{}
+	err := json.Unmarshal([]byte(content), &data)
+	if err != nil {
+		runtime.LogErrorf(a.ctx, err.Error())
+		return fmt.Errorf("невалидный json, проверьте ввод")
+	}
+
+	if err := a.app.SaveFileToStorage(a.Name+op, fileName, "", data); err != nil {
 		runtime.LogErrorf(a.ctx, err.Error())
 		return err
 	}

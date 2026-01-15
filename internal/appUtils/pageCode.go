@@ -3,7 +3,6 @@ package appUtils
 import (
 	"strings"
 
-	"github.com/fatih/color"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -48,5 +47,5 @@ func PrintInstructionToSetupAutoRun() {
 	sb.WriteString("Нажмите Ок и перезапустите командную строку\n")
 
 	instructions := sb.String()
-	color.Blue(instructions)
+	InfoMessage(instructions)
 }

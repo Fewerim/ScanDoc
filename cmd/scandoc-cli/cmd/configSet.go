@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"proWeb/internal/appUtils"
+	"proWeb/internal/files"
 	"proWeb/lib/config"
 
 	"github.com/fatih/color"
@@ -30,7 +31,7 @@ func configSet(configPath string, port int, pythonExecutable, pythonScript, stor
 	cfg.PythonScript = pythonScript
 	cfg.PythonVenvPath = pyVenvPath
 
-	projectRoot, err := config.FindProjectRoot(".")
+	projectRoot, err := files.FindProjectRoot(".")
 	if err != nil {
 		return appUtils.ServerError(err.Error())
 	}

@@ -5,10 +5,19 @@ import (
 	"os"
 	"path/filepath"
 	"proWeb/internal/appUtils"
-	"proWeb/internal/files"
 	"proWeb/internal/logger"
+	"proWeb/internal/storage"
 	"proWeb/lib/config"
 )
+
+//type AppCmds interface {
+//	GetConfig() *config.Config
+//	GetCfgPath() string
+//	GetLog() logger.Logger
+//	SetCfgPath(path string)
+//	StartApp(nameApp string) error
+//	CheckStorageJSON() error
+//}
 
 type App struct {
 	CfgPath string
@@ -16,13 +25,49 @@ type App struct {
 	Log     logger.Logger
 }
 
-func New() *App {
+func NewApp() *App {
 	return &App{
 		CfgPath: "",
 		Cfg:     nil,
 		Log:     nil,
 	}
 }
+
+//func (a *App) StartApp(nameApp string) error {
+//	cfg := a.GetConfig()
+//
+//	a.LoadConfig()
+//	a.SetupLogger(cfg.LogPath)
+//
+//	if err := a.InitPythonVenv(); err != nil {
+//		return err
+//	}
+//	if err := a.CheckPythonScripts(); err != nil {
+//		return err
+//	}
+//	if err := a.CheckStorageJSON(); err != nil {
+//		return err
+//	}
+//
+//	a.Log.Info(nameApp, "Успешный старт")
+//	return nil
+//}
+//
+//func (a *App) SetCfgPath(path string) {
+//	a.CfgPath = path
+//}
+//
+//func (a *App) GetConfig() *config.Config {
+//	return a.Cfg
+//}
+//
+//func (a *App) GetLog() logger.Logger {
+//	return a.Log
+//}
+//
+//func (a *App) GetCfgPath() string {
+//	return a.CfgPath
+//}
 
 // LoadConfig - загружает конфиг по пути из поля App, если путь пустой, устанавливает его
 func (a *App) LoadConfig() {
@@ -68,10 +113,10 @@ func (a *App) CheckPythonScripts() error {
 
 // CheckStorageJSON - проверяет наличие локального хранилища, если его нет, создает новое
 func (a *App) CheckStorageJSON() error {
-	files.InitStorage(a.Cfg.StoragePath)
+	storage.InitStorage(a.Cfg.StoragePath)
 
-	if !files.StorageExists() {
-		if err := files.CreateStorageJSON(); err != nil {
+	if !storage.CheckStorageExists() {
+		if err := storage.CreateStorageJSON(); err != nil {
 			return fmt.Errorf("ошибка создания локального хранилища: %v", err)
 		}
 	}

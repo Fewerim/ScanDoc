@@ -8,14 +8,12 @@ import (
 	"proWeb/internal/exitCodes"
 	"proWeb/internal/tesseract"
 	"time"
-
-	"github.com/fatih/color"
 )
 
 // OnceFile - проверяет входные данные, создает подключение к серверу,
 // обрабатывает и сохраняет файл локально
 func (a *App) OnceFile(operation, filePath, createdFileName string) (err error) {
-	color.Blue("Команда run_once начала свое выполнение, валидация входных данных и проверка предварительных условий")
+	appUtils.InfoMessage("Команда run_once начала свое выполнение, валидация входных данных и проверка предварительных условий")
 
 	if err := tesseract.CheckTesseract(); err != nil {
 		a.Log.Error(operation, "tesseract не добавлен в PATH", exitCodes.UserError)
@@ -82,7 +80,7 @@ func (a *App) OnceFile(operation, filePath, createdFileName string) (err error) 
 	}
 
 	a.Log.Info(operation, "начало обработки файла")
-	color.Blue("Начало обработки файла")
+	appUtils.InfoMessage("Начало обработки файла")
 
 	result, err := appWorks.ProcessOnceFile(filePath, createdFileName, a.Cfg)
 	if err != nil {

@@ -7,8 +7,6 @@ import (
 	"proWeb/internal/appUtils"
 	"proWeb/internal/exitCodes"
 	"runtime"
-
-	"github.com/fatih/color"
 )
 
 // ClearTerminal - команда, очищающая терминал
@@ -22,7 +20,7 @@ func (a *App) ClearTerminal(operation string) error {
 	}
 
 	a.Log.Info(operation, "терминал успешно очищен")
-	color.Blue("Терминал очищен")
+	appUtils.InfoMessage("Терминал очищен")
 	return nil
 }
 

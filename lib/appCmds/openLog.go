@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"proWeb/internal/appUtils"
 	"proWeb/internal/exitCodes"
-
-	"github.com/fatih/color"
 )
 
 // OpenLogFolder - команда, открывающая папку с логами
@@ -20,7 +18,7 @@ func (a *App) OpenLogFolder(operation string, clearFlag bool) error {
 			return appUtils.InternalError(info)
 		}
 		a.Log.Info(operation, "файла с логами был очищен")
-		color.Blue("Файл с логами был очищен")
+		appUtils.InfoMessage("Файл с логами был очищен")
 	}
 
 	a.Log.Info(operation, "открытие файла с логами")
@@ -30,7 +28,7 @@ func (a *App) OpenLogFolder(operation string, clearFlag bool) error {
 		return appUtils.InternalError(info)
 	}
 
-	color.Blue("Файл с логами открыт")
+	appUtils.InfoMessage("Файл с логами открыт")
 	return nil
 }
 

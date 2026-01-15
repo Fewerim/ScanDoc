@@ -3,7 +3,7 @@ package typesUtils
 import (
 	"errors"
 	"fmt"
-	typesJSON2 "proWeb/internal/typesJSON"
+	"proWeb/internal/typesJSON"
 	"strings"
 )
 
@@ -11,9 +11,9 @@ type DocFactory func() interface{}
 
 // docFactories - хранилище допустимых типов документов
 var docFactories = map[string]DocFactory{
-	"upd":     func() interface{} { return &typesJSON2.Upd{} },
-	"invoice": func() interface{} { return &typesJSON2.TheInvoice{} },
-	"torg12":  func() interface{} { return &typesJSON2.Torg12{} },
+	"upd":     func() interface{} { return &typesJSON.Upd{} },
+	"invoice": func() interface{} { return &typesJSON.TheInvoice{} },
+	"torg12":  func() interface{} { return &typesJSON.Torg12{} },
 }
 
 // normalize - нормализует строку переводя ее в верхний регистр и убирая лишние пробелы

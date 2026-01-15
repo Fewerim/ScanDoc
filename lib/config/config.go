@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"proWeb/internal/files"
 	"strings"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -45,7 +46,7 @@ func NewDefaultConfig() *Config {
 
 // SetupDefaultConfig - устанавливает дефолтные значения для конфига
 func (cfg *Config) SetupDefaultConfig() {
-	projectRoot, err := FindProjectRoot(".")
+	projectRoot, err := files.FindProjectRoot(".")
 	if err != nil {
 		return
 	}
@@ -195,19 +196,4 @@ func escapeYAMLString(s string) string {
 	s = strings.ReplaceAll(s, `\`, `\\`)
 	s = strings.ReplaceAll(s, `"`, `\"`)
 	return s
-}
-
-func FindProjectRoot(start string) (string, error) {
-	dir := start
-	for i := 0; i < 10; i++ {
-		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
-			projectRoot, err := filepath.Abs(dir)
-			if err != nil {
-				return "", err
-			}
-			return projectRoot, nil
-		}
-		dir = filepath.Dir(dir)
-	}
-	return "", fmt.Errorf("корень проекта не найден")
 }

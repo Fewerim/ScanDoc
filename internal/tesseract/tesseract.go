@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"proWeb/internal/files"
 	"runtime"
-
-	"github.com/fatih/color"
 )
 
 const (
@@ -89,7 +87,6 @@ func setupTesseract(installerPath string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	color.Blue("Запуск установщика Tesseract")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("ошибка запуска установщика")
 	}

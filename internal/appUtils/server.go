@@ -1,16 +1,13 @@
 package appUtils
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"net/url"
-	"os"
 	"os/exec"
 	"path/filepath"
 	parser2 "proWeb/internal/parser"
@@ -25,14 +22,6 @@ const (
 	healthCheckClientTimeout = 5 * time.Second
 	ErrorNoPython            = "python не найден"
 )
-
-// Data - заглушка имитирующая некие данные, т.е файл json
-type Data struct {
-	Filename    string            `json:"filename"`
-	DocType     string            `json:"doc_type"`
-	ProcessedAt string            `json:"processed_at"`
-	Fields      map[string]string `json:"fields"`
-}
 
 // StartPythonServer - создает соединение с сервером
 func StartPythonServer(port int, pythonExecutable, pathToScript string) (*exec.Cmd, error) {
@@ -71,12 +60,6 @@ func KillServer(cmd *exec.Cmd) {
 // SendFileToServer - отправляет файл на сервер и возвращает результат выполнения сервиса (файл)
 func SendFileToServer(filePath string, port int) (interface{}, string, error) {
 	var data interface{}
-	//fieldNameOfRequest := setupFieldName(filePath)
-	//
-	//body, contentType, err := buildMultipartBody(filePath, fieldNameOfRequest)
-	//if err != nil {
-	//	return data, InternalError(err.Error())
-	//}
 
 	resp, err := scanRequest(port, filePath)
 	if err != nil {
@@ -112,32 +95,6 @@ func SendFileToServer(filePath string, port int) (interface{}, string, error) {
 	}
 
 	return decodeDataWithTable, t, nil
-}
-
-// buildMultipartBody - создание тела для запроса
-func buildMultipartBody(filePath, fieldName string) (body *bytes.Buffer, contentType string, err error) {
-	f, err := os.Open(filePath)
-	if err != nil {
-		return nil, "", fmt.Errorf("не удалось открыть файл: %v", err)
-	}
-	defer f.Close()
-
-	body = &bytes.Buffer{}
-	w := multipart.NewWriter(body)
-
-	//TODO: file | image
-	part, err := w.CreateFormFile(fieldName, filepath.Base(filePath))
-	if err != nil {
-		return nil, "", fmt.Errorf("ошибка форматирования multipart: %v", err)
-	}
-	if _, err = io.Copy(part, f); err != nil {
-		return nil, "", fmt.Errorf("ошибка чтения файла: %v", err)
-	}
-	if err = w.Close(); err != nil {
-		return nil, "", fmt.Errorf("ошибка закрытия multipart: %v", err)
-	}
-
-	return body, w.FormDataContentType(), nil
 }
 
 // scanRequest - отправка HTTP запроса на энд-поинт scan
@@ -197,15 +154,4 @@ func decodeDataResponse(r io.Reader) (interface{}, error) {
 		return data, fmt.Errorf("ошибка парсинга JSON-ответа: %v", err)
 	}
 	return data, nil
-}
-
-// setupFieldName - возвращает тип файла для поля запроса (image или file)
-func setupFieldName(filePath string) string {
-	ext := filepath.Ext(filePath)
-	switch ext {
-	case ".jpg", ".jpeg", ".png":
-		return "image"
-	default:
-		return "file"
-	}
 }

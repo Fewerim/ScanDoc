@@ -13,5 +13,5 @@ type AppCLI struct {
 
 // NewApp - конструктор для приложения
 func NewApp() *AppCLI {
-	return &AppCLI{Name: NameApp, App: appCmds.New()}
+	return &AppCLI{Name: NameApp, App: appCmds.NewApp()}
 }
