@@ -59,7 +59,7 @@ func (a *App) MultiFiles(operation, directory, createdFolderName string) (err er
 	a.log.Info(operation, "начало обработки директории файлов")
 	appUtils.InfoMessage("Начало обработки директории файлов")
 
-	result, err, errs := appWorks.MultiProcessFiles(directory, a.cfg, createdFolderName)
+	result, err, errs := appWorks.MultiProcessFiles(directory, createdFolderName, a.cfg, a.storage)
 	if err != nil {
 		a.log.Error(operation, err.Error(), appUtils.GetExitCode(err, exitCodes.ServerError))
 		return err

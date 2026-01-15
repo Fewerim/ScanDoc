@@ -8,7 +8,6 @@ import (
 	"proWeb/internal/appUtils"
 	"proWeb/internal/exitCodes"
 	"proWeb/internal/files"
-	"proWeb/internal/storage"
 )
 
 // OpenStorage - команда приложения. Открывает хранилище
@@ -38,10 +37,10 @@ func (a *App) OpenStorage(operation string, clearFlag bool) error {
 
 // CheckStorageJSON - проверяет наличие локального хранилища, если его нет, создает новое
 func (a *App) CheckStorageJSON() error {
-	storage.InitStorage(a.cfg.StoragePath)
+	a.storage.Init(a.cfg.StoragePath)
 
-	if !storage.CheckStorageExists() {
-		if err := storage.CreateStorageJSON(); err != nil {
+	if !a.storage.CheckExists() {
+		if err := a.storage.Create(); err != nil {
 			return fmt.Errorf("ошибка создания локального хранилища: %v", err)
 		}
 	}
@@ -51,7 +50,7 @@ func (a *App) CheckStorageJSON() error {
 // GetFilesFromStorage - команда приложения. Получает все файлы из хранилища
 func (a *App) GetFilesFromStorage(operation string) ([]files.File, error) {
 	a.log.Info(operation, "Получение файлов из хранилища")
-	results, err := storage.GetStorageFiles(a.cfg.StoragePath)
+	results, err := a.storage.GetFiles()
 	if err != nil {
 		a.log.Error(operation, err.Error(), exitCodes.InternalError)
 		return nil, appUtils.InternalError(err.Error())
@@ -63,7 +62,7 @@ func (a *App) GetFilesFromStorage(operation string) ([]files.File, error) {
 // ReadFileFromStorage - команда приложения. Читает содержимое файла из хранилища
 func (a *App) ReadFileFromStorage(operation, fileName string) (string, error) {
 	a.log.Info(operation, fmt.Sprintf("Чтение содержимого файла: %s", fileName))
-	content, err := storage.ReadFileFromStorage(a.cfg.StoragePath, fileName)
+	content, err := a.storage.ReadFile(fileName)
 	if err != nil {
 		a.log.Error(operation, err.Error(), exitCodes.InternalError)
 		return "", appUtils.InternalError(err.Error())
@@ -75,7 +74,7 @@ func (a *App) ReadFileFromStorage(operation, fileName string) (string, error) {
 // SaveFileToStorage - команда приложения. Сохраняет файл в хранилище
 func (a *App) SaveFileToStorage(operation, fileName, folder string, content interface{}) error {
 	a.log.Info(operation, fmt.Sprintf("Сохранение файла %v в хранилище", fileName))
-	err := storage.SaveFileToStorage(a.cfg.StoragePath, folder, fileName, content, files.Overwrite)
+	err := a.storage.SaveFile(folder, fileName, content, files.Overwrite)
 	if err != nil {
 		a.log.Error(operation, err.Error(), exitCodes.InternalError)
 		return appUtils.InternalError(err.Error())
@@ -87,7 +86,7 @@ func (a *App) SaveFileToStorage(operation, fileName, folder string, content inte
 // DeleteFileFromStorage - команда приложения. Удаляет файл из хранилища
 func (a *App) DeleteFileFromStorage(operation, fileName string) error {
 	a.log.Info(operation, fmt.Sprintf("Удаление файла %v из хранилища", fileName))
-	err := storage.DeleteFileFromStorage(a.cfg.StoragePath, fileName)
+	err := a.storage.DeleteFile(fileName)
 	if err != nil {
 		a.log.Error(operation, err.Error(), exitCodes.InternalError)
 		return appUtils.InternalError(err.Error())

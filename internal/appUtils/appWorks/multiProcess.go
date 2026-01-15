@@ -16,7 +16,7 @@ const maxParallelOperations = 5
 // MultiProcessFiles - подключение к серверу, обработка файлов в директории, сохранение результатов в локальное хранилище.
 // Обрабатывает сразу все файлы из директории, возвращает результаты выполнения CLI команды, ошибку при подключении сервера или проверки директории,
 // слайс ошибок, возникших при обработке конкретных файлов
-func MultiProcessFiles(directoryPath string, cfg *config.Config, folderName string) (appUtils.MultiProcessResult, error, []appUtils.FileError) {
+func MultiProcessFiles(directoryPath, folderName string, cfg *config.Config, storage *storage.Storage) (appUtils.MultiProcessResult, error, []appUtils.FileError) {
 	filePaths, errorInfo := appUtils.GetFilesFromDirectory(directoryPath)
 	if errorInfo != "" {
 		return appUtils.MultiProcessResult{}, appUtils.UserError(errorInfo), nil
@@ -84,7 +84,7 @@ func MultiProcessFiles(directoryPath string, cfg *config.Config, folderName stri
 			}
 
 			//errNew := files.SaveFileToDirectory(fileNameWithoutExt, folderName, data, files.NotOverwrite)
-			errNew := storage.SaveFileToStorage(cfg.StoragePath, folderName, fileNameWithoutExt, data, files.NotOverwrite)
+			errNew := storage.SaveFile(folderName, fileNameWithoutExt, data, files.NotOverwrite)
 			if errNew != nil {
 				info := fmt.Sprintf("ошибка при попытке сохранить файл: %v", errNew)
 				errorsFileProcessing <- appUtils.FileError{fileName, appUtils.ServerError(info)}

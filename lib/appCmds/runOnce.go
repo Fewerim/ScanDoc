@@ -82,7 +82,7 @@ func (a *App) OnceFile(operation, filePath, createdFileName string) (err error) 
 	a.log.Info(operation, "начало обработки файла")
 	appUtils.InfoMessage("Начало обработки файла")
 
-	result, err := appWorks.ProcessOnceFile(filePath, createdFileName, a.cfg)
+	result, err := appWorks.ProcessOnceFile(filePath, createdFileName, a.cfg, a.storage)
 	if err != nil {
 		a.log.Error(operation, err.Error(), appUtils.GetExitCode(err, exitCodes.ServerError), filepath.Base(filePath))
 		return err

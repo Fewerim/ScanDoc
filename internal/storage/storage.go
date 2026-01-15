@@ -8,43 +8,45 @@ import (
 	"proWeb/internal/files"
 )
 
-var defaultNameStorage = "storageJSONs"
+const defaultStorage = "storageJSONs"
 
-// InitStorage - инициализирует название локального хранилище
-func InitStorage(storage string) {
-	if storage != "" {
-		defaultNameStorage = storage
+type Storage struct {
+	BasePath string
+}
+
+func New(path string) *Storage {
+	if path == "" {
+		path = defaultStorage
+	}
+
+	return &Storage{BasePath: path}
+}
+
+// Init - инициализирует хранилище
+func (s *Storage) Init(path string) {
+	if path != "" {
+		s.BasePath = path
 	}
 }
 
-// CreateStorageJSON - создает локальное хранилище для хранения обработанных файлов
-func CreateStorageJSON() error {
-	if err := files.CreateFolder(defaultNameStorage); err != nil {
+// Create - создает хранилище
+func (s *Storage) Create() error {
+	if err := files.CreateFolder(s.BasePath); err != nil {
 		return err
 	}
-	appUtils.InfoMessage(fmt.Sprintf("Хранилище для обработанных файлов (%s) успешно создано", defaultNameStorage))
+	appUtils.InfoMessage(fmt.Sprintf("Хранилище для обработанных файлов (%s) успешно создано", s.BasePath))
 	return nil
 }
 
-// CheckStorageExists - проверяет наличие локального хранилища
-func CheckStorageExists() bool {
-	_, err := os.Stat(defaultNameStorage)
+// CheckExists - проверяет наличие хранилища
+func (s *Storage) CheckExists() bool {
+	_, err := os.Stat(s.BasePath)
 	return !os.IsNotExist(err)
 }
 
-// GetStorageFiles - достает все файлы из хранилища и подпапок
-func GetStorageFiles(pathToStorage string) ([]files.File, error) {
-	results, err := files.GetFilesFromDirectory(pathToStorage)
-	if err != nil {
-		return nil, fmt.Errorf("ошибка получения файлов из хранилища")
-	}
-	return results, nil
-}
-
-// ReadFileFromStorage - читает содержимое файла из локального хранилища
-func ReadFileFromStorage(pathToStorage, fileName string) (string, error) {
-	filePath := filepath.Join(pathToStorage, fileName)
-
+// ReadFile - читает файл из хранилища
+func (s *Storage) ReadFile(fileName string) (string, error) {
+	filePath := filepath.Join(s.BasePath, fileName)
 	content, err := files.ReadFileFromDirectory(filePath)
 	if err != nil {
 		return "", err
@@ -52,9 +54,9 @@ func ReadFileFromStorage(pathToStorage, fileName string) (string, error) {
 	return string(content), nil
 }
 
-// SaveFileToStorage - сохраняет файл в локальное хранилище
-func SaveFileToStorage(pathToStorage, folder, filename string, content interface{}, overwrite bool) error {
-	fullPath := filepath.Join(pathToStorage, folder)
+// SaveFile - сохраняет файл в хранилище
+func (s *Storage) SaveFile(folder, filename string, content any, overwrite bool) error {
+	fullPath := filepath.Join(s.BasePath, folder)
 
 	if err := files.SaveFileToDirectory(filename, fullPath, content, overwrite); err != nil {
 		return fmt.Errorf("ошибка сохранения файла в локальное хранилище: %v", err)
@@ -62,9 +64,18 @@ func SaveFileToStorage(pathToStorage, folder, filename string, content interface
 	return nil
 }
 
-// DeleteFileFromStorage - удаляет файл из локального хранилища
-func DeleteFileFromStorage(pathToStorage, fileName string) error {
-	fullPath := filepath.Join(pathToStorage, fileName)
+// GetFiles - достает все файлы из хранилища и подпапок
+func (s *Storage) GetFiles() ([]files.File, error) {
+	results, err := files.GetFilesFromDirectory(s.BasePath)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка получения файлов из хранилища")
+	}
+	return results, nil
+}
+
+// DeleteFile - удаляет файл из локального хранилища
+func (s *Storage) DeleteFile(fileName string) error {
+	fullPath := filepath.Join(s.BasePath, fileName)
 
 	if err := files.DeleteFileFromDirectory(fullPath); err != nil {
 		return fmt.Errorf("ошибка удаления файла из локального хранилища")

@@ -7,6 +7,7 @@ import (
 	"proWeb/internal/appUtils"
 	"proWeb/internal/files"
 	"proWeb/internal/logger"
+	"proWeb/internal/storage"
 	"proWeb/lib/config"
 )
 
@@ -33,6 +34,7 @@ type AppCmds interface {
 
 type App struct {
 	cfgPath string
+	storage *storage.Storage
 	cfg     *config.Config
 	log     logger.Logger
 }
@@ -40,6 +42,7 @@ type App struct {
 func NewApp() *App {
 	return &App{
 		cfgPath: "",
+		storage: nil,
 		cfg:     nil,
 		log:     nil,
 	}
@@ -49,6 +52,7 @@ func NewApp() *App {
 func (a *App) StartApp(operation string) error {
 	a.loadConfig()
 	a.setupLogger(a.cfg.LogPath)
+	a.setupStorage(a.cfg.StoragePath)
 
 	if err := a.initPythonVenv(); err != nil {
 		return err
@@ -98,6 +102,11 @@ func (a *App) loadConfig() {
 // setupLogger - устанавливает логгер, который пишет в файл по переданному пути
 func (a *App) setupLogger(pathToFile string) {
 	a.log = logger.MustSetup(pathToFile)
+}
+
+// setupStorage - устанавливает локально хранилище
+func (a *App) setupStorage(pathToStorage string) {
+	a.storage = storage.New(pathToStorage)
 }
 
 // initPythonVenv - инициализирует venv для python, если файла нет, создает

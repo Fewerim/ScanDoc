@@ -13,7 +13,7 @@ import (
 const processTimeout = 180 * time.Second
 
 // ProcessOnceFile - подключение к серверу, отправка файла, обработка результата, сохранение в локальное хранилище
-func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (appUtils.OnceProcessResult, error) {
+func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config, storage *storage.Storage) (appUtils.OnceProcessResult, error) {
 	_, cancel := context.WithTimeout(context.Background(), processTimeout)
 	defer cancel()
 
@@ -37,7 +37,7 @@ func ProcessOnceFile(filePath, createdNameFile string, cfg *config.Config) (appU
 	}
 
 	//err = files.SaveFileToDirectory(createdNameFile, "", data, files.NotOverwrite)
-	err = storage.SaveFileToStorage(cfg.StoragePath, "", createdNameFile, data, files.NotOverwrite)
+	err = storage.SaveFile("", createdNameFile, data, files.NotOverwrite)
 	if err != nil {
 		info := fmt.Sprintf("ошибка при попытке сохранить файл: %v", err)
 		return appUtils.OnceProcessResult{}, appUtils.ServerError(info)
