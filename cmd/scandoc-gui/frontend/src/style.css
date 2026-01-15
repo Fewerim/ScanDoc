@@ -434,86 +434,61 @@ button[data-disabled-reason="requires-init"]:hover {
     opacity: 1 !important;
     font-style: italic;
 }
+:root {
+    --sb-thumb: rgba(213, 201, 241, 0.28);
+    --sb-thumb-hover: rgba(213, 201, 241, 0.45);
+    --sb-thumb-ff: rgba(255, 255, 255, 0.35);
+}
 
 .scroll-container {
-    margin-bottom: 1rem;
-    width: 100%;
-    height: 300px;
-    border: 3px solid rgba(102, 126, 234, 0.5);  /* Alpha 0.5 вместо 1 */
-    border-radius: 12px;
-    background: rgba(248, 250, 252, 0.15);  /* Alpha 0.15 вместо 1 */
-    backdrop-filter: blur(15px);  /* Сильнее blur для видимости */
-    -webkit-backdrop-filter: blur(15px);
-    overflow: hidden;
-    margin-top: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    margin: 1.1rem auto;
+    width: 300px;
+    height: 350px;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.10);
+    color: #f8fafc;
+
+    overflow: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-thumb-ff) transparent;
 }
 
 .files-list {
-    width: 100%;
-    height: 100%;
-    padding: 15px;
+    padding: 14px 16px;
     margin: 0;
-    overflow-y: scroll;
-    background: rgba(255, 255, 255, 0.1);  /* Alpha 0.1 вместо 0.2 */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    scrollbar-width: thin;
-    scrollbar-color: #667eea rgba(246, 246, 246, 0.16);
+
+    background: transparent;
+    overflow: visible;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .file-item {
-    padding: 12px;
-    margin-bottom: 8px;
-    background: linear-gradient(135deg, rgba(226, 232, 240, 0.4), rgba(241, 245, 249, 0.4));  /* Alpha 0.4 */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-left: 4px solid rgba(102, 126, 234, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    color: #1e293b;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
+    padding: 12px 14px;
+    border-radius: 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: #f8fafc;
+
+    font-weight: bold;
     cursor: pointer;
+
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
 }
 
 .file-item:hover {
-    background: linear-gradient(135deg, rgba(203, 213, 225, 0.6), rgba(226, 232, 240, 0.6));  /* Alpha 0.6 на hover */
-    transform: translateX(4px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
-}
-
-.files-list::-webkit-scrollbar {
-    width: 8px;
-}
-
-.files-list::-webkit-scrollbar-track {
-    background: rgba(226, 232, 240, 0.4);  /* Alpha 0.4 */
-    backdrop-filter: blur(10px);
-    border-radius: 6px;
-    margin: 4px;
-}
-
-.files-list::-webkit-scrollbar-thumb {
-    background: rgba(102, 126, 234, 0.85);
-    border-radius: 6px;
-    border: 2px solid rgba(226, 232, 240, 0.6);
-    backdrop-filter: blur(10px);
-}
-
-.files-list::-webkit-scrollbar-thumb:hover {
-    background: #667eea;
-}
-
-.files-list:empty::before {
-    content: "Файлы не найдены";
-    color: rgba(100, 116, 139, 0.7);
-    font-style: italic;
-    display: block;
-    padding: 20px;
-    text-align: center;
-    backdrop-filter: blur(10px);
+    background: rgba(213, 201, 241, 0.12);
+    border-color: rgba(213, 201, 241, 0.28);
+    transform: translateX(2px);
 }
 
 .preview-block,
@@ -545,6 +520,9 @@ button[data-disabled-reason="requires-init"]:hover {
 
     overflow: auto;
     white-space: pre-wrap;
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-thumb-ff) transparent;
 }
 
 #fileContent {
@@ -570,13 +548,7 @@ button[data-disabled-reason="requires-init"]:hover {
     font-weight: bold;
 }
 
-#editor,
-#fileContent {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(213, 201, 241, 0.35) transparent;
-}
-
-/* Chrome / Edge / Safari */
+.scroll-container::-webkit-scrollbar,
 #editor::-webkit-scrollbar,
 #fileContent::-webkit-scrollbar {
     width: 10px;
@@ -584,23 +556,26 @@ button[data-disabled-reason="requires-init"]:hover {
     background: transparent;
 }
 
+.scroll-container::-webkit-scrollbar-track,
 #editor::-webkit-scrollbar-track,
 #fileContent::-webkit-scrollbar-track {
     background: transparent;
 }
 
+.scroll-container::-webkit-scrollbar-thumb,
 #editor::-webkit-scrollbar-thumb,
 #fileContent::-webkit-scrollbar-thumb {
-    background: rgba(213, 201, 241, 0.28);
+    background: var(--sb-thumb);
     border-radius: 999px;
 
     border: 3px solid transparent;
     background-clip: content-box;
 }
 
+.scroll-container::-webkit-scrollbar-thumb:hover,
 #editor::-webkit-scrollbar-thumb:hover,
 #fileContent::-webkit-scrollbar-thumb:hover {
-    background: rgba(213, 201, 241, 0.45);
+    background: var(--sb-thumb-hover);
     background-clip: content-box;
 }
 
