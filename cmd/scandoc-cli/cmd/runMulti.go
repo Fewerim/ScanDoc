@@ -14,7 +14,7 @@ func newMultiRunCmd(a *AppCLI) *cobra.Command {
 		Example: "scandoc.exe run_multi --dir='./packageToScan' --name='test'\nотправит пакет файлов на обработку, результаты будут сохранены в подпапку с именем, переданным во флаге 'name', в локальное хранилище под теми же именами",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			const op = ".init"
-			return a.App.MultiFiles(a.Name+op, directory, createdFolderName)
+			return a.AppCmds.MultiFiles(a.Name+op, directory, createdFolderName)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,

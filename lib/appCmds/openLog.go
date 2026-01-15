@@ -12,19 +12,19 @@ import (
 // OpenLogFolder - команда, открывающая папку с логами
 func (a *App) OpenLogFolder(operation string, clearFlag bool) error {
 	if clearFlag {
-		if err := clearLog(a.Cfg.LogPath); err != nil {
+		if err := clearLog(a.cfg.LogPath); err != nil {
 			info := fmt.Sprintf("ошибка удаления: %v", err)
-			a.Log.Error(operation, info, exitCodes.InternalError)
+			a.log.Error(operation, info, exitCodes.InternalError)
 			return appUtils.InternalError(info)
 		}
-		a.Log.Info(operation, "файла с логами был очищен")
+		a.log.Info(operation, "файла с логами был очищен")
 		appUtils.InfoMessage("Файл с логами был очищен")
 	}
 
-	a.Log.Info(operation, "открытие файла с логами")
-	if err := openLog(a.Cfg.LogPath); err != nil {
+	a.log.Info(operation, "открытие файла с логами")
+	if err := openLog(a.cfg.LogPath); err != nil {
 		info := fmt.Sprintf("ошибка при открытии файла с логами: %v", err)
-		a.Log.Error(operation, info, exitCodes.InternalError)
+		a.log.Error(operation, info, exitCodes.InternalError)
 		return appUtils.InternalError(info)
 	}
 

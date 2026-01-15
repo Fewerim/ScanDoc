@@ -11,15 +11,15 @@ import (
 
 // ClearTerminal - команда, очищающая терминал
 func (a *App) ClearTerminal(operation string) error {
-	a.Log.Info(operation, "очистка терминала")
+	a.log.Info(operation, "очистка терминала")
 
 	if err := clearConsole(); err != nil {
 		info := fmt.Sprintf("не удалось очистить терминал: %v", err)
-		a.Log.Error(operation, info, exitCodes.InternalError)
+		a.log.Error(operation, info, exitCodes.InternalError)
 		return appUtils.InternalError(info)
 	}
 
-	a.Log.Info(operation, "терминал успешно очищен")
+	a.log.Info(operation, "терминал успешно очищен")
 	appUtils.InfoMessage("Терминал очищен")
 	return nil
 }

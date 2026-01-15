@@ -12,7 +12,7 @@ func newInitAppCmd(a *AppCLI) *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			const op = ".init"
-			return a.App.InitApp(a.Name + op)
+			return a.AppCmds.InitApp(a.Name + op)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,

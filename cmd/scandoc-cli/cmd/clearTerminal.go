@@ -13,7 +13,7 @@ func newClearCmd(a *AppCLI) *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			const op = ".clear_terminal"
-			return a.App.ClearTerminal(a.Name + op)
+			return a.AppCmds.ClearTerminal(a.Name + op)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,

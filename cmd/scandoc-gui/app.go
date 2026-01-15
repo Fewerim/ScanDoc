@@ -14,39 +14,26 @@ const NameApp = "scandoc-GUI"
 
 // App struct
 type App struct {
-	Name string
-	ctx  context.Context
-	app  *appCmds.App
+	Name    string
+	ctx     context.Context
+	appCmds appCmds.AppCmds
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{
-		Name: NameApp,
-		ctx:  context.Background(),
-		app:  appCmds.NewApp(),
+		Name:    NameApp,
+		ctx:     context.Background(),
+		appCmds: appCmds.NewApp(),
 	}
 }
 
 func (a *App) SetupApp(ctx context.Context) error {
-	const op = ".startup"
-	a.app.LoadConfig()
-	a.app.SetupLogger(a.app.Cfg.LogPath)
-
-	if err := a.app.InitPythonVenv(); err != nil {
+	if err := a.appCmds.StartApp(a.Name); err != nil {
 		return err
 	}
-
-	if err := a.app.CheckPythonScripts(); err != nil {
-		return err
-	}
-
-	if err := a.app.CheckStorageJSON(); err != nil {
-		return err
-	}
-
 	a.ctx = ctx
-	a.app.Log.Info(a.Name+op, "успешный старт")
+
 	return nil
 }
 
@@ -62,7 +49,7 @@ func (a *App) startup(ctx context.Context) {
 func (a *App) OpenLog() {
 	const op = ".open_log"
 
-	if err := a.app.OpenLogFolder(a.Name+op, false); err != nil {
+	if err := a.appCmds.OpenLogFolder(a.Name+op, false); err != nil {
 		runtime.LogErrorf(a.ctx, err.Error())
 	}
 }
@@ -71,7 +58,7 @@ func (a *App) OpenLog() {
 func (a *App) OpenStorage() {
 	const op = ".open_storage"
 
-	if err := a.app.OpenStorage(a.Name+op, false); err != nil {
+	if err := a.appCmds.OpenStorage(a.Name+op, false); err != nil {
 		runtime.LogErrorf(a.ctx, err.Error())
 	}
 }
@@ -79,7 +66,7 @@ func (a *App) OpenStorage() {
 func (a *App) StartInit() {
 	const op = ".init"
 
-	if ok, _ := a.app.CheckInit(a.Name + op); ok {
+	if ok, _ := a.appCmds.CheckInit(a.Name + op); ok {
 		runtime.EventsEmit(a.ctx, "init_status", "already-init")
 		return
 	}
@@ -87,7 +74,7 @@ func (a *App) StartInit() {
 	runtime.EventsEmit(a.ctx, "init_status", "process")
 
 	runtime.EventsEmit(a.ctx, "processing_start", nil)
-	if err := a.app.InitApp(a.Name + op); err != nil {
+	if err := a.appCmds.InitApp(a.Name + op); err != nil {
 		runtime.EventsEmit(a.ctx, "init_status", "error")
 		runtime.EventsEmit(a.ctx, "processing_end", nil)
 		return
@@ -100,7 +87,7 @@ func (a *App) StartInit() {
 func (a *App) CheckInitStatus() string {
 	const op = ".check_init_status"
 
-	ok, err := a.app.CheckInit(a.Name + op)
+	ok, err := a.appCmds.CheckInit(a.Name + op)
 	if err != nil {
 		return "error"
 	}
@@ -113,7 +100,7 @@ func (a *App) CheckInitStatus() string {
 func (a *App) GetFilesFromStorage() interface{} {
 	const op = ".get_files_from_storage"
 
-	files, err := a.app.GetFilesFromStorage(a.Name + op)
+	files, err := a.appCmds.GetFilesFromStorage(a.Name + op)
 	if err != nil {
 		runtime.LogErrorf(a.ctx, err.Error())
 		return nil
@@ -125,7 +112,7 @@ func (a *App) GetFilesFromStorage() interface{} {
 func (a *App) ReadFileFromStorage(fileName string) string {
 	const op = ".read_file_from_storage"
 
-	content, err := a.app.ReadFileFromStorage(a.Name+op, fileName)
+	content, err := a.appCmds.ReadFileFromStorage(a.Name+op, fileName)
 	if err != nil {
 		runtime.LogErrorf(a.ctx, err.Error())
 		return ""
@@ -147,7 +134,7 @@ func (a *App) SaveFileToStorage(fileName string, content string) error {
 		return fmt.Errorf("невалидный json, проверьте ввод")
 	}
 
-	if err := a.app.SaveFileToStorage(a.Name+op, fileName, "", data); err != nil {
+	if err := a.appCmds.SaveFileToStorage(a.Name+op, fileName, "", data); err != nil {
 		runtime.LogErrorf(a.ctx, err.Error())
 		return err
 	}

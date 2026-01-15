@@ -13,22 +13,22 @@ import (
 
 // OpenStorage - команда приложения. Открывает хранилище
 func (a *App) OpenStorage(operation string, clearFlag bool) error {
-	storagePath := a.Cfg.StoragePath
+	storagePath := a.cfg.StoragePath
 
 	if clearFlag {
 		if err := clearStorage(storagePath); err != nil {
 			info := fmt.Sprintf("ошибка очистки локального хранилища: %v", err)
-			a.Log.Error(operation, info, exitCodes.InternalError)
+			a.log.Error(operation, info, exitCodes.InternalError)
 			return appUtils.InternalError(info)
 		}
-		a.Log.Info(operation, "локальное хранилище было очищено")
+		a.log.Info(operation, "локальное хранилище было очищено")
 		appUtils.InfoMessage("Локальное хранилище было очищено")
 	}
 
-	a.Log.Info(operation, "открытие локального хранилища")
+	a.log.Info(operation, "открытие локального хранилища")
 	if err := openStorage(storagePath); err != nil {
 		info := fmt.Sprintf("ошибка при открытии локального хранилища: %v", err)
-		a.Log.Error(operation, info, exitCodes.InternalError)
+		a.log.Error(operation, info, exitCodes.InternalError)
 		return appUtils.InternalError(info)
 	}
 
@@ -36,51 +36,63 @@ func (a *App) OpenStorage(operation string, clearFlag bool) error {
 	return nil
 }
 
+// CheckStorageJSON - проверяет наличие локального хранилища, если его нет, создает новое
+func (a *App) CheckStorageJSON() error {
+	storage.InitStorage(a.cfg.StoragePath)
+
+	if !storage.CheckStorageExists() {
+		if err := storage.CreateStorageJSON(); err != nil {
+			return fmt.Errorf("ошибка создания локального хранилища: %v", err)
+		}
+	}
+	return nil
+}
+
 // GetFilesFromStorage - команда приложения. Получает все файлы из хранилища
 func (a *App) GetFilesFromStorage(operation string) ([]files.File, error) {
-	a.Log.Info(operation, "Получение файлов из хранилища")
-	results, err := storage.GetStorageFiles(a.Cfg.StoragePath)
+	a.log.Info(operation, "Получение файлов из хранилища")
+	results, err := storage.GetStorageFiles(a.cfg.StoragePath)
 	if err != nil {
-		a.Log.Error(operation, err.Error(), exitCodes.InternalError)
+		a.log.Error(operation, err.Error(), exitCodes.InternalError)
 		return nil, appUtils.InternalError(err.Error())
 	}
-	a.Log.Info(operation, "Файлы из хранилища успешно получены")
+	a.log.Info(operation, "Файлы из хранилища успешно получены")
 	return results, nil
 }
 
 // ReadFileFromStorage - команда приложения. Читает содержимое файла из хранилища
 func (a *App) ReadFileFromStorage(operation, fileName string) (string, error) {
-	a.Log.Info(operation, fmt.Sprintf("Чтение содержимого файла: %s", fileName))
-	content, err := storage.ReadFileFromStorage(a.Cfg.StoragePath, fileName)
+	a.log.Info(operation, fmt.Sprintf("Чтение содержимого файла: %s", fileName))
+	content, err := storage.ReadFileFromStorage(a.cfg.StoragePath, fileName)
 	if err != nil {
-		a.Log.Error(operation, err.Error(), exitCodes.InternalError)
+		a.log.Error(operation, err.Error(), exitCodes.InternalError)
 		return "", appUtils.InternalError(err.Error())
 	}
-	a.Log.Info(operation, fmt.Sprintf("Файл %s успешно прочитан", fileName))
+	a.log.Info(operation, fmt.Sprintf("Файл %s успешно прочитан", fileName))
 	return content, nil
 }
 
 // SaveFileToStorage - команда приложения. Сохраняет файл в хранилище
 func (a *App) SaveFileToStorage(operation, fileName, folder string, content interface{}) error {
-	a.Log.Info(operation, fmt.Sprintf("Сохранение файла %v в хранилище", fileName))
-	err := storage.SaveFileToStorage(a.Cfg.StoragePath, folder, fileName, content, files.Overwrite)
+	a.log.Info(operation, fmt.Sprintf("Сохранение файла %v в хранилище", fileName))
+	err := storage.SaveFileToStorage(a.cfg.StoragePath, folder, fileName, content, files.Overwrite)
 	if err != nil {
-		a.Log.Error(operation, err.Error(), exitCodes.InternalError)
+		a.log.Error(operation, err.Error(), exitCodes.InternalError)
 		return appUtils.InternalError(err.Error())
 	}
-	a.Log.Info(operation, fmt.Sprintf("Успешное сохранение файла %v в хранилище", fileName))
+	a.log.Info(operation, fmt.Sprintf("Успешное сохранение файла %v в хранилище", fileName))
 	return nil
 }
 
 // DeleteFileFromStorage - команда приложения. Удаляет файл из хранилища
 func (a *App) DeleteFileFromStorage(operation, fileName string) error {
-	a.Log.Info(operation, fmt.Sprintf("Удаление файла %v из хранилища", fileName))
-	err := storage.DeleteFileFromStorage(a.Cfg.StoragePath, fileName)
+	a.log.Info(operation, fmt.Sprintf("Удаление файла %v из хранилища", fileName))
+	err := storage.DeleteFileFromStorage(a.cfg.StoragePath, fileName)
 	if err != nil {
-		a.Log.Error(operation, err.Error(), exitCodes.InternalError)
+		a.log.Error(operation, err.Error(), exitCodes.InternalError)
 		return appUtils.InternalError(err.Error())
 	}
-	a.Log.Info(operation, fmt.Sprintf("Файл %v успешно удален из хранилища", fileName))
+	a.log.Info(operation, fmt.Sprintf("Файл %v успешно удален из хранилища", fileName))
 	return nil
 }
 

@@ -18,7 +18,7 @@ func newOpenStorageCmd(a *AppCLI) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("ошибка чтения флага: %v", err)
 			}
-			return a.App.OpenStorage(a.Name+op, clearFlag)
+			return a.AppCmds.OpenStorage(a.Name+op, clearFlag)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,

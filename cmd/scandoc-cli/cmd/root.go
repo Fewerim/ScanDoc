@@ -16,6 +16,8 @@ var (
 // initCommands - инициализирует CLI команды, предварительно обработав флаг для получения пути к конфигу
 // если флаг не был введен, используется дефолтный путь.
 func (a *AppCLI) initCommands() {
+	const op = ".startApp"
+
 	rootCmd.PersistentFlags().StringVar(&configFlag, "config", "", "путь к конфигурации приложения")
 	rootCmd.LocalFlags().BoolP("help", "h", false, "показать справку по команде")
 
@@ -29,17 +31,10 @@ func (a *AppCLI) initCommands() {
 		}
 
 		if configFlag == "" {
-			a.App.CfgPath = configFlag
+			a.AppCmds.SetCfgPath(configFlag)
 		}
 
-		a.App.LoadConfig()
-		a.App.SetupLogger(a.App.Cfg.LogPath)
-
-		if err := a.App.InitPythonVenv(); err != nil {
-			return err
-		}
-
-		if err := a.App.CheckPythonScripts(); err != nil {
+		if err := a.AppCmds.StartApp(a.Name + op); err != nil {
 			return err
 		}
 
@@ -56,7 +51,7 @@ func (a *AppCLI) initCommands() {
 	rootCmd.AddCommand(newOpenStorageCmd(a))
 }
 
-// Execute - делегирует запуск CLI приложения, вызываясь на экземпляре App
+// Execute - делегирует запуск CLI приложения, вызываясь на экземпляре AppCmds
 func (a *AppCLI) Execute() error {
 	a.initCommands()
 	return rootCmd.Execute()

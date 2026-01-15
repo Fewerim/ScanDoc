@@ -10,7 +10,6 @@ import (
 	"proWeb/internal/logger"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +37,7 @@ func handleError(err error, log logger.Logger) {
 	}
 
 	msg := fmt.Sprintf("непредвиденная ошибка: %v", err)
-	color.Red(msg)
+	appUtils.FailMessage(msg)
 	os.Exit(exitCodes.InternalError)
 }
 
@@ -54,9 +53,9 @@ func catchPanic() {
 		msg = strings.TrimSuffix(msg, ": Access is denied.")
 
 		if strings.Contains(msg, "nil pointer") {
-			color.Red("программа завершилась с паникой: возможно, команда получила не все аргументы. проверьте ввод")
+			appUtils.FailMessage("программа завершилась с паникой: возможно, команда получила не все аргументы. проверьте ввод")
 		} else {
-			color.Red("программа завершилась с паникой: " + msg)
+			appUtils.FailMessage("программа завершилась с паникой: " + msg)
 		}
 		os.Exit(3)
 	}
@@ -70,12 +69,12 @@ func runStandardApp() {
 	a := cmd.NewApp()
 
 	if err := a.Execute(); err != nil {
-		handleError(err, a.App.Log)
+		handleError(err, a.AppCmds.GetLog())
 		return
 	}
 
-	if a.App.Log != nil {
-		a.App.Log.Info(a.Name+op, "приложение успешно завершено")
+	if a.AppCmds.GetLog() != nil {
+		a.AppCmds.GetLog().Info(a.Name+op, "приложение успешно завершено")
 	}
 }
 
@@ -89,7 +88,7 @@ func runConfigSetOnly() {
 	rootCmd.AddCommand(cmd.NewConfigSetCmd())
 
 	if err := rootCmd.Execute(); err != nil {
-		color.Red("Ошибка: %v", err)
+		appUtils.FailMessage(fmt.Sprintf("Ошибка: %v", err))
 		os.Exit(1)
 	}
 }

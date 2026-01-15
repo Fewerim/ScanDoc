@@ -15,7 +15,7 @@ func newRunOnceCmd(a *AppCLI) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			const op = ".run_once"
 
-			return a.App.OnceFile(a.Name+op, pathToFile, nameNewFile)
+			return a.AppCmds.OnceFile(a.Name+op, pathToFile, nameNewFile)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,

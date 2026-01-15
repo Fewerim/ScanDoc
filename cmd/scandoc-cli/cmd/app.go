@@ -7,11 +7,11 @@ import (
 const NameApp = "scandoc-CLI"
 
 type AppCLI struct {
-	Name string
-	App  *appCmds.App
+	Name    string
+	AppCmds appCmds.AppCmds
 }
 
 // NewApp - конструктор для приложения
 func NewApp() *AppCLI {
-	return &AppCLI{Name: NameApp, App: appCmds.NewApp()}
+	return &AppCLI{Name: NameApp, AppCmds: appCmds.NewApp()}
 }
