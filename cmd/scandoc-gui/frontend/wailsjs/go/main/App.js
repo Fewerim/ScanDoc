@@ -22,12 +22,16 @@ export function OpenLog() {
   return window['go']['main']['App']['OpenLog']();
 }
 
-export function OpenStorage() {
-  return window['go']['main']['App']['OpenStorage']();
-}
-
 export function ReadFileFromStorage(arg1) {
   return window['go']['main']['App']['ReadFileFromStorage'](arg1);
+}
+
+export function RunMultiFile(arg1, arg2) {
+  return window['go']['main']['App']['RunMultiFile'](arg1, arg2);
+}
+
+export function RunOnceFile(arg1, arg2) {
+  return window['go']['main']['App']['RunOnceFile'](arg1, arg2);
 }
 
 export function SaveFileToStorage(arg1, arg2) {

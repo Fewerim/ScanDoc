@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -78,9 +78,10 @@
                         <div class="inputs">
                             <div class="input_group">
                                 <p><label>Файл:</label></p>
-                                <div class="file_input_wrapper">
-                                    <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,application/pdf"  class="select_folder">
-                                </div>
+
+                                <input type="text" id="fileInput" autocomplete="off" placeholder="Введите путь к файлу">
+<!--                            <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,application/pdf"  class="select_folder">-->
+
                             </div>
                             <div class="input_group">
                                 <p><label>Название:</label></p>
@@ -118,16 +119,15 @@
                         <div class="inputs">
                             <div class="input_group">
                                 <p><label>Папка:</label></p>
-                                <div class="file_input_wrapper">
-                                    <input type="file" id="fileInput" class="select_folder">
-                                </div>
+                                <input type="text" id="dirPathInput" autocomplete="off" placeholder="Введите путь к папке">
+                                <!--<input type="file" id="fileInput" class="select_folder">-->
                             </div>
                             <div class="input_group">
                                 <p><label>Название:</label></p>
-                                <input type="text" id="filenameInput" autocomplete="off" placeholder="Введите имя папки">
+                                <input type="text" id="folderNameCreate" autocomplete="off" placeholder="Введите имя папки">
                             </div>
                         </div>
-                        <p>Если статус равен <mark>error</mark>, проверьте лог</p>
+                        <p>Если статус равен <mark>error</mark>, или в хранилище не появились результаты, проверьте лог</p>
                     </div>
                     <button id="backBtn">Назад</button>
                 </div>

@@ -29,7 +29,8 @@ func NewApp() *App {
 }
 
 func (a *App) SetupApp(ctx context.Context) error {
-	if err := a.appCmds.StartApp(a.Name); err != nil {
+	const op = ".startup"
+	if err := a.appCmds.StartApp(a.Name + op); err != nil {
 		return err
 	}
 	a.ctx = ctx
@@ -63,15 +64,6 @@ func (a *App) CleanLog() {
 	}
 }
 
-// OpenStorage - открывает локальное хранилище
-func (a *App) OpenStorage() {
-	const op = ".open_storage"
-
-	if err := a.appCmds.OpenStorage(a.Name+op, false); err != nil {
-		runtime.LogErrorf(a.ctx, err.Error())
-	}
-}
-
 func (a *App) StartInit() {
 	const op = ".init"
 
@@ -81,8 +73,8 @@ func (a *App) StartInit() {
 	}
 
 	runtime.EventsEmit(a.ctx, "init_status", "process")
-
 	runtime.EventsEmit(a.ctx, "processing_start", nil)
+
 	if err := a.appCmds.InitApp(a.Name + op); err != nil {
 		runtime.EventsEmit(a.ctx, "init_status", "error")
 		runtime.EventsEmit(a.ctx, "processing_end", nil)
@@ -156,5 +148,37 @@ func (a *App) DeleteFileFromStorage(fileName string) error {
 	if err := a.appCmds.DeleteFileFromStorage(a.Name+op, fileName); err != nil {
 		runtime.LogErrorf(a.ctx, err.Error())
 	}
+	return nil
+}
+
+func (a *App) RunOnceFile(filePath, createdFileName string) error {
+	const op = ".run_once"
+
+	runtime.EventsEmit(a.ctx, "run_once_status", "process")
+	runtime.EventsEmit(a.ctx, "processing_start")
+	if err := a.appCmds.OnceFile(a.Name+op, filePath, createdFileName); err != nil {
+		runtime.LogErrorf(a.ctx, "%s", err.Error())
+		runtime.EventsEmit(a.ctx, "processing_end")
+		runtime.EventsEmit(a.ctx, "run_once_status", "error", err.Error())
+		return err
+	}
+	runtime.EventsEmit(a.ctx, "processing_end")
+	runtime.EventsEmit(a.ctx, "run_once_status", "success")
+	return nil
+}
+
+func (a *App) RunMultiFile(directory, createdFolder string) error {
+	const op = ".run_multi"
+
+	runtime.EventsEmit(a.ctx, "run_multi_status", "process")
+	runtime.EventsEmit(a.ctx, "processing_start")
+	if err := a.appCmds.MultiFiles(a.Name+op, directory, createdFolder); err != nil {
+		runtime.LogErrorf(a.ctx, "%s", err.Error())
+		runtime.EventsEmit(a.ctx, "processing_end")
+		runtime.EventsEmit(a.ctx, "run_multi_status", "error", err.Error())
+		return err
+	}
+	runtime.EventsEmit(a.ctx, "processing_end")
+	runtime.EventsEmit(a.ctx, "run_multi_status", "success")
 	return nil
 }

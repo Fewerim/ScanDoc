@@ -12,9 +12,11 @@ export function GetFilesFromStorage():Promise<any>;
 
 export function OpenLog():Promise<void>;
 
-export function OpenStorage():Promise<void>;
-
 export function ReadFileFromStorage(arg1:string):Promise<string>;
+
+export function RunMultiFile(arg1:string,arg2:string):Promise<void>;
+
+export function RunOnceFile(arg1:string,arg2:string):Promise<void>;
 
 export function SaveFileToStorage(arg1:string,arg2:string):Promise<void>;
 

@@ -1,4 +1,4 @@
-import { OpenLog, StartInit, CheckInitStatus, GetFilesFromStorage, ReadFileFromStorage, SaveFileToStorage, DeleteFileFromStorage } from "../wailsjs/go/main/App"
+import { OpenLog, StartInit, CheckInitStatus, GetFilesFromStorage, ReadFileFromStorage, SaveFileToStorage, DeleteFileFromStorage, RunMultiFile, RunOnceFile } from "../wailsjs/go/main/App"
 import { EventsOn } from "../wailsjs/runtime/runtime"
 
 let selectedFile = null;
@@ -42,6 +42,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if (status === "error") {
             setProcessing(false);
         }
+    });
+
+    EventsOn("run_once_status", (...args) => {
+        const status = args[0];
+        const statusEl = document.getElementById("status_run_once");
+        if (statusEl) {
+            statusEl.textContent = status;
+            statusEl.className = `status-${status}`;
+        }
+
+        if (status === "process") showNotice("Файл обрабатывается...", "warn", 1400);
+        if (status === "success") showNotice("Файл успешно обработан", "success", 1800);
+        if (status === "error") showNotice("Ошибка обработки (смотрите лог)", "error", 2400);
+
+        updateRunOnceStartButton(); // <-- добавить
+    });
+
+    EventsOn("run_multi_status", (...args) => {
+        const status = args[0];
+        const errMsg = args[1] || null;
+
+        const statusEl = document.getElementById("status_run_multi");
+        if (statusEl) {
+            statusEl.textContent = status;
+            statusEl.className = `status-${status}`;
+        }
+
+        //if (status === "process") showNotice("Папка обрабатывается...", "warn", 1400);
+        if (status === "success") showNotice("Папка успешно обработана", "success", 1800);
+        if (status === "error") showNotice(errMsg ? ("Ошибка обработки: " + errMsg) : "Ошибка обработки (смотрите лог)", "error", 2600);
+
+        updateRunMultiStartButton();
     });
 
     EventsOn("processing_start", () => {
@@ -141,17 +173,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 showNotice("Файл удален", "warn", 1600);
 
-                // 1) убрать выбранный файл
                 selectedFile = null;
 
-                // 2) очистить окно показа файла
                 resetPreview();
 
-                // 3) заблокировать edit/del
                 updateEditButton(false);
                 updateDeleteButton(false);
 
-                // 4) динамически обновить список
                 await loadFiles();
             } catch (err) {
                 console.error("DeleteFileFromStorage error:", err);
@@ -176,6 +204,32 @@ function setupMenuButton(id, page, event) {
     } else {
         console.warn(`Menu button #${id} not found`);
     }
+}
+
+function updateRunOnceStartButton() {
+    const btn = document.getElementById("start_run_onceBtn");
+    if (!btn) return;
+
+    const path = (document.getElementById("fileInput")?.value || "").trim();
+    const outName = (document.getElementById("filenameInput")?.value || "").trim();
+
+    //Блокировка кнопки
+    btn.disabled = isProcessing || !path || !outName;
+    btn.style.opacity = btn.disabled ? "0.5" : "1";
+    btn.style.cursor = btn.disabled ? "not-allowed" : "pointer";
+}
+
+function updateRunMultiStartButton() {
+    const btn = document.getElementById("start_run_multiBtn");
+    if (!btn) return;
+
+    const dir = (document.getElementById("dirPathInput")?.value || "").trim();
+    const folder = (document.getElementById("folderNameCreate")?.value || "").trim();
+
+    // Блокировка кнопки
+    btn.disabled = isProcessing || !dir || !folder;
+    btn.style.opacity = btn.disabled ? "0.5" : "1";
+    btn.style.cursor = btn.disabled ? "not-allowed" : "pointer";
 }
 
 function updateRunButtonState(btn) {
@@ -243,6 +297,8 @@ function setProcessing(processing) {
     isProcessing = processing;
     document.body.classList.toggle('processing', isProcessing);
     updateAllButtons();
+    updateRunOnceStartButton();
+    updateRunMultiStartButton();
 }
 
 // ✅ Безопасная функция без сложных селекторов
@@ -314,6 +370,12 @@ function showPage(pageId) {
         case 'initPage':
             checkInitOnPageLoad();
             break;
+        case 'run_oncePage':
+            resetRunOncePage();
+            break;
+        case 'run_multiPage':
+            resetRunMultiPage();
+            break;
         case 'resultsPage':
             //loadFiles();
             break;
@@ -354,7 +416,94 @@ function bindAllButtons() {
         };
     });
 
+    document.querySelectorAll('#start_run_onceBtn').forEach(btn => {
+        btn.onclick = async (e) => {
+            e.stopPropagation();
+            if (isProcessing) return;
 
+            const filePath = (document.getElementById("fileInput")?.value || "").trim();
+            const outName = (document.getElementById("filenameInput")?.value || "").trim();
+
+            if (!filePath) {
+                showNotice("Укажите путь к файлу", "error", 2200);
+                updateRunOnceStartButton();
+                return;
+            }
+            if (!outName) {
+                showNotice("Укажите название результата", "error", 2200);
+                updateRunOnceStartButton();
+                return;
+            }
+
+            try {
+                await RunOnceFile(filePath, outName);
+                // success/error придёт через EventsOn("run_once_status")
+            } catch (err) {
+                console.error("RunOnceFile error:", err);
+                showNotice("Ошибка запуска обработки", "error", 2400);
+            }
+        };
+    });
+
+    document.querySelectorAll('#start_run_multiBtn').forEach(btn => {
+        btn.onclick = async (e) => {
+            e.stopPropagation();
+            if (isProcessing) return;
+
+            const dir = (document.getElementById("dirPathInput")?.value || "").trim();
+            const folder = (document.getElementById("folderNameCreate")?.value || "").trim();
+
+            if (!dir) { showNotice("Укажите путь к папке", "error", 2200); updateRunMultiStartButton(); return; }
+            if (!folder) { showNotice("Укажите название папки результата", "error", 2200); updateRunMultiStartButton(); return; }
+
+            try {
+                await RunMultiFile(dir, folder); // <-- нужен импорт RunMultiFile из wailsjs/go/main/App
+            } catch (err) {
+                console.error("RunMultiFile error:", err);
+                showNotice("Ошибка запуска обработки", "error", 2400);
+            }
+        };
+    });
+
+    document.getElementById("fileInput")?.addEventListener("input", updateRunOnceStartButton);
+    document.getElementById("filenameInput")?.addEventListener("input", updateRunOnceStartButton);
+    updateRunOnceStartButton();
+
+    document.getElementById("dirPathInput")?.addEventListener("input", updateRunMultiStartButton);
+    document.getElementById("folderNameCreate")?.addEventListener("input", updateRunMultiStartButton);
+    updateRunMultiStartButton();
+}
+
+function resetRunOncePage() {
+    const pathEl = document.getElementById("fileInput");
+    const nameEl = document.getElementById("filenameInput");
+    const statusEl = document.getElementById("status_run_once");
+
+    if (pathEl) pathEl.value = "";
+    if (nameEl) nameEl.value = "";
+
+    if (statusEl) {
+        statusEl.textContent = "ready";
+        statusEl.className = "status-ready";
+    }
+
+    updateRunOnceStartButton();
+}
+
+function resetRunMultiPage() {
+    const pathEl = document.getElementById("dirPathInput");
+    const nameEl = document.getElementById("folderNameCreate");
+    const statusEl = document.getElementById("status_run_multi");
+
+    if (pathEl) pathEl.value = "";
+    if (nameEl) nameEl.value = "";
+
+    if (statusEl) {
+        statusEl.textContent = "ready";
+        statusEl.className = "status-ready";
+    }
+
+    updateRunMultiStartButton();
 }
 
 function setupButton(id, handler) {
