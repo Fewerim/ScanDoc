@@ -382,7 +382,7 @@ async function loadFiles() {
         list.innerHTML = '';
 
         if (!files || files.length === 0) {
-            list.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b;">Файлы не найдены</div>';
+            list.innerHTML = '<div style="padding:20px;text-align:center;color:rgba(248, 250, 252, 0.55);font-weight: bold;">Файлы не найдены</div>';
             return;
         }
 
@@ -396,6 +396,11 @@ async function loadFiles() {
             item.style.opacity = isProcessing ? '0.5' : '1';
             item.addEventListener('click', () => {
                 if (isProcessing) return;
+                document.querySelectorAll('#filesList .file-item')
+                    .forEach(el => el.classList.remove('is-selected'));
+
+                item.classList.add('is-selected');
+
                 selectedFile = filename;
                 loadFileContent(filename);
                 updateEditButton(true);

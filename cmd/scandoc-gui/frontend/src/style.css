@@ -491,6 +491,15 @@ button[data-disabled-reason="requires-init"]:hover {
     transform: translateX(2px);
 }
 
+.file-item.is-selected {
+    background: rgba(248, 247, 248, 0.50);
+    border-color: rgba(213, 201, 241, 0.70);
+    box-shadow:
+            0 0 0 3px rgba(213, 201, 241, 0.28),
+            0 10px 26px rgba(0, 0, 0, 0.22);
+    transform: none;
+}
+
 .preview-block,
 .edit_area {
     height: 400px;
