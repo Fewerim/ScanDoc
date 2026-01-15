@@ -1,4 +1,4 @@
-import { OpenLog, StartInit, CheckInitStatus, GetFilesFromStorage, ReadFileFromStorage, SaveFileToStorage } from "../wailsjs/go/main/App"
+import { OpenLog, StartInit, CheckInitStatus, GetFilesFromStorage, ReadFileFromStorage, SaveFileToStorage, DeleteFileFromStorage } from "../wailsjs/go/main/App"
 import { EventsOn } from "../wailsjs/runtime/runtime"
 
 let selectedFile = null;
@@ -7,6 +7,7 @@ let isProcessing = false;
 let isInitialized = false;
 let originalEditContent = "";
 let currentEditFilename = null;
+let isLoadingFiles = false;
 
 const menuButtons = [
     {id: "initBtn", page: "initPage", event: "initPage-clicked"},
@@ -124,6 +125,41 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 
+    document.querySelectorAll('#delBtn').forEach(btn => {
+        btn.onclick = async (e) => {
+            e.stopPropagation();
+            if (isProcessing) return;
+            if (!selectedFile) {
+                updateDeleteButton(false);
+                return;
+            }
+
+            const filenameToDelete = selectedFile;
+
+            try {
+                await DeleteFileFromStorage(filenameToDelete);
+
+                showNotice("Файл удален", "warn", 1600);
+
+                // 1) убрать выбранный файл
+                selectedFile = null;
+
+                // 2) очистить окно показа файла
+                resetPreview();
+
+                // 3) заблокировать edit/del
+                updateEditButton(false);
+                updateDeleteButton(false);
+
+                // 4) динамически обновить список
+                await loadFiles();
+            } catch (err) {
+                console.error("DeleteFileFromStorage error:", err);
+                showNotice("Ошибка удаления: " + (err?.message || err), "error", 2400);
+            }
+        };
+    });
+
 
     setupPageObserver();
     checkInitOnPageLoad();
@@ -173,6 +209,33 @@ function updateRunButtonState(btn) {
         const badge = btn.querySelector('.init-badge');
         if (badge) badge.remove();
     }
+}
+
+function updateDeleteButton(enabled) {
+    const delBtn = document.getElementById('delBtn');
+    if (!delBtn) return;
+
+    // Во время processing всегда блокируем
+    if (isProcessing) {
+        delBtn.disabled = true;
+        delBtn.style.opacity = '0.5';
+        delBtn.style.cursor = 'not-allowed';
+        return;
+    }
+
+    // Если resultsPage скрыта — блокируем
+    const resultsPage = document.getElementById('resultsPage');
+    if (resultsPage?.classList.contains('hidden')) {
+        delBtn.disabled = true;
+        delBtn.style.opacity = '0.5';
+        delBtn.style.cursor = 'not-allowed';
+        return;
+    }
+
+    // Включаем только когда выбран файл
+    delBtn.disabled = !(enabled && selectedFile);
+    delBtn.style.opacity = delBtn.disabled ? '0.5' : '1';
+    delBtn.style.cursor = delBtn.disabled ? 'not-allowed' : 'pointer';
 }
 
 
@@ -252,7 +315,7 @@ function showPage(pageId) {
             checkInitOnPageLoad();
             break;
         case 'resultsPage':
-            loadFiles();
+            //loadFiles();
             break;
     }
 
@@ -307,8 +370,11 @@ function setupButton(id, handler) {
 }
 
 async function loadFiles() {
+    if (isLoadingFiles) return;
+    isLoadingFiles = true;
     selectedFile = null;
     updateEditButton(false);
+    updateDeleteButton(false)
 
     try {
         const files = await GetFilesFromStorage();
@@ -333,11 +399,12 @@ async function loadFiles() {
                 selectedFile = filename;
                 loadFileContent(filename);
                 updateEditButton(true);
+                updateDeleteButton(true);
             });
             list.appendChild(item);
         });
-    } catch (error) {
-        console.error('Ошибка:', error);
+    } finally {
+        isLoadingFiles = false;
     }
 }
 
@@ -394,6 +461,7 @@ function resetPreview() {
 function resetResultsState() {
     selectedFile = null;
     updateEditButton(false);
+    updateDeleteButton(false);
 }
 
 function updateInitStatus(status, errorMsg) {

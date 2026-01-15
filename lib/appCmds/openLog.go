@@ -17,7 +17,7 @@ func (a *App) OpenLogFolder(operation string, clearFlag bool) error {
 			a.log.Error(operation, info, exitCodes.InternalError)
 			return appUtils.InternalError(info)
 		}
-		a.log.Info(operation, "файла с логами был очищен")
+		a.log.Info(operation, "файл с логами был очищен")
 		appUtils.InfoMessage("Файл с логами был очищен")
 	}
 
@@ -29,6 +29,18 @@ func (a *App) OpenLogFolder(operation string, clearFlag bool) error {
 	}
 
 	appUtils.InfoMessage("Файл с логами открыт")
+	return nil
+}
+
+// CleanLogFolder - очистка папки с логами
+func (a *App) CleanLogFolder(operation string) error {
+	if err := clearLog(a.cfg.LogPath); err != nil {
+		info := fmt.Sprintf("ошибка удаления: %v", err)
+		a.log.Error(operation, info, exitCodes.InternalError)
+		return appUtils.InternalError(info)
+	}
+	a.log.Info(operation, "файл с логами был очищен")
+	appUtils.InfoMessage("Файл с логами был очищен")
 	return nil
 }
 

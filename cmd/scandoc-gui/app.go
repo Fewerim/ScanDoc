@@ -54,6 +54,15 @@ func (a *App) OpenLog() {
 	}
 }
 
+// CleanLog - очищает папку с логами
+func (a *App) CleanLog() {
+	const op = ".clean_log"
+
+	if err := a.appCmds.CleanLogFolder(a.Name + op); err != nil {
+		runtime.LogErrorf(a.ctx, err.Error())
+	}
+}
+
 // OpenStorage - открывает локальное хранилище
 func (a *App) OpenStorage() {
 	const op = ".open_storage"
@@ -137,6 +146,15 @@ func (a *App) SaveFileToStorage(fileName string, content string) error {
 	if err := a.appCmds.SaveFileToStorage(a.Name+op, fileName, "", data); err != nil {
 		runtime.LogErrorf(a.ctx, err.Error())
 		return err
+	}
+	return nil
+}
+
+func (a *App) DeleteFileFromStorage(fileName string) error {
+	const op = ".delete_file_from_storage"
+
+	if err := a.appCmds.DeleteFileFromStorage(a.Name+op, fileName); err != nil {
+		runtime.LogErrorf(a.ctx, err.Error())
 	}
 	return nil
 }

@@ -23,6 +23,7 @@ type AppCmds interface {
 	CheckInit(operation string) (bool, error)
 	InstallTesseract() error
 	OpenLogFolder(operation string, clearFlag bool) error
+	CleanLogFolder(operation string) error
 	MultiFiles(operation, directory, createdFolderName string) error
 	OnceFile(operation, filePath, createdFileName string) error
 	OpenStorage(operation string, clearFlag bool) error
@@ -104,7 +105,7 @@ func (a *App) setupLogger(pathToFile string) {
 	a.log = logger.MustSetup(pathToFile)
 }
 
-// setupStorage - устанавливает локально хранилище
+// setupStorage - устанавливает локальное хранилище
 func (a *App) setupStorage(pathToStorage string) {
 	a.storage = storage.New(pathToStorage)
 }

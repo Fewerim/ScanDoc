@@ -4,6 +4,10 @@ import {context} from '../models';
 
 export function CheckInitStatus():Promise<string>;
 
+export function CleanLog():Promise<void>;
+
+export function DeleteFileFromStorage(arg1:string):Promise<void>;
+
 export function GetFilesFromStorage():Promise<any>;
 
 export function OpenLog():Promise<void>;

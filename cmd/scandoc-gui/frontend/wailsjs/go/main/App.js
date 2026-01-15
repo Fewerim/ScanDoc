@@ -6,6 +6,14 @@ export function CheckInitStatus() {
   return window['go']['main']['App']['CheckInitStatus']();
 }
 
+export function CleanLog() {
+  return window['go']['main']['App']['CleanLog']();
+}
+
+export function DeleteFileFromStorage(arg1) {
+  return window['go']['main']['App']['DeleteFileFromStorage'](arg1);
+}
+
 export function GetFilesFromStorage() {
   return window['go']['main']['App']['GetFilesFromStorage']();
 }
