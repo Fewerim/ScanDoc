@@ -4,6 +4,7 @@
 /.venv
 /Output
 /thirdparty
-scanner.iss
+*.iss
 run_scanner.bat
 /forsetup
+/internal/appUtils/command

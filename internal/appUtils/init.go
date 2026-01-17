@@ -8,13 +8,15 @@ import (
 	"os/exec"
 	"path/filepath"
 	"proWeb/internal/tesseract"
+	"syscall"
 )
 
 // CreateVenv - создает виртуальное окружения для python
 func CreateVenv(pathToCreate string) error {
 	venvPath := filepath.Join(pathToCreate, ".venv")
 
-	if _, err := os.Stat(".venv"); err == nil {
+	pipPath := filepath.Join(venvPath, "Scripts", "pip.exe")
+	if _, err := os.Stat(pipPath); err == nil {
 		return nil
 	}
 
@@ -33,6 +35,21 @@ func CreateVenv(pathToCreate string) error {
 		log.Printf(err.Error())
 		info := fmt.Sprintf("ошибка создания venv: %v", err)
 		return InternalError(info)
+	}
+
+	if _, err := os.Stat(pipPath); os.IsNotExist(err) {
+		venvPython := filepath.Join(pathToCreate, ".venv", "Scripts", "python.exe")
+
+		fixCmd := exec.Command(venvPython, "-m", "ensurepip", "--upgrade", "--default-pip")
+		fixCmd.Dir = pathToCreate
+		fixCmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+
+		var out bytes.Buffer
+		fixCmd.Stdout = &out
+
+		if err = fixCmd.Run(); err != nil {
+			panic("не удалось установить pip")
+		}
 	}
 
 	return nil

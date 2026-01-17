@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
             statusEl.className = `status-${status}`;
         }
 
-        if (status === "process") showNotice("Файл обрабатывается...", "warn", 1400);
+        //if (status === "process") showNotice("Файл обрабатывается...", "warn", 1400);
         if (status === "success") showNotice("Файл успешно обработан", "success", 1800);
         if (status === "error") showNotice("Ошибка обработки (смотрите лог)", "error", 2400);
 
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         //if (status === "process") showNotice("Папка обрабатывается...", "warn", 1400);
         if (status === "success") showNotice("Папка успешно обработана", "success", 1800);
-        if (status === "error") showNotice(errMsg ? ("Ошибка обработки: " + errMsg) : "Ошибка обработки (смотрите лог)", "error", 2600);
+        if (status === "error") showNotice(errMsg ? ("Ошибка обработки (смотрите лог)" + errMsg) : "Ошибка обработки (смотрите лог)", "error", 2600);
 
         updateRunMultiStartButton();
     });
