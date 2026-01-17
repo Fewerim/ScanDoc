@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"proWeb/internal/appUtils"
+	"proWeb/internal/appUtils/command"
 	"proWeb/internal/exitCodes"
 	"runtime"
 )
@@ -30,9 +31,9 @@ func clearConsole() error {
 
 	switch runtime.GOOS {
 	case "windows":
-		cmd = exec.Command("cmd", "/c", "cls")
+		cmd = command.Command("cmd", "/c", "cls")
 	default:
-		cmd = exec.Command("clear")
+		cmd = command.Command("clear")
 	}
 
 	cmd.Stdout = os.Stdout

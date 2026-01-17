@@ -1,728 +1,682 @@
-import { OpenLog, StartInit, CheckInitStatus, GetFilesFromStorage, ReadFileFromStorage, SaveFileToStorage, DeleteFileFromStorage, RunMultiFile, RunOnceFile } from "../wailsjs/go/main/App"
+import {
+    OpenLog,
+    StartInit,
+    CheckInitStatus,
+    GetFilesFromStorage,
+    ReadFileFromStorage,
+    SaveFileToStorage,
+    DeleteFileFromStorage,
+    RunMultiFile,
+    RunOnceFile
+} from "../wailsjs/go/main/App"
 import { EventsOn } from "../wailsjs/runtime/runtime"
 
-let selectedFile = null;
-let navigationStack = ['menuPage'];
-let isProcessing = false;
-let isInitialized = false;
-let originalEditContent = "";
-let currentEditFilename = null;
-let isLoadingFiles = false;
+let selectedFile = null
+let navigationStack = ["menuPage"]
+let isProcessing = false
+let isInitialized = false
+let originalEditContent = ""
+let currentEditFilename = null
+let isLoadingFiles = false
+let inputsBound = false
+let noticeTimer = null
+let initRequestedByButton = false
 
 const menuButtons = [
-    {id: "initBtn", page: "initPage", event: "initPage-clicked"},
-    {id: "run_onceBtn", page: "run_oncePage", event: "run_oncePage-clicked"},
-    {id: "run_multiBtn", page: "run_multiPage", event: "run_multiPage-clicked"},
-    {id: "resultsBtn", page: "resultsPage", event: "resultsPage-clicked"}
+    { id: "initBtn", page: "initPage", event: "initPage-clicked" },
+    { id: "run_onceBtn", page: "run_oncePage", event: "run_oncePage-clicked" },
+    { id: "run_multiBtn", page: "run_multiPage", event: "run_multiPage-clicked" },
+    { id: "resultsBtn", page: "resultsPage", event: "resultsPage-clicked" }
 ]
 
-document.addEventListener('DOMContentLoaded', bindAllButtons)
+document.addEventListener("DOMContentLoaded", () => {
+    registerEvents()
+    setupMenu()
+    setupStaticUiHandlers()
+    setupPageObserver()
+    bindInputsOnce()
+    bindAllButtons()
+    checkInitOnPageLoad()
+})
 
-document.addEventListener('DOMContentLoaded', () => {
-    EventsOn("init_status", (...args) => {
-        const status = args[0];
-        const errorMsg = args[1] || null;
-        const statusEl = document.getElementById("status");
+function byId(id) {
+    return document.getElementById(id)
+}
 
+function qsa(sel) {
+    return document.querySelectorAll(sel)
+}
+
+function bindOnClick(sel, handler) {
+    qsa(sel).forEach(el => (el.onclick = handler))
+}
+
+function setBtnState(btn, disabled, title = "") {
+    if (!btn) return
+    btn.disabled = !!disabled
+    btn.style.opacity = btn.disabled ? "0.5" : "1"
+    btn.style.cursor = btn.disabled ? "not-allowed" : "pointer"
+    btn.title = title
+}
+
+function stop(e) {
+    e?.stopPropagation?.()
+}
+
+function registerEvents() {
+    EventsOn("init_status", status => {
+        const statusEl = byId("status")
         if (statusEl && status) {
-            statusEl.textContent = getStatusText(status);
-            statusEl.className = `status-${status}`;
+            statusEl.textContent = getStatusText(status)
+            statusEl.className = `status-${status}`
         }
 
-        if (status === "process") {
-            setProcessing(true);
-        } else if (status === "success" || status === "already-init" || status === "done") {
-            setProcessing(false);
-            isInitialized = true;
-            updateAllButtons();
-        } else {
-            setProcessing(false);
-        }
+        if (status === "process") setProcessing(true)
+        else setProcessing(false)
 
-        if (status === "error") {
-            setProcessing(false);
+        if (status === "success" || status === "already-init" || status === "done") {
+            isInitialized = true
+            if (initRequestedByButton && (status === "success" || status === "already-init" || status === "done")) {
+                initRequestedByButton = false
+                showNotice(
+                    status === "already-init" ? "Инициализация уже выполнена" : "Инициализация завершена",
+                    "success",
+                    2200
+                )
+            }
+            updateAllButtons()
         }
-    });
+    })
 
-    EventsOn("run_once_status", (...args) => {
-        const status = args[0];
-        const statusEl = document.getElementById("status_run_once");
+    EventsOn("run_once_status", status => {
+        const statusEl = byId("status_run_once")
         if (statusEl) {
-            statusEl.textContent = status;
-            statusEl.className = `status-${status}`;
+            statusEl.textContent = status
+            statusEl.className = `status-${status}`
         }
 
-        //if (status === "process") showNotice("Файл обрабатывается...", "warn", 1400);
-        if (status === "success") showNotice("Файл успешно обработан", "success", 1800);
-        if (status === "error") showNotice("Ошибка обработки (смотрите лог)", "error", 2400);
+        if (status === "success") showNotice("Файл успешно обработан", "success", 1800)
+        if (status === "error") showNotice("Ошибка обработки (смотрите лог)", "error", 2400)
 
-        updateRunOnceStartButton(); // <-- добавить
-    });
+        updateRunOnceStartButton()
+    })
 
-    EventsOn("run_multi_status", (...args) => {
-        const status = args[0];
-        const errMsg = args[1] || null;
-
-        const statusEl = document.getElementById("status_run_multi");
+    EventsOn("run_multi_status", (status, errMsg = null) => {
+        const statusEl = byId("status_run_multi")
         if (statusEl) {
-            statusEl.textContent = status;
-            statusEl.className = `status-${status}`;
+            statusEl.textContent = status
+            statusEl.className = `status-${status}`
         }
 
-        //if (status === "process") showNotice("Папка обрабатывается...", "warn", 1400);
-        if (status === "success") showNotice("Папка успешно обработана", "success", 1800);
-        if (status === "error") showNotice(errMsg ? ("Ошибка обработки (смотрите лог)" + errMsg) : "Ошибка обработки (смотрите лог)", "error", 2600);
+        if (status === "success") showNotice("Папка успешно обработана", "success", 1800)
+        if (status === "error") showNotice(errMsg ? ("Ошибка обработки (смотрите лог)" + errMsg) : "Ошибка обработки (смотрите лог)", "error", 2600)
 
-        updateRunMultiStartButton();
-    });
+        updateRunMultiStartButton()
+    })
 
-    EventsOn("processing_start", () => {
-        setProcessing(true);
-    });
+    EventsOn("processing_start", () => setProcessing(true))
+    EventsOn("processing_end", () => setProcessing(false))
+}
 
-    EventsOn("processing_end", () => {
-        setProcessing(false);
-    });
+function setupMenu() {
+    setupMenuButton("menuBtn", "menuPage", "menu-clicked")
+    menuButtons.forEach(({ id, page, event }) => setupMenuButton(id, page, event))
+}
 
-    setupMenuButton("menuBtn", 'menuPage', "menu-clicked");
-    menuButtons.forEach(({id, page, event}) => {
-        setupMenuButton(id, page, event);
-    });
+function setupStaticUiHandlers() {
+    qsa('[id*="exitBtn"]').forEach(btn => (btn.onclick = () => window.runtime.Quit()))
 
-    setupButton("editBtn", async () => {
-        if (!selectedFile || isProcessing) {
-            if (!selectedFile) alert('Сначала выберите файл!');
-            return;
+    qsa("h1.nameApp").forEach(scandoc => {
+        scandoc.style.cursor = "pointer"
+        scandoc.style.userSelect = "none"
+        scandoc.onclick = () => pushPage("mainPage")
+        scandoc.onmouseenter = () => (scandoc.style.opacity = "0.85")
+        scandoc.onmouseleave = () => (scandoc.style.opacity = "1")
+    })
+
+    bindOnClick("#cancelEditBtn", e => {
+        stop(e)
+        if (isProcessing) return
+        const editorEl = byId("editor")
+        if (editorEl) editorEl.value = originalEditContent
+        showNotice("Изменения отменены", "warn", 1600)
+    })
+
+    bindOnClick("#saveEditBtn", async e => {
+        stop(e)
+        if (isProcessing) return
+        if (!currentEditFilename) {
+            showNotice("Файл не выбран", "error", 2200)
+            return
         }
 
-        currentEditFilename = selectedFile;
+        const editorEl = byId("editor")
+        const newContent = editorEl ? editorEl.value : ""
 
-        pushPage('editPage');
-        await openEditorForFile(currentEditFilename);
-    });
+        try {
+            await SaveFileToStorage(currentEditFilename, newContent)
+            originalEditContent = newContent
+            showNotice("Файл сохранён", "success", 1800)
+        } catch (err) {
+            console.error("SaveFileToStorage error:", err)
+            showNotice("Ошибка сохранения: " + (err?.message || err), "error", 2600)
+        }
+    })
 
+    bindOnClick("#delBtn", async e => {
+        stop(e)
+        if (isProcessing) return
+        if (!selectedFile) {
+            updateDeleteButton(false)
+            return
+        }
 
-    document.querySelectorAll('[id*="exitBtn"]').forEach(btn => {
-        btn.onclick = () => window.runtime.Quit();
-    });
-
-    document.querySelectorAll('h1.nameApp').forEach(scandoc => {
-        scandoc.style.cursor = 'pointer';
-        scandoc.style.userSelect = 'none';
-        scandoc.onclick = (e) => pushPage('mainPage');
-        scandoc.onmouseenter = () => scandoc.style.opacity = '0.85';
-        scandoc.onmouseleave = () => scandoc.style.opacity = '1';
-    });
-
-    document.querySelectorAll('#cancelEditBtn').forEach(btn => {
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            if (isProcessing) return;
-
-            const editorEl = document.getElementById("editor");
-            if (editorEl) editorEl.value = originalEditContent;
-
-            showNotice("Изменения отменены", "warn", 1600);
-        };
-    });
-
-    document.querySelectorAll('#delBtn').forEach(btn => {
-        btn.onclick = (e) => {
-
-            showNotice("Файл удален", "warn", 1600);
-        };
-    });
-
-    document.querySelectorAll('#saveEditBtn').forEach(btn => {
-        btn.onclick = async (e) => {
-            e.stopPropagation();
-            if (isProcessing) return; // блокировка только когда init/run
-
-            if (!currentEditFilename) {
-                showNotice("Файл не выбран", "error", 2200);
-                return;
-            }
-
-            const editorEl = document.getElementById("editor");
-            const newContent = editorEl ? editorEl.value : "";
-
-            try {
-                await SaveFileToStorage(currentEditFilename, newContent);
-                originalEditContent = newContent;
-                showNotice("Файл сохранён", "success", 1800);
-            } catch (err) {
-                console.error("SaveFileToStorage error:", err);
-                showNotice("Ошибка сохранения: " + (err?.message || err), "error", 2600);
-            }
-        };
-    });
-
-    document.querySelectorAll('#delBtn').forEach(btn => {
-        btn.onclick = async (e) => {
-            e.stopPropagation();
-            if (isProcessing) return;
-            if (!selectedFile) {
-                updateDeleteButton(false);
-                return;
-            }
-
-            const filenameToDelete = selectedFile;
-
-            try {
-                await DeleteFileFromStorage(filenameToDelete);
-
-                showNotice("Файл удален", "warn", 1600);
-
-                selectedFile = null;
-
-                resetPreview();
-
-                updateEditButton(false);
-                updateDeleteButton(false);
-
-                await loadFiles();
-            } catch (err) {
-                console.error("DeleteFileFromStorage error:", err);
-                showNotice("Ошибка удаления: " + (err?.message || err), "error", 2400);
-            }
-        };
-    });
-
-
-    setupPageObserver();
-    checkInitOnPageLoad();
-});
+        const filenameToDelete = selectedFile
+        try {
+            await DeleteFileFromStorage(filenameToDelete)
+            showNotice("Файл удален", "warn", 1600)
+            selectedFile = null
+            resetPreview()
+            updateEditButton(false)
+            updateDeleteButton(false)
+            await loadFiles()
+        } catch (err) {
+            console.error("DeleteFileFromStorage error:", err)
+            showNotice("Ошибка удаления: " + (err?.message || err), "error", 2400)
+        }
+    })
+}
 
 function setupMenuButton(id, page, event) {
-    const btn = document.getElementById(id);
-    if (btn) {
-        btn.onclick = () => {
-            pushPage(page);
-            window.runtime.EventsEmit(event);
-        };
-        updateRunButtonState(btn);
-    } else {
-        console.warn(`Menu button #${id} not found`);
+    const btn = byId(id)
+    if (!btn) {
+        console.warn(`Menu button #${id} not found`)
+        return
     }
+
+    btn.onclick = () => {
+        pushPage(page)
+        window.runtime.EventsEmit(event)
+    }
+
+    updateRunButtonState(btn)
+}
+
+function bindInputsOnce() {
+    if (inputsBound) return
+    inputsBound = true
+
+    const fileInput = byId("fileInput")
+    const filenameInput = byId("filenameInput")
+    const dirPathInput = byId("dirPathInput")
+    const folderNameCreate = byId("folderNameCreate")
+
+    fileInput?.addEventListener("input", updateRunOnceStartButton)
+    filenameInput?.addEventListener("input", updateRunOnceStartButton)
+    dirPathInput?.addEventListener("input", updateRunMultiStartButton)
+    folderNameCreate?.addEventListener("input", updateRunMultiStartButton)
+}
+
+function bindAllButtons() {
+    bindOnClick("#openLogBtn", async e => {
+        stop(e)
+        if (isProcessing) return
+        await OpenLog()
+    })
+
+    bindOnClick("#backBtn", e => {
+        stop(e)
+        goBack()
+    })
+
+    bindOnClick("#open_resultsBtn", e => {
+        stop(e)
+        if (isProcessing) return
+        pushPage("resultsPage")
+    })
+
+    bindOnClick("#startInitBtn", async e => {
+        stop(e)
+        if (isProcessing) return
+        initRequestedByButton = true
+        await StartInit()
+    })
+
+    const editBtn = byId("editBtn")
+    if (editBtn) {
+        editBtn.onclick = async e => {
+            stop(e)
+            if (!selectedFile || isProcessing) {
+                if (!selectedFile) alert("Сначала выберите файл!")
+                return
+            }
+            currentEditFilename = selectedFile
+            pushPage("editPage")
+            await openEditorForFile(currentEditFilename)
+        }
+    }
+
+    bindOnClick("#start_run_onceBtn", async e => {
+        stop(e)
+        if (isProcessing) return
+
+        const filePath = (byId("fileInput")?.value || "").trim()
+        const outName = (byId("filenameInput")?.value || "").trim()
+
+        if (!filePath) {
+            showNotice("Укажите путь к файлу", "error", 2200)
+            updateRunOnceStartButton()
+            return
+        }
+        if (!outName) {
+            showNotice("Укажите название результата", "error", 2200)
+            updateRunOnceStartButton()
+            return
+        }
+
+        try {
+            await RunOnceFile(filePath, outName)
+        } catch (err) {
+            console.error("RunOnceFile error:", err)
+            showNotice("Ошибка запуска обработки", "error", 2400)
+        }
+    })
+
+    bindOnClick("#start_run_multiBtn", async e => {
+        stop(e)
+        if (isProcessing) return
+
+        const dir = (byId("dirPathInput")?.value || "").trim()
+        const folder = (byId("folderNameCreate")?.value || "").trim()
+
+        if (!dir) {
+            showNotice("Укажите путь к папке", "error", 2200)
+            updateRunMultiStartButton()
+            return
+        }
+        if (!folder) {
+            showNotice("Укажите название папки результата", "error", 2200)
+            updateRunMultiStartButton()
+            return
+        }
+
+        try {
+            await RunMultiFile(dir, folder)
+        } catch (err) {
+            console.error("RunMultiFile error:", err)
+            showNotice("Ошибка запуска обработки", "error", 2400)
+        }
+    })
+
+    updateRunOnceStartButton()
+    updateRunMultiStartButton()
+    updateAllButtons()
 }
 
 function updateRunOnceStartButton() {
-    const btn = document.getElementById("start_run_onceBtn");
-    if (!btn) return;
+    const btn = byId("start_run_onceBtn")
+    if (!btn) return
 
-    const path = (document.getElementById("fileInput")?.value || "").trim();
-    const outName = (document.getElementById("filenameInput")?.value || "").trim();
+    const path = (byId("fileInput")?.value || "").trim()
+    const outName = (byId("filenameInput")?.value || "").trim()
 
-    //Блокировка кнопки
-    btn.disabled = isProcessing || !path || !outName;
-    btn.style.opacity = btn.disabled ? "0.5" : "1";
-    btn.style.cursor = btn.disabled ? "not-allowed" : "pointer";
+    setBtnState(btn, isProcessing || !path || !outName)
 }
 
 function updateRunMultiStartButton() {
-    const btn = document.getElementById("start_run_multiBtn");
-    if (!btn) return;
+    const btn = byId("start_run_multiBtn")
+    if (!btn) return
 
-    const dir = (document.getElementById("dirPathInput")?.value || "").trim();
-    const folder = (document.getElementById("folderNameCreate")?.value || "").trim();
+    const dir = (byId("dirPathInput")?.value || "").trim()
+    const folder = (byId("folderNameCreate")?.value || "").trim()
 
-    // Блокировка кнопки
-    btn.disabled = isProcessing || !dir || !folder;
-    btn.style.opacity = btn.disabled ? "0.5" : "1";
-    btn.style.cursor = btn.disabled ? "not-allowed" : "pointer";
+    setBtnState(btn, isProcessing || !dir || !folder)
 }
 
 function updateRunButtonState(btn) {
-    if (!isInitialized && (btn.id === 'run_onceBtn' || btn.id === 'run_multiBtn')) {
-        btn.disabled = true;
-        btn.style.opacity = '0.7';
-        btn.style.cursor = 'not-allowed';
-        btn.title = 'Сначала выполните инициализацию!';
-        btn.dataset.disabledReason = 'requires-init';
+    if (!btn) return
 
-        if (!btn.querySelector('.init-badge')) {
-            const badge = document.createElement('span');
-            badge.className = 'init-badge';
-            badge.textContent = 'требуется инициализация';
+    if (!isInitialized && (btn.id === "run_onceBtn" || btn.id === "run_multiBtn")) {
+        btn.disabled = true
+        btn.style.opacity = "0.7"
+        btn.style.cursor = "not-allowed"
+        btn.title = "Сначала выполните инициализацию!"
+        btn.dataset.disabledReason = "requires-init"
+
+        if (!btn.querySelector(".init-badge")) {
+            const badge = document.createElement("span")
+            badge.className = "init-badge"
+            badge.textContent = "требуется инициализация"
             badge.style.cssText =
-                'display: block; ' +
-                'font-size: 0.8em; font-weight: bold; ' +
-                'color: #D5C9F1FF; ' +
-                'margin-top: 2px; ' +
-                'opacity: 1;';
-            btn.appendChild(badge);
+                "display: block; font-size: 0.8em; font-weight: bold; color: #D5C9F1FF; margin-top: 2px; opacity: 1;"
+            btn.appendChild(badge)
         }
-
-    } else {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.style.cursor = 'pointer';
-        btn.title = '';
-        delete btn.dataset.disabledReason;
-
-        const badge = btn.querySelector('.init-badge');
-        if (badge) badge.remove();
+        return
     }
+
+    btn.disabled = false
+    btn.style.opacity = "1"
+    btn.style.cursor = "pointer"
+    btn.title = ""
+    delete btn.dataset.disabledReason
+
+    const badge = btn.querySelector(".init-badge")
+    if (badge) badge.remove()
 }
 
 function updateDeleteButton(enabled) {
-    const delBtn = document.getElementById('delBtn');
-    if (!delBtn) return;
+    const delBtn = byId("delBtn")
+    if (!delBtn) return
 
-    // Во время processing всегда блокируем
     if (isProcessing) {
-        delBtn.disabled = true;
-        delBtn.style.opacity = '0.5';
-        delBtn.style.cursor = 'not-allowed';
-        return;
+        setBtnState(delBtn, true)
+        return
     }
 
-    // Если resultsPage скрыта — блокируем
-    const resultsPage = document.getElementById('resultsPage');
-    if (resultsPage?.classList.contains('hidden')) {
-        delBtn.disabled = true;
-        delBtn.style.opacity = '0.5';
-        delBtn.style.cursor = 'not-allowed';
-        return;
+    const resultsPage = byId("resultsPage")
+    if (resultsPage?.classList.contains("hidden")) {
+        setBtnState(delBtn, true)
+        return
     }
 
-    // Включаем только когда выбран файл
-    delBtn.disabled = !(enabled && selectedFile);
-    delBtn.style.opacity = delBtn.disabled ? '0.5' : '1';
-    delBtn.style.cursor = delBtn.disabled ? 'not-allowed' : 'pointer';
+    setBtnState(delBtn, !(enabled && selectedFile))
 }
-
 
 function setProcessing(processing) {
-    isProcessing = processing;
-    document.body.classList.toggle('processing', isProcessing);
-    updateAllButtons();
-    updateRunOnceStartButton();
-    updateRunMultiStartButton();
+    isProcessing = processing
+    document.body.classList.toggle("processing", isProcessing)
+    updateAllButtons()
+    updateRunOnceStartButton()
+    updateRunMultiStartButton()
 }
 
-// ✅ Безопасная функция без сложных селекторов
 function updateAllButtons() {
-    // Обновляем RUN кнопки с подсказкой
-    document.querySelectorAll('#run_onceBtn, #run_multiBtn').forEach(updateRunButtonState);
+    qsa("#run_onceBtn, #run_multiBtn").forEach(updateRunButtonState)
 
-    // ПРОСТЫЕ селекторы
-    const buttons = document.querySelectorAll('button');
-    const inputs = document.querySelectorAll('input[type="button"], input[type="submit"]');
-    const links = document.querySelectorAll('a[href]');
-    const selects = document.querySelectorAll('select');
-    const textareas = document.querySelectorAll('textarea');
-    const onclicks = document.querySelectorAll('[onclick]');
+    const buttons = document.querySelectorAll("button")
+    const inputs = document.querySelectorAll('input[type="button"], input[type="submit"]')
+    const links = document.querySelectorAll("a[href]")
+    const selects = document.querySelectorAll("select")
+    const textareas = document.querySelectorAll("textarea")
+    const onclicks = document.querySelectorAll("[onclick]")
 
-    // Объединяем все элементы
-    [...buttons, ...inputs, ...links, ...selects, ...textareas, ...onclicks].forEach(el => {
-        // Исключаем меню кнопки
-        const menuIds = ['menuBtn', 'initBtn', 'run_onceBtn', 'run_multiBtn', 'resultsBtn'];
-        if (menuIds.includes(el.id) || el.matches('h1.nameApp') || el.id?.includes('exitBtn')) {
-            return;
-        }
+    ;[...buttons, ...inputs, ...links, ...selects, ...textareas, ...onclicks].forEach(el => {
+        const menuIds = ["menuBtn", "initBtn", "run_onceBtn", "run_multiBtn", "resultsBtn"]
+        if (menuIds.includes(el.id) || el.matches("h1.nameApp") || el.id?.includes("exitBtn")) return
 
         if (isProcessing) {
-            el.disabled = true;
-            el.style.opacity = '0.5';
-            el.style.cursor = 'not-allowed';
-            el.style.pointerEvents = 'none';
-            el.title = 'Выполнение в процессе...';
-        } else {
-            el.disabled = false;
-            el.style.opacity = '1';
-            el.style.cursor = '';
-            el.style.pointerEvents = '';
-            el.title = '';
+            el.disabled = true
+            el.style.opacity = "0.5"
+            el.style.cursor = "not-allowed"
+            el.style.pointerEvents = "none"
+            el.title = "Выполнение в процессе..."
+            return
         }
-    });
+
+        el.disabled = false
+        el.style.opacity = "1"
+        el.style.cursor = ""
+        el.style.pointerEvents = ""
+        el.title = ""
+    })
 }
 
 function pushPage(pageId) {
-    navigationStack.push(pageId);
-    showPage(pageId);
+    navigationStack.push(pageId)
+    showPage(pageId)
 }
 
 function goBack() {
     if (navigationStack.length > 1) {
-        navigationStack.pop();
-        const previousPage = navigationStack[navigationStack.length - 1];
-        showPage(previousPage);
+        navigationStack.pop()
+        const previousPage = navigationStack[navigationStack.length - 1]
+        showPage(previousPage)
     } else {
-        showPage('menuPage');
+        showPage("menuPage")
     }
 }
 
 function showPage(pageId) {
-    if (document.getElementById('resultsPage') && !document.getElementById('resultsPage').classList.contains('hidden')) {
-        if (pageId !== 'resultsPage') {
-            resetResultsState();
-        }
+    const resultsPage = byId("resultsPage")
+    if (resultsPage && !resultsPage.classList.contains("hidden")) {
+        if (pageId !== "resultsPage") resetResultsState()
     }
 
-    bindAllButtons();
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.add('hidden');
-    });
-    document.getElementById(pageId)?.classList.remove('hidden');
+    bindAllButtons()
 
-    switch (pageId) {
-        case 'initPage':
-            checkInitOnPageLoad();
-            break;
-        case 'run_oncePage':
-            resetRunOncePage();
-            break;
-        case 'run_multiPage':
-            resetRunMultiPage();
-            break;
-        case 'resultsPage':
-            //loadFiles();
-            break;
-    }
+    qsa(".page").forEach(page => page.classList.add("hidden"))
+    byId(pageId)?.classList.remove("hidden")
 
-    window.history.pushState({page: pageId}, '', `#${pageId}`);
-}
+    if (pageId === "initPage") checkInitOnPageLoad()
+    else if (pageId === "run_oncePage") resetRunOncePage()
+    else if (pageId === "run_multiPage") resetRunMultiPage()
 
-function bindAllButtons() {
-    document.querySelectorAll('#openLogBtn').forEach(btn => {
-        btn.onclick = async (e) => {
-            e.stopPropagation();
-            if (isProcessing) return;
-            await OpenLog();
-        };
-    });
-
-    document.querySelectorAll('#backBtn').forEach(btn => {
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            goBack();
-        };
-    });
-
-    document.querySelectorAll('#open_resultsBtn').forEach(btn => {
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            if (isProcessing) return;
-            pushPage('resultsPage');
-        };
-    });
-
-    document.querySelectorAll('#startInitBtn').forEach(btn => {
-        btn.onclick = async (e) => {
-            e.stopPropagation();
-            if (isProcessing) return;
-            await StartInit();
-        };
-    });
-
-    document.querySelectorAll('#start_run_onceBtn').forEach(btn => {
-        btn.onclick = async (e) => {
-            e.stopPropagation();
-            if (isProcessing) return;
-
-            const filePath = (document.getElementById("fileInput")?.value || "").trim();
-            const outName = (document.getElementById("filenameInput")?.value || "").trim();
-
-            if (!filePath) {
-                showNotice("Укажите путь к файлу", "error", 2200);
-                updateRunOnceStartButton();
-                return;
-            }
-            if (!outName) {
-                showNotice("Укажите название результата", "error", 2200);
-                updateRunOnceStartButton();
-                return;
-            }
-
-            try {
-                await RunOnceFile(filePath, outName);
-                // success/error придёт через EventsOn("run_once_status")
-            } catch (err) {
-                console.error("RunOnceFile error:", err);
-                showNotice("Ошибка запуска обработки", "error", 2400);
-            }
-        };
-    });
-
-    document.querySelectorAll('#start_run_multiBtn').forEach(btn => {
-        btn.onclick = async (e) => {
-            e.stopPropagation();
-            if (isProcessing) return;
-
-            const dir = (document.getElementById("dirPathInput")?.value || "").trim();
-            const folder = (document.getElementById("folderNameCreate")?.value || "").trim();
-
-            if (!dir) { showNotice("Укажите путь к папке", "error", 2200); updateRunMultiStartButton(); return; }
-            if (!folder) { showNotice("Укажите название папки результата", "error", 2200); updateRunMultiStartButton(); return; }
-
-            try {
-                await RunMultiFile(dir, folder); // <-- нужен импорт RunMultiFile из wailsjs/go/main/App
-            } catch (err) {
-                console.error("RunMultiFile error:", err);
-                showNotice("Ошибка запуска обработки", "error", 2400);
-            }
-        };
-    });
-
-    document.getElementById("fileInput")?.addEventListener("input", updateRunOnceStartButton);
-    document.getElementById("filenameInput")?.addEventListener("input", updateRunOnceStartButton);
-    updateRunOnceStartButton();
-
-    document.getElementById("dirPathInput")?.addEventListener("input", updateRunMultiStartButton);
-    document.getElementById("folderNameCreate")?.addEventListener("input", updateRunMultiStartButton);
-    updateRunMultiStartButton();
+    window.history.pushState({ page: pageId }, "", `#${pageId}`)
 }
 
 function resetRunOncePage() {
-    const pathEl = document.getElementById("fileInput");
-    const nameEl = document.getElementById("filenameInput");
-    const statusEl = document.getElementById("status_run_once");
+    const pathEl = byId("fileInput")
+    const nameEl = byId("filenameInput")
+    const statusEl = byId("status_run_once")
 
-    if (pathEl) pathEl.value = "";
-    if (nameEl) nameEl.value = "";
+    if (pathEl) pathEl.value = ""
+    if (nameEl) nameEl.value = ""
 
     if (statusEl) {
-        statusEl.textContent = "ready";
-        statusEl.className = "status-ready";
+        statusEl.textContent = "ready"
+        statusEl.className = "status-ready"
     }
 
-    updateRunOnceStartButton();
+    updateRunOnceStartButton()
 }
 
 function resetRunMultiPage() {
-    const pathEl = document.getElementById("dirPathInput");
-    const nameEl = document.getElementById("folderNameCreate");
-    const statusEl = document.getElementById("status_run_multi");
+    const pathEl = byId("dirPathInput")
+    const nameEl = byId("folderNameCreate")
+    const statusEl = byId("status_run_multi")
 
-    if (pathEl) pathEl.value = "";
-    if (nameEl) nameEl.value = "";
+    if (pathEl) pathEl.value = ""
+    if (nameEl) nameEl.value = ""
 
     if (statusEl) {
-        statusEl.textContent = "ready";
-        statusEl.className = "status-ready";
+        statusEl.textContent = "ready"
+        statusEl.className = "status-ready"
     }
 
-    updateRunMultiStartButton();
-}
-
-function setupButton(id, handler) {
-    const btn = document.getElementById(id);
-    if (btn) {
-        btn.onclick = (e) => {
-            if (isProcessing && id !== 'editBtn') return;
-            handler(e);
-        };
-    } else {
-        console.warn(`Button #${id} not found`);
-    }
+    updateRunMultiStartButton()
 }
 
 async function loadFiles() {
-    if (isLoadingFiles) return;
-    isLoadingFiles = true;
-    selectedFile = null;
-    updateEditButton(false);
+    if (isLoadingFiles) return
+    isLoadingFiles = true
+
+    selectedFile = null
+    updateEditButton(false)
     updateDeleteButton(false)
 
     try {
-        const files = await GetFilesFromStorage();
-        const list = document.getElementById('filesList');
-        list.innerHTML = '';
+        const files = await GetFilesFromStorage()
+        const list = byId("filesList")
+        if (!list) return
+        list.innerHTML = ""
 
         if (!files || files.length === 0) {
-            list.innerHTML = '<div style="padding:20px;text-align:center;color:rgba(248, 250, 252, 0.55);font-weight: bold;">Файлы не найдены</div>';
-            return;
+            list.innerHTML =
+                '<div style="padding:20px;text-align:center;color:rgba(248, 250, 252, 0.55);font-weight: bold;">Файлы не найдены</div>'
+            return
         }
 
         files.forEach(file => {
-            const filename = typeof file === 'object' ? file.name || file.filename : file;
-            const item = document.createElement('div');
-            item.className = 'file-item';
-            item.dataset.filename = filename;
-            item.innerHTML = `<strong>${filename}</strong>`;
-            item.style.cursor = isProcessing ? 'not-allowed' : 'pointer';
-            item.style.opacity = isProcessing ? '0.5' : '1';
-            item.addEventListener('click', () => {
-                if (isProcessing) return;
-                document.querySelectorAll('#filesList .file-item')
-                    .forEach(el => el.classList.remove('is-selected'));
+            const filename = typeof file === "object" ? file.name || file.filename : file
+            const item = document.createElement("div")
+            item.className = "file-item"
+            item.dataset.filename = filename
+            item.innerHTML = `<strong>${filename}</strong>`
+            item.style.cursor = isProcessing ? "not-allowed" : "pointer"
+            item.style.opacity = isProcessing ? "0.5" : "1"
 
-                item.classList.add('is-selected');
+            item.addEventListener("click", () => {
+                if (isProcessing) return
+                qsa("#filesList .file-item").forEach(el => el.classList.remove("is-selected"))
+                item.classList.add("is-selected")
 
-                selectedFile = filename;
-                loadFileContent(filename);
-                updateEditButton(true);
-                updateDeleteButton(true);
-            });
-            list.appendChild(item);
-        });
+                selectedFile = filename
+                loadFileContent(filename)
+                updateEditButton(true)
+                updateDeleteButton(true)
+            })
+
+            list.appendChild(item)
+        })
     } finally {
-        isLoadingFiles = false;
+        isLoadingFiles = false
     }
 }
 
 async function loadFileContent(filename) {
     try {
-        document.getElementById('previewTitle').textContent = `Файл: ${filename}`;
-        const content = await ReadFileFromStorage(filename);
-        document.getElementById('fileContent').textContent = content || 'Файл пустой';
+        byId("previewTitle").textContent = `Файл: ${filename}`
+        const content = await ReadFileFromStorage(filename)
+        byId("fileContent").textContent = content || "Файл пустой"
     } catch (error) {
-        document.getElementById('fileContent').textContent = 'Ошибка: ' + error;
+        byId("fileContent").textContent = "Ошибка: " + error
     }
 }
 
 function updateEditButton(enabled) {
-    const editBtn = document.getElementById('editBtn');
-    if (!editBtn) return;
+    const editBtn = byId("editBtn")
+    if (!editBtn) return
 
     if (isProcessing) {
-        editBtn.disabled = true;
-        editBtn.style.opacity = '0.5';
-        editBtn.style.cursor = 'not-allowed';
-        return;
+        setBtnState(editBtn, true)
+        return
     }
 
-    const resultsPage = document.getElementById('resultsPage');
-    if (resultsPage?.classList.contains('hidden')) {
-        editBtn.disabled = true;
-        editBtn.style.opacity = '0.5';
-        editBtn.style.cursor = 'not-allowed';
-        selectedFile = null;
-        return;
+    const resultsPage = byId("resultsPage")
+    if (resultsPage?.classList.contains("hidden")) {
+        setBtnState(editBtn, true)
+        selectedFile = null
+        return
     }
 
     if (enabled && selectedFile) {
-        editBtn.disabled = false;
-        editBtn.style.opacity = '1';
-        editBtn.style.cursor = 'pointer';
-    } else {
-        editBtn.disabled = true;
-        editBtn.style.opacity = '0.5';
-        editBtn.style.cursor = 'not-allowed';
-        selectedFile = null;
-        resetPreview();
+        setBtnState(editBtn, false)
+        return
     }
+
+    setBtnState(editBtn, true)
+    selectedFile = null
+    resetPreview()
 }
 
 function resetPreview() {
-    const previewTitle = document.getElementById('previewTitle');
-    const fileContent = document.getElementById('fileContent');
-    if (previewTitle) previewTitle.textContent = 'Выберите файл для просмотра';
-    if (fileContent) fileContent.textContent = '';
+    const previewTitle = byId("previewTitle")
+    const fileContent = byId("fileContent")
+    if (previewTitle) previewTitle.textContent = "Выберите файл для просмотра"
+    if (fileContent) fileContent.textContent = ""
 }
 
 function resetResultsState() {
-    selectedFile = null;
-    updateEditButton(false);
-    updateDeleteButton(false);
+    selectedFile = null
+    updateEditButton(false)
+    updateDeleteButton(false)
 }
 
 function updateInitStatus(status, errorMsg) {
-    const statusEl = document.getElementById("status");
-    const initBtn = document.getElementById("startInitBtn");
+    const statusEl = byId("status")
+    const initBtn = byId("startInitBtn")
+    if (!statusEl || !initBtn) return
 
-    if (!statusEl || !initBtn) return;
-
-    statusEl.textContent = getStatusText(status);
-    statusEl.className = `status-${status}`;
+    statusEl.textContent = getStatusText(status)
+    statusEl.className = `status-${status}`
 
     if (status === "success" || status === "already-init" || status === "done") {
-        initBtn.disabled = true;
-        initBtn.textContent = "Инициализация завершена";
-        initBtn.classList.add("completed");
+        initBtn.disabled = true
+        initBtn.textContent = "Инициализация завершена"
+        initBtn.classList.add("completed")
     } else {
-        initBtn.disabled = false;
-        initBtn.textContent = "Начать инициализацию";
-        initBtn.classList.remove("completed");
+        initBtn.disabled = false
+        initBtn.textContent = "Начать инициализацию"
+        initBtn.classList.remove("completed")
     }
 
     if (status === "error" && errorMsg) {
-        statusEl.textContent += `: ${errorMsg}`;
-        console.error("Init error:", errorMsg);
+        statusEl.textContent += `: ${errorMsg}`
+        console.error("Init error:", errorMsg)
     }
 }
 
 function getStatusText(status) {
     const texts = {
-        "ready": "Готов к инициализации",
-        "process": "Выполняется...",
-        "success": "Успешно завершено",
+        ready: "Готов к инициализации",
+        process: "Выполняется...",
+        success: "Успешно завершено",
         "already-init": "Инициализация уже выполнена",
-        "done": "Готово"
-    };
-    return texts[status] || status;
+        done: "Готово"
+    }
+    return texts[status] || status
 }
 
 function setupPageObserver() {
-    const resultsPage = document.getElementById('resultsPage');
-    if (!resultsPage) return;
+    const resultsPage = byId("resultsPage")
+    if (!resultsPage) return
 
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                if (resultsPage.classList.contains('hidden')) {
-                    resetPreview();
-                } else {
-                    loadFiles();
-                }
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            if (mutation.type === "attributes" && mutation.attributeName === "class") {
+                if (resultsPage.classList.contains("hidden")) resetPreview()
+                else loadFiles()
             }
-        });
-    });
-    observer.observe(resultsPage, { attributes: true });
+        })
+    })
+
+    observer.observe(resultsPage, { attributes: true })
 }
 
 async function checkInitOnPageLoad() {
     try {
-        const status = await CheckInitStatus();
-        if (status === "success" || status === "already-init" || status === "done") {
-            isInitialized = true;
-        }
-        updateInitStatus(status);
-        updateAllButtons();
+        const status = await CheckInitStatus()
+        if (status === "success" || status === "already-init" || status === "done") isInitialized = true
+        updateInitStatus(status)
+        updateAllButtons()
     } catch (error) {
-        updateInitStatus("error", error.message);
+        updateInitStatus("error", error.message)
     }
 }
-
 
 async function openEditorForFile(filename) {
     try {
-        currentEditFilename = filename;
+        currentEditFilename = filename
 
-        const titleEl = document.getElementById("editFilename");
-        if (titleEl) titleEl.textContent = `Файл: ${filename}`;
+        const titleEl = byId("editFilename")
+        if (titleEl) titleEl.textContent = `Файл: ${filename}`
 
-        const content = await ReadFileFromStorage(filename);
-        originalEditContent = content || "";
+        const content = await ReadFileFromStorage(filename)
+        originalEditContent = content || ""
 
-        const editorEl = document.getElementById("editor");
-        if (editorEl) editorEl.value = originalEditContent;
-
+        const editorEl = byId("editor")
+        if (editorEl) editorEl.value = originalEditContent
     } catch (e) {
-        console.error("ReadFileFromStorage error:", e);
-        showNotice("Ошибка чтения файла: " + (e?.message || e), "error", 2400);
+        showNotice("Ошибка чтения файла: " + (e?.message || e), "error", 2400)
+        console.error("ReadFileFromStorage error:", e)
     }
 }
 
-
-let noticeTimer = null;
-
 function showNotice(text, type = "success", timeoutMs = 1800) {
-    const old = document.getElementById("appNotice");
-    if (old) old.remove();
-    if (noticeTimer) clearTimeout(noticeTimer);
+    const old = byId("appNotice")
+    if (old) old.remove()
+    if (noticeTimer) clearTimeout(noticeTimer)
 
-    const el = document.createElement("div");
-    el.id = "appNotice";
-    el.className = `notice ${type}`;
-    el.textContent = text;
+    const el = document.createElement("div")
+    el.id = "appNotice"
+    el.className = `notice ${type}`
+    el.textContent = text
 
-    document.body.appendChild(el);
-    requestAnimationFrame(() => el.classList.add("show"));
+    document.body.appendChild(el)
+    requestAnimationFrame(() => el.classList.add("show"))
 
     noticeTimer = setTimeout(() => {
-        el.classList.remove("show");
-        setTimeout(() => el.remove(), 250);
-    }, timeoutMs);
+        el.classList.remove("show")
+        setTimeout(() => el.remove(), 250)
+    }, timeoutMs)
 }

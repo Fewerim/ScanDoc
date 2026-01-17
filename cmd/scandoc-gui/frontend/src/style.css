@@ -1,17 +1,59 @@
+:root {
+    --font: "Montserrat", sans-serif;
+
+    --bg-grad: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+
+    --glass: rgba(255,255,255,0.10);
+    --glass-2: rgba(255,255,255,0.20);
+    --glass-3: rgba(255,255,255,0.30);
+
+    --border: 1px solid rgba(255, 255, 255, 0.22);
+    --shadow: 0 2px 10px rgba(0,0,0,0.3);
+
+    --sb-thumb: rgba(213, 201, 241, 0.28);
+    --sb-thumb-hover: rgba(213, 201, 241, 0.45);
+    --sb-thumb-ff: rgba(255, 255, 255, 0.35);
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Montserrat", sans-serif;
+    font-family: var(--font);
 }
 
 body {
     height: 100vh;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-grad);
     display: flex;
     justify-content: center;
     align-items: center;
     color: white;
+}
+
+.hidden { display: none !important; }
+
+.page {
+    align-content: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.4s ease;
+}
+
+#app { text-align: center; }
+
+h1 {
+    font-size: 4.5rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+    text-shadow: var(--shadow);
+}
+
+p {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 2.5rem;
+    opacity: 0.9;
 }
 
 mark {
@@ -22,47 +64,40 @@ mark {
     font-weight: 900;
 }
 
-.hidden {
-    display: none !important;
+h1.nameApp {
+    font-size: 5.5rem;
+    font-weight: bold;
+    text-shadow: var(--shadow);
+    cursor: pointer !important;
+    user-select: none;
+    transition: all 0.2s ease;
 }
 
-.page {
-    align-content: center;
-    justify-content: center;
-    opacity: 1;
-    transition: opacity 0.4s ease;
+h1.nameApp:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
 }
 
-#app {
-    text-align: center;
-}
-
-h1 {
-    font-size: 4.5rem;
-    font-weight: 300;
-    margin-bottom: 1rem;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+h2.titlePage {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-shadow: var(--shadow);
+    cursor: default;
+    transition: all 0.2s ease;
 }
 
 .footer h1.nameOrg {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: bold;
     margin-top: 2rem;
     opacity: 0.8;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-
-p {
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-bottom: 2.5rem;
-    opacity: 0.9;
+    text-shadow: var(--shadow);
 }
 
 button {
-    background: rgba(255,255,255,0.2);
+    background: var(--glass-2);
     backdrop-filter: blur(10px);
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 2px solid var(--glass-3);
     color: white;
     padding: 15px 40px;
     margin: 0 15px;
@@ -90,7 +125,8 @@ button:hover {
     gap: 2rem;
 }
 
-.page_body {
+.page_body,
+.bodyMenu {
     flex: 0 0 420px;
     display: flex;
     flex-direction: column;
@@ -107,7 +143,7 @@ body.processing {
 }
 
 body.processing::before {
-    content: 'Выполнение в процессе... Пожалуйста подождите';
+    content: "Выполнение в процессе... Пожалуйста подождите";
     position: fixed;
     top: 50%;
     left: 50%;
@@ -122,29 +158,6 @@ body.processing::before {
     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 
-
-h1.nameApp {
-    font-size: 5.5rem;
-    font-weight: bold;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    cursor: pointer !important;
-    user-select: none;
-    transition: all 0.2s ease;
-}
-
-h1.nameApp:hover {
-    opacity: 0.9;
-    transform: scale(1.02);
-}
-
-h2.titlePage {
-    font-size: 2.5rem;
-    font-weight: bold;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    cursor: default;
-    transition: all 0.2s ease;
-}
-
 .welcome_block {
     display: flex;
     align-items: center;
@@ -153,21 +166,25 @@ h2.titlePage {
     width: 100%;
 }
 
-.welcome_block ul {
+.welcome_block ul,
+.menu {
     display: flex;
     flex-direction: column;
     justify-content: center;
     gap: 2rem;
     width: 100%;
-    max-width: 500px;
     padding: 0;
-    margin-top: 1rem;
+    margin: 0;
     list-style: none;
 }
 
-.welcome_block li {
-    list-style: none;
-}
+.welcome_block ul { max-width: 500px; margin-top: 1rem; }
+
+.welcome_block li,
+.bodyMenu li,
+.menu li { list-style: none; }
+
+.menu { gap: 1.1rem; max-width: 380px; }
 
 .menu_block {
     display: flex;
@@ -179,28 +196,12 @@ h2.titlePage {
     gap: 6rem;
 }
 
-.menu_block > div:first-child {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-}
-
+.menu_block > div:first-child,
 .menu_block > div:last-child {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-}
-
-.bodyMenu {
-    flex: 0 0 420px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 1rem;
 }
 
 .bodyMenu h2 {
@@ -213,21 +214,6 @@ h2.titlePage {
     max-width: 380px;
 }
 
-.bodyMenu li {
-    list-style: none;
-}
-
-.menu {
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
-    width: 100%;
-    max-width: 380px;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-}
-
 .menu li button {
     width: 100%;
     padding: 1.3rem 1.5rem;
@@ -235,6 +221,7 @@ h2.titlePage {
     text-align: center;
     font-size: 1.1rem;
     border-radius: 18px;
+    margin: 0;
 }
 
 .menu li button:hover {
@@ -252,9 +239,7 @@ h2.titlePage {
     gap: 2rem;
 }
 
-.init_page_status {
-    margin-top: 0.5rem;
-}
+.init_page_status { margin-top: 0.5rem; }
 
 .work_buttons {
     display: flex;
@@ -284,19 +269,11 @@ h2.titlePage {
     justify-content: center;
 }
 
-.init-badge {
-    animation: badgePulse 3s infinite ease-in-out; /* ✅ Медленная ненавязчивая */
-}
+.init-badge { animation: badgePulse 3s infinite ease-in-out; }
 
 @keyframes badgePulse {
-    0%, 100% {
-        opacity: 0.85;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.02);
-    }
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.02); }
 }
 
 button[data-disabled-reason="requires-init"]:hover .init-badge {
@@ -308,7 +285,6 @@ button[data-disabled-reason="requires-init"]:hover {
     background-color: #484242 !important;
     border-color: #d5c9f1 !important;
 }
-
 
 .text_row {
     display: flex;
@@ -326,20 +302,22 @@ button[data-disabled-reason="requires-init"]:hover {
     line-height: 1.6;
     text-align: center;
     color: rgba(255,255,255,0.95);
+    margin-bottom: 0;
 }
 
 .text_row p:last-child {
-    flex: 1;
     margin-top: 1.25rem;
     font-size: 1.15rem;
     font-weight: bold;
-    line-height: 1.6;
     color: rgba(0,0,0,0.75);
 }
 
-.status-done, .status-already-init, .status-success { color: white; }
-.status-process { color: white; animation: pulse 1.5s infinite; }
+.status-done,
+.status-already-init,
+.status-success,
 .status-error { color: white; }
+
+.status-process { color: white; animation: pulse 1.5s infinite; }
 
 .inputs {
     margin-top: 1rem;
@@ -356,16 +334,20 @@ button[data-disabled-reason="requires-init"]:hover {
     gap: 0.5rem;
 }
 
-.select_folder {
+.select_folder,
+:is(#filenameInput, #fileInput, #dirPathInput, #folderNameCreate) {
     width: 100%;
     height: 3rem;
     padding: 0 1rem;
     border: 2px solid #e1e5e9;
     border-radius: 12px;
-    background: linear-gradient(145deg, #f8f9fa, #f1f3f4);
     font-size: 1rem;
-    cursor: pointer;
     transition: all 0.3s ease;
+}
+
+.select_folder {
+    background: linear-gradient(145deg, #f8f9fa, #f1f3f4);
+    cursor: pointer;
 }
 
 .select_folder:hover {
@@ -380,9 +362,7 @@ button[data-disabled-reason="requires-init"]:hover {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
-.select_folder::file-selector-button {
-    display: none;
-}
+.select_folder::file-selector-button { display: none; }
 
 .select_folder::before {
     content: attr(data-placeholder);
@@ -392,66 +372,37 @@ button[data-disabled-reason="requires-init"]:hover {
     pointer-events: none;
 }
 
-#filenameInput, #fileInput, #dirPathInput, #folderNameCreate {
-    width: 100%;
-    height: 3rem;
+:is(#filenameInput, #fileInput, #dirPathInput, #folderNameCreate) {
     max-width: 250px;
     padding: 0 1.2rem;
-    border: 2px solid #e1e5e9;
-    border-radius: 12px;
     background: #f8f9fa;
     color: #9198a1;
     font-weight: bold;
     font-size: 0.9rem;
     font-style: italic;
-    transition: all 0.3s ease;
 }
 
-#filenameInput:focus, #fileInput:focus, #dirPathInput:focus, #folderNameCreate:focus {
+:is(#filenameInput, #fileInput, #dirPathInput, #folderNameCreate):focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/*#fileInput {*/
-/*    width: 100%;*/
-/*    max-width: 250px;*/
-/*    height: 3rem;*/
-/*    border: 2px solid #e1e5e9;*/
-/*    border-radius: 12px;*/
-/*    background: #f8f9fa !important;*/
-/*    color: #9ca3af !important;*/
-/*    font-size: 0.9rem;*/
-/*    font-weight: bold;*/
-/*    font-style: italic;*/
-/*    align-content: center;*/
-/*    cursor: pointer;*/
-/*    transition: all 0.3s ease;*/
-/*}*/
-
-#filenameInput::placeholder, #fileInput::placeholder, #dirPathInput::placeholder, #folderNameCreate::placeholder {
+:is(#filenameInput, #fileInput, #dirPathInput, #folderNameCreate)::placeholder {
     color: #9ca3af !important;
     opacity: 1 !important;
     font-style: italic;
-}
-:root {
-    --sb-thumb: rgba(213, 201, 241, 0.28);
-    --sb-thumb-hover: rgba(213, 201, 241, 0.45);
-    --sb-thumb-ff: rgba(255, 255, 255, 0.35);
 }
 
 .scroll-container {
     margin: 1.1rem auto;
     width: 300px;
     height: 350px;
-
     border-radius: 14px;
     border: 1px solid rgba(255, 255, 255, 0.22);
-    background: rgba(255, 255, 255, 0.10);
+    background: var(--glass);
     color: #f8fafc;
-
     overflow: auto;
-
     scrollbar-width: thin;
     scrollbar-color: var(--sb-thumb-ff) transparent;
 }
@@ -459,10 +410,8 @@ button[data-disabled-reason="requires-init"]:hover {
 .files-list {
     padding: 14px 16px;
     margin: 0;
-
     background: transparent;
     overflow: visible;
-
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -471,14 +420,11 @@ button[data-disabled-reason="requires-init"]:hover {
 .file-item {
     padding: 12px 14px;
     border-radius: 12px;
-
     border: 1px solid rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.06);
     color: #f8fafc;
-
     font-weight: bold;
     cursor: pointer;
-
     transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
 }
 
@@ -491,9 +437,7 @@ button[data-disabled-reason="requires-init"]:hover {
 .file-item.is-selected {
     background: rgba(248, 247, 248, 0.50);
     border-color: rgba(213, 201, 241, 0.70);
-    box-shadow:
-            0 0 0 3px rgba(213, 201, 241, 0.28),
-            0 10px 26px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 0 0 3px rgba(213, 201, 241, 0.28), 0 10px 26px rgba(0, 0, 0, 0.22);
     transform: none;
 }
 
@@ -504,41 +448,28 @@ button[data-disabled-reason="requires-init"]:hover {
     margin: 1.1rem 0;
 }
 
-#editor,
-#fileContent {
+:is(#editor, #fileContent) {
     height: 100%;
     width: 100%;
     box-sizing: border-box;
-
     padding: 14px 16px;
     border-radius: 14px;
-
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    background: rgba(255, 255, 255, 0.10);
+    border: var(--border);
+    background: var(--glass);
     color: #f8fafc;
-
     font-size: 14px;
     line-height: 1.5;
     font-weight: bold;
     text-align: left;
-
     outline: none;
-
     overflow: auto;
     white-space: pre-wrap;
-
     scrollbar-width: thin;
     scrollbar-color: var(--sb-thumb-ff) transparent;
 }
 
-#fileContent {
-    cursor: default;
-}
-
-#editor {
-    resize: none;
-    cursor: text !important;
-}
+#fileContent { cursor: default; }
+#editor { resize: none; cursor: text !important; }
 
 #editor:focus-visible {
     border-color: rgba(213, 201, 241, 0.95);
@@ -554,33 +485,24 @@ button[data-disabled-reason="requires-init"]:hover {
     font-weight: bold;
 }
 
-.scroll-container::-webkit-scrollbar,
-#editor::-webkit-scrollbar,
-#fileContent::-webkit-scrollbar {
+:is(.scroll-container, #editor, #fileContent)::-webkit-scrollbar {
     width: 10px;
     height: 10px;
     background: transparent;
 }
 
-.scroll-container::-webkit-scrollbar-track,
-#editor::-webkit-scrollbar-track,
-#fileContent::-webkit-scrollbar-track {
+:is(.scroll-container, #editor, #fileContent)::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.scroll-container::-webkit-scrollbar-thumb,
-#editor::-webkit-scrollbar-thumb,
-#fileContent::-webkit-scrollbar-thumb {
+:is(.scroll-container, #editor, #fileContent)::-webkit-scrollbar-thumb {
     background: var(--sb-thumb);
     border-radius: 999px;
-
     border: 3px solid transparent;
     background-clip: content-box;
 }
 
-.scroll-container::-webkit-scrollbar-thumb:hover,
-#editor::-webkit-scrollbar-thumb:hover,
-#fileContent::-webkit-scrollbar-thumb:hover {
+:is(.scroll-container, #editor, #fileContent)::-webkit-scrollbar-thumb:hover {
     background: var(--sb-thumb-hover);
     background-clip: content-box;
 }
@@ -606,11 +528,3 @@ button[data-disabled-reason="requires-init"]:hover {
 }
 
 .notice.show { opacity: 1; }
-
-
-
-
-
-
-
-

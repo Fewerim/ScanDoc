@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"proWeb/internal/appUtils/command"
 	"proWeb/internal/tesseract"
 	"syscall"
 )
@@ -25,7 +26,7 @@ func CreateVenv(pathToCreate string) error {
 		return InternalError(err.Error())
 	}
 
-	cmd := exec.Command(py, "-m", "venv", venvPath)
+	cmd := command.Command(py, "-m", "venv", venvPath)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -40,7 +41,7 @@ func CreateVenv(pathToCreate string) error {
 	if _, err := os.Stat(pipPath); os.IsNotExist(err) {
 		venvPython := filepath.Join(pathToCreate, ".venv", "Scripts", "python.exe")
 
-		fixCmd := exec.Command(venvPython, "-m", "ensurepip", "--upgrade", "--default-pip")
+		fixCmd := command.Command(venvPython, "-m", "ensurepip", "--upgrade", "--default-pip")
 		fixCmd.Dir = pathToCreate
 		fixCmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 
@@ -72,7 +73,7 @@ func InstallRequirements(pathToVenv, pathToScript string) error {
 		return UserError("не удается подключиться к PyPi. проверьте подключение к интернету")
 	}
 
-	cmd := exec.Command(pipPath, "install", "-r", reqsPath)
+	cmd := command.Command(pipPath, "install", "-r", reqsPath)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -117,7 +118,7 @@ func findSystemPython() (string, error) {
 	}
 
 	if path, err := exec.LookPath("python"); err == nil {
-		cmd := exec.Command("python", "--version")
+		cmd := command.Command("python", "--version")
 		out, _ := cmd.CombinedOutput()
 		if !bytes.Contains(out, []byte("Microsoft Store")) {
 			return path, nil
@@ -129,7 +130,7 @@ func findSystemPython() (string, error) {
 
 // checkInternetConnection - проверяет наличие интернета через попытку подключиться к PyPi
 func checkInternetConnection() bool {
-	cmd := exec.Command("ping", "-n", "1", "-w", "3000", "pypi.org")
+	cmd := command.Command("ping", "-n", "1", "-w", "3000", "pypi.org")
 	return cmd.Run() == nil
 }
 

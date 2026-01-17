@@ -7,4 +7,3 @@
 *.iss
 run_scanner.bat
 /forsetup
-/internal/appUtils/command

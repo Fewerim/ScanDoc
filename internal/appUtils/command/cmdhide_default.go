@@ -1,4 +1,4 @@
-//go:build !gui
+//go:build !(windows && wails)
 
 package command
 

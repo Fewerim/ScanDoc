@@ -3,9 +3,9 @@ package appCmds
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"proWeb/internal/appUtils"
+	"proWeb/internal/appUtils/command"
 	"proWeb/internal/exitCodes"
 	"proWeb/internal/files"
 )
@@ -108,7 +108,7 @@ func openStorage(storagePath string) error {
 		}
 	}
 
-	cmd := exec.Command("explorer.exe", fullPath)
+	cmd := command.Command("explorer.exe", fullPath)
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("не удалось открыть папку storage: %v", err)
 	}

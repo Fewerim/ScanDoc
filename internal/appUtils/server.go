@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os/exec"
 	"path/filepath"
+	"proWeb/internal/appUtils/command"
 	parser2 "proWeb/internal/parser"
 	"proWeb/internal/typesJSON/typesUtils"
 	"time"
@@ -31,7 +32,7 @@ func StartPythonServer(port int, pythonExecutable, pathToScript string) (*exec.C
 	portStr := fmt.Sprintf("%d", port)
 	pathToScript = filepath.Join(pathToScript, "src/run_api.py")
 
-	cmd := exec.Command(pythonExecutable, pathToScript, "--port", portStr)
+	cmd := command.Command(pythonExecutable, pathToScript, "--port", portStr)
 
 	if err := cmd.Start(); err != nil {
 		info := fmt.Sprintf("не удалось запустить сервер: %v", err)

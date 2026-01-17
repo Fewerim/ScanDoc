@@ -3,8 +3,8 @@ package appUtils
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"proWeb/internal/appUtils/command"
 	"runtime"
 	"strings"
 )
@@ -124,7 +124,7 @@ func ConvertPdfToImg(filePath string) (string, error) {
 		gsExe = "gs"
 	}
 
-	cmd := exec.Command(gsExe,
+	cmd := command.Command(gsExe,
 		"-sDEVICE=jpeg",
 		"-r300", // DPI
 		"-dNOPAUSE",
