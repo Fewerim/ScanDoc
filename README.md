@@ -74,7 +74,7 @@ scandoc.exe run_multi -d="C:\FolderScans" -n="result_folder_scans"
 
 Проверьте наличие необходимого ПО в PATH:
 1) Python (*должен быть не Microsoft/WindowsApps*)
-2) Tesseract 
+2) Tesseract (setx /M PATH "<путь к каталогу с tesseract>;%PATH%")
 3) GhostScript
 
 Проверить можно в CMD: `<название> --version`
