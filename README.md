@@ -72,6 +72,10 @@ scandoc.exe run_multi -d="C:\FolderScans" -n="result_folder_scans"
 5) Установите значение @chcp 65001>nul
 6) Нажмите Ок
 
+Tesseract
+Во время установки Tesseract обязательно добавьте внутри `Additional language data`:
+English, Russian
+
 Проверьте наличие необходимого ПО в PATH:
 1) Python (*должен быть не Microsoft/WindowsApps*)
 2) Tesseract (setx /M PATH "<путь к каталогу с tesseract>;%PATH%")
