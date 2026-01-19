@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SCANDOC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+<div id="app">
+    <!--Страница welcome-->
+    <div class="page" id="mainPage">
+        <div class="welcome_block">
+            <h1 class="nameApp">SCANDOC</h1>
+            <h2 class="text_row">Приложение для распознавания бухгалтерских документов</h2>
+            <ul>
+                <li><button id="menuBtn">Меню</button></li>
+                <li><button id="exitBtn">Выход</button></li>
+            </ul>
+        </div>
+    </div>
+
+    <!--Страница меню-->
+    <div class="page hidden" id="menuPage">
+        <div class="page_block">
+            <div class="page_body">
+                <div>
+                    <h2 class="titlePage">Меню</h2>
+                    <ul class="menu">
+                        <li><button id="initBtn">Инициализация</button></li>
+                        <li><button id="run_onceBtn">Однофайловая обработка</button></li>
+                        <li><button id="run_multiBtn">Пакетная обработка</button></li>
+                        <li><button id="resultsBtn">Результаты обработки</button></li>
+                        <li><button id="exitBtn">Выход</button></li>
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+            </div>
+        </div>
+    </div>
+
+    <!--Страница инициализации-->
+    <div class="page hidden" id="initPage">
+        <div class="page_block">
+            <div class="page_body">
+                <h2 class="titlePage">Инициализация</h2>
+                <div class="text_row">
+                    <p>Приложение установит/обновит необходимые зависимости</p>
+                    <p>Проверит наличие хранилища для результатов обработки</p>
+                    <p>Если статус равен <mark>error</mark>, проверьте лог</p>
+                </div>
+                <button id="backBtn">Назад</button>
+            </div>
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+                <div class="init_buttons">
+                    <button id="startInitBtn">Начать инициализацию</button>
+                    <button id="openLogBtn">Лог</button>
+                </div>
+                <h2>Статус инициализации:</h2>
+                <h2 class="init_page_status"><mark><span id="status" class="status-ready"></span></mark></h2>
+            </div>
+        </div>
+    </div>
+
+    <!--Страница обработки одного файла-->
+    <div class="page hidden" id="run_oncePage">
+        <div class="page_block">
+            <div class="page_body">
+                <div>
+                    <h2 class="titlePage">Однофайловая обработка</h2>
+                    <div class="text_row">
+                        <p>Приложение обрабатывает файл</p>
+                        <p>Результат сохраняется в локальное хранилище в формате <mark>.json</mark></p>
+                        <div class="inputs">
+                            <div class="input_group">
+                                <p><label>Файл:</label></p>
+                                <input type="text" id="fileInput" autocomplete="off" placeholder="Введите путь к файлу">
+                                <!--<input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,application/pdf"  class="select_folder">-->
+                            </div>
+                            <div class="input_group">
+                                <p><label>Название:</label></p>
+                                <input type="text" id="filenameInput" autocomplete="off" placeholder="Введите имя файла">
+                            </div>
+                        </div>
+                        <p>Если статус равен <mark>error</mark>, проверьте лог</p>
+                    </div>
+                    <button id="backBtn">Назад</button>
+                </div>
+            </div>
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+                <div class="work_buttons">
+                    <button id="start_run_onceBtn">Начать обработку</button>
+                    <div class="lower_buttons">
+                        <button id="open_resultsBtn">Результат</button>
+                        <button id="openLogBtn">Лог</button>
+                    </div>
+                </div>
+                <h2>Статус обработки:</h2>
+                <h2><mark><span id="status_run_once" class="status-ready">status</span></mark></h2>
+            </div>
+        </div>
+    </div>
+
+    <!--Страница пакетной обработки файлов-->
+    <div class="page hidden" id="run_multiPage">
+        <div class="page_block">
+            <div class="page_body">
+                <div>
+                    <h2 class="titlePage">Пакетная обработка</h2>
+                    <div class="text_row">
+                        <p>Приложение обрабатывает папку</p>
+                        <p>Результаты сохраняются в локальное хранилище в формате <mark>.json</mark></p>
+                        <div class="inputs">
+                            <div class="input_group">
+                                <p><label>Папка:</label></p>
+                                <input type="text" id="dirPathInput" autocomplete="off" placeholder="Введите путь к папке">
+                                <!--<input type="file" id="fileInput" class="select_folder">-->
+                            </div>
+                            <div class="input_group">
+                                <p><label>Название:</label></p>
+                                <input type="text" id="folderNameCreate" autocomplete="off" placeholder="Введите имя папки">
+                            </div>
+                        </div>
+                        <p>Если статус равен <mark>error</mark>, или в хранилище не появились результаты, проверьте лог</p>
+                    </div>
+                    <button id="backBtn">Назад</button>
+                </div>
+            </div>
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+                <div class="work_buttons">
+                    <button id="start_run_multiBtn">Начать обработку</button>
+                    <div class="lower_buttons">
+                        <button id="open_resultsBtn">Результат</button>
+                        <button id="openLogBtn">Лог</button>
+                    </div>
+                </div>
+                <h2>Статус обработки:</h2>
+                <h2><mark><span id="status_run_multi" class="status-ready">status</span></mark></h2>
+            </div>
+        </div>
+    </div>
+
+    <!--Страница хранилища обработанных файлов-->
+    <div class="page hidden" id="resultsPage">
+        <div class="page_block">
+            <div class="page_body">
+                <div>
+                    <h2 class="titlePage">Хранилище результатов</h2>
+                    <p class="text_row">Результаты</p>
+                    <div class="scroll-container">
+                        <div id="filesList" class="files-list">
+                        </div>
+                    </div>
+                </div>
+                <button id="backBtn">Назад</button>
+            </div>
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+                <div id="previewTitle"><h2 class="titlePage">Выберите файл для просмотра</h2></div>
+                <div class="preview-block">
+                    <div id="fileContent" class="file-content"></div>
+                </div>
+                <button id="editBtn">Редактировать</button>
+                <button id="delBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <!--Страница редактирования обработанного файла-->
+    <div class="page hidden" id="editPage">
+        <div class="page_block">
+            <div class="page_body">
+                <div>
+                    <h2 class="titlePage">Редактирование результата</h2>
+                    <div class="text_row">
+                        <p>Вы можете редактировать результаты</p>
+                        <p>Отредактированные файлы сохраняются в локальном хранилище в формате <mark>.json</mark></p>
+                        <p>Если в файле не отобразились изменения, проверьте лог</p>
+                    </div>
+                </div>
+                <div>
+                    <button id="backBtn">Назад</button>
+                    <button id="openLogBtn">Лог</button>
+                </div>
+            </div>
+            <div>
+                <h1 class="nameApp">SCANDOC</h1>
+                <div>
+                    <h2 class="titlePage" id="editFilename">Файл: </h2>
+                </div>
+                <div class="edit_area">
+                    <textarea id="editor" spellcheck="false"></textarea>
+                </div>
+                <div class="edit_buttons">
+                    <button id="saveEditBtn">Сохранить</button>
+                    <button id="cancelEditBtn">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Разработчик-->
+    <div class="footer">
+        <h1 class="nameOrg">ProWeb</h1>
+    </div>
+</div>
+<script src="./src/main.js" type="module"></script>
+</body>
+</html>

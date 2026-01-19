@@ -1,0 +1,58 @@
+package cmd
+
+import (
+	"github.com/spf13/cobra"
+)
+
+var (
+	rootCmd = &cobra.Command{
+		Use:   "scandoc.exe",
+		Short: "ScanDoc - CLI для распознавания бухгалтерских документов",
+	}
+
+	configFlag string
+)
+
+// initCommands - инициализирует CLI команды, предварительно обработав флаг для получения пути к конфигу
+// если флаг не был введен, используется дефолтный путь.
+func (a *AppCLI) initCommands() {
+	const op = ".startApp"
+
+	rootCmd.PersistentFlags().StringVar(&configFlag, "config", "", "путь к конфигурации приложения")
+	rootCmd.LocalFlags().BoolP("help", "h", false, "показать справку по команде")
+
+	rootCmd.DisableAutoGenTag = true
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+
+	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if cmd.Flags().Lookup("help") != nil && cmd.Flags().Lookup("help").Changed ||
+			cmd.CommandPath() == "proweb-scandoc-cli" && len(args) == 0 {
+			return nil
+		}
+
+		if configFlag == "" {
+			a.AppCmds.SetCfgPath(configFlag)
+		}
+
+		if err := a.AppCmds.StartApp(a.Name + op); err != nil {
+			return err
+		}
+
+		return nil
+	}
+	rootCmd.SetHelpCommand(newHelperCmd(a))
+	rootCmd.AddCommand(newInstallTesseractCmd(a))
+	rootCmd.AddCommand(newInitAppCmd(a))
+	rootCmd.AddCommand(newRunOnceCmd(a))
+	rootCmd.AddCommand(newMultiRunCmd(a))
+	rootCmd.AddCommand(NewConfigSetCmd())
+	rootCmd.AddCommand(newClearCmd(a))
+	rootCmd.AddCommand(newOpenLogCmd(a))
+	rootCmd.AddCommand(newOpenStorageCmd(a))
+}
+
+// Execute - делегирует запуск CLI приложения, вызываясь на экземпляре AppCmds
+func (a *AppCLI) Execute() error {
+	a.initCommands()
+	return rootCmd.Execute()
+}

@@ -2,17 +2,14 @@ package main
 
 import (
 	"fmt"
-	"proWeb/internal/cliUtils"
-	"time"
+	"proWeb/internal/appUtils"
 )
 
 func main() {
-	multi1 := cliUtils.MultiProcessResult{
-		Results: []cliUtils.Result{
-			{FileName: "file1.json", Location: "storageJSON", CreatedAt: time.Now()},
-			{FileName: "file2.json", Location: "storageJSON", CreatedAt: time.Now().Add(time.Second)},
-			{FileName: "file3.json", Location: "storageJSON", CreatedAt: time.Now().Add(2 * time.Second)},
-		},
+	dir, err := appUtils.ConvertPdfToImg("C:\\Users\\Administrator\\Downloads\\Telegram Desktop\\4ТОРГ-12.pdf")
+	if err != nil {
+		fmt.Println("Ошибка:", err)
+		return
 	}
-	fmt.Print(multi1.ToString())
+	fmt.Println("JPG сохранены в:", dir)
 }

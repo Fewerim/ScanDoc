@@ -2,8 +2,11 @@ package parser
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 )
+
+var ErrNotFoundTable = errors.New("поле 'table' не найдено в JSON")
 
 // GetTableFromJson - достает объект table(если оно есть) из json файла
 func GetTableFromJson(data interface{}) ([]byte, error) {
@@ -30,7 +33,7 @@ func GetTableFromJson(data interface{}) ([]byte, error) {
 
 	tableBytes, exists := jsonData["table"]
 	if !exists {
-		return nil, fmt.Errorf("поле 'table' не найдено в JSON")
+		return nil, ErrNotFoundTable
 	}
 
 	if tableBytes[0] == '[' {
